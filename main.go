@@ -1,13 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
-	"github.com/iamcathal/booksbooksbooks/endpoints"
+	"github.com/iamcathal/booksbooksbooks/goodreads"
 )
 
 var (
@@ -21,18 +18,21 @@ func initConfig() dtos.AppConfig {
 }
 
 func main() {
-	appConfig := initConfig()
-	endpoints.InitConfig(appConfig)
-	port := "2945"
 
-	router := endpoints.SetupRouter()
+	goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
 
-	srv := &http.Server{
-		Handler:      router,
-		Addr:         ":" + fmt.Sprint(port),
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  10 * time.Second,
-	}
-	fmt.Println("serving requests on :" + port)
-	log.Fatal(srv.ListenAndServe())
+	// appConfig := initConfig()
+	// endpoints.InitConfig(appConfig)
+	// port := "2945"
+
+	// router := endpoints.SetupRouter()
+
+	// srv := &http.Server{
+	// 	Handler:      router,
+	// 	Addr:         ":" + fmt.Sprint(port),
+	// 	WriteTimeout: 10 * time.Second,
+	// 	ReadTimeout:  10 * time.Second,
+	// }
+	// fmt.Println("serving requests on :" + port)
+	// log.Fatal(srv.ListenAndServe())
 }
