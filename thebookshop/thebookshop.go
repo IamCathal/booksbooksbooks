@@ -14,19 +14,49 @@ var (
 )
 
 func SearchForBook(bookInfo dtos.BasicGoodReadsBook) dtos.TheBookshopBook {
-	searchTheBookshop(bookInfo)
+	allBooks := searchTheBookshop(bookInfo)
+	for i, book := range allBooks {
+		fmt.Printf("[%d] %+v\n", i, book)
+	}
 	return dtos.TheBookshopBook{}
 }
 
-func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) *goquery.Selection {
+func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
-	fmt.Println(searchURL)
-	// doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
-	// checkErr(err)
-	return nil
+	doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
+	checkErr(err)
+
+	allBooks := []dtos.TheBookshopBook{}
+
+	doc.Find("ul[class='productGrid']").Each(func(i int, bookReviews *goquery.Selection) {
+		bookReviews.Find("li[class='product']").Each(func(k int, bookProduct *goquery.Selection) {
+
+			bookTitle := bookProduct.Find("h4[class='card-title']").Text()
+			bookLink, ok := bookProduct.Find("h4[class='card-title'] a").Attr("href")
+			if !ok {
+				panic(fmt.Sprintf("no bookLink found for %+v with query %s", bookInfo, searchURL))
+			}
+
+			bookPrice := bookProduct.Find("span[data-product-price-without-tax='']").Text()
+			fmt.Printf("Title: '%s' Price: '%s' Link: %s\n", bookTitle, bookPrice, bookLink)
+
+			author, title := extractAuthorFromTitle(bookTitle)
+
+			foundBook := dtos.TheBookshopBook{
+				Title:  title,
+				Author: author,
+				Price:  bookPrice,
+				Link:   bookLink,
+			}
+			allBooks = append(allBooks, foundBook)
+		})
+	})
+
+	return allBooks
 }
 
 func getPage(pageURL string) io.ReadCloser {
+	fmt.Println(pageURL)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", pageURL, nil)
 	checkErr(err)

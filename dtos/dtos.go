@@ -19,4 +19,8 @@ type BasicGoodReadsBook struct {
 }
 
 type TheBookshopBook struct {
+	Title  string `json:"title"`
+	Author string `json:"author"`
+	Price  string `json:"price"`
+	Link   string `json:"link"`
 }
