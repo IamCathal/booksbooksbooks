@@ -2,6 +2,7 @@ package goodreads
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
@@ -25,11 +26,9 @@ func processBook(fullTitle, author string) dtos.BasicGoodReadsBook {
 	author = stripOfFormatting(author)
 	bookTitle, seriesInfo := extractTitleDetailsIfPossible(fullTitle)
 	newBook := dtos.BasicGoodReadsBook{
-		Title:  bookTitle,
-		Author: author,
-	}
-	if seriesInfo != "" {
-		newBook.SeriesText = seriesInfo
+		Title:      bookTitle,
+		Author:     author,
+		SeriesText: seriesInfo,
 	}
 	return newBook
 }
@@ -46,4 +45,19 @@ func extractTitleDetailsIfPossible(fullTitle string) (string, string) {
 		return splitFullTitle[0], splitFullTitle[1]
 	}
 	return fullTitle, ""
+}
+
+func extractLoadedCount(loadedCountText string) (int, int) {
+	loadedCountText = strings.TrimSpace(loadedCountText)
+	splitBySpace := strings.Split(loadedCountText, " ")
+	if len(splitBySpace) == 4 {
+		return strToInt(splitBySpace[0]), strToInt(splitBySpace[2])
+	}
+	panic(splitBySpace)
+}
+
+func strToInt(str string) int {
+	intVersion, err := strconv.Atoi(str)
+	checkErr(err)
+	return intVersion
 }
