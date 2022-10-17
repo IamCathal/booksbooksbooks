@@ -5,6 +5,7 @@ import (
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
+	"github.com/iamcathal/booksbooksbooks/thebookshop"
 )
 
 var (
@@ -19,8 +20,8 @@ func initConfig() dtos.AppConfig {
 
 func main() {
 
-	goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
-
+	allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
+	thebookshop.SearchForBook(allBooks[0])
 	// appConfig := initConfig()
 	// endpoints.InitConfig(appConfig)
 	// port := "2945"

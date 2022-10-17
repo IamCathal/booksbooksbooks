@@ -17,3 +17,6 @@ type BasicGoodReadsBook struct {
 	Author     string `json:"author"`
 	SeriesText string `json:"seriesText"`
 }
+
+type TheBookshopBook struct {
+}

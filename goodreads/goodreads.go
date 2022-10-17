@@ -60,7 +60,7 @@ func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
 		fmt.Printf("[%d] %+v\n", i, book)
 	}
 
-	return []dtos.BasicGoodReadsBook{}
+	return allBooks
 }
 
 func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
