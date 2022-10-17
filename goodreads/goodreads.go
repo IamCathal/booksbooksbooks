@@ -93,6 +93,5 @@ func getPage(pageURL string) io.ReadCloser {
 
 	res, err := client.Do(req)
 	checkErr(err)
-	fmt.Printf("%+v\n", res)
 	return res.Body
 }

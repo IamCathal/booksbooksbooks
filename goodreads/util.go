@@ -1,6 +1,7 @@
 package goodreads
 
 import (
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -26,8 +27,13 @@ func checkErr(err error) {
 	}
 }
 
-func checkIsShelfURL(url string) bool {
-	return strings.HasPrefix(url, GOODREADS_SHELF_URL_PREFIX)
+func checkIsShelfURL(checkURL string) bool {
+	hasPrefix := strings.HasPrefix(checkURL, GOODREADS_SHELF_URL_PREFIX)
+	properURL, err := url.Parse(checkURL)
+	checkErr(err)
+	shelfParam := properURL.Query().Get("shelf")
+
+	return hasPrefix && shelfParam != ""
 }
 
 func processBook(fullTitle, author string) dtos.BasicGoodReadsBook {
