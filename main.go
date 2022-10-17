@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
+	"github.com/iamcathal/booksbooksbooks/search"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
 )
 
@@ -21,7 +23,13 @@ func initConfig() dtos.AppConfig {
 func main() {
 
 	allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
-	thebookshop.SearchForBook(allBooks[0])
+	searchResults := thebookshop.SearchForBook(allBooks[25])
+	potentialMatches := search.Search(allBooks[25], searchResults)
+
+	fmt.Printf("%d matches\n", len(potentialMatches))
+	for i, potentialMatch := range potentialMatches {
+		fmt.Printf("(%d) %+v\n", i, potentialMatch)
+	}
 	// appConfig := initConfig()
 	// endpoints.InitConfig(appConfig)
 	// port := "2945"

@@ -13,12 +13,12 @@ var (
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
 )
 
-func SearchForBook(bookInfo dtos.BasicGoodReadsBook) dtos.TheBookshopBook {
+func SearchForBook(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook {
 	allBooks := searchTheBookshop(bookInfo)
-	for i, book := range allBooks {
-		fmt.Printf("[%d] %+v\n", i, book)
-	}
-	return dtos.TheBookshopBook{}
+	// for i, book := range allBooks {
+	// 	fmt.Printf("[%d] %+v\n", i, book)
+	// }
+	return allBooks
 }
 
 func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook {
@@ -38,7 +38,7 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook 
 			}
 
 			bookPrice := bookProduct.Find("span[data-product-price-without-tax='']").Text()
-			fmt.Printf("Title: '%s' Price: '%s' Link: %s\n", bookTitle, bookPrice, bookLink)
+			// fmt.Printf("Title: '%s' Price: '%s' Link: %s\n", bookTitle, bookPrice, bookLink)
 
 			author, title := extractAuthorFromTitle(bookTitle)
 
