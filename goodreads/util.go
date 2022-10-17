@@ -13,12 +13,21 @@ var (
 	// title and its series information if
 	// the series information is given
 	TITLE_AND_SERIES_INFO_SEPERATOR = regexp.MustCompile("[ ]{3,}")
+	// Goodreads returns 30 books per page
+	BOOK_COUNT_PER_PAGE = 30
+	// Crude to check if a roughly  valid
+	// shelf URL is being queried
+	GOODREADS_SHELF_URL_PREFIX = "https://www.goodreads.com/review/list/"
 )
 
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func checkIsShelfURL(url string) bool {
+	return strings.HasPrefix(url, GOODREADS_SHELF_URL_PREFIX)
 }
 
 func processBook(fullTitle, author string) dtos.BasicGoodReadsBook {
@@ -60,4 +69,18 @@ func strToInt(str string) int {
 	intVersion, err := strconv.Atoi(str)
 	checkErr(err)
 	return intVersion
+}
+
+func totalPagesToCrawl(totalBooks int) int {
+	fullPages, nonFullPageIfMoreThanOne := divmod(totalBooks, BOOK_COUNT_PER_PAGE)
+	if (nonFullPageIfMoreThanOne) >= 1 {
+		return fullPages + 1
+	}
+	return fullPages
+}
+
+func divmod(big, little int) (int, int) {
+	quotient := big / little
+	remainder := big % little
+	return quotient, remainder
 }

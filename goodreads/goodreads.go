@@ -12,7 +12,9 @@ import (
 
 func GetBooksFromShelf(shelfURL string) []dtos.BasicGoodReadsBook {
 	// is a shelf URL ?
-
+	if isShelfURL := checkIsShelfURL(shelfURL); !isShelfURL {
+		return []dtos.BasicGoodReadsBook{}
+	}
 	extractedBooks := extractBooksFromShelfPage(shelfURL)
 	return extractedBooks
 }
@@ -31,18 +33,18 @@ func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
 	})
 
 	allBooks = append(allBooks, extractBooksFromHTML(doc)...)
-
 	fmt.Printf("First page done %d/%d books gathered\n", loadedInView, totalBooks)
 
 	if len(allBooks) < totalBooks {
-		fmt.Println("more viewing will be required")
+		totalPagesToCrawl := totalPagesToCrawl(totalBooks)
+		fmt.Printf("%d pages will need to be crawled\n", totalPagesToCrawl)
 		currPageToView := 2
 		for {
 			if len(allBooks) == totalBooks {
 				break
 			}
 			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
-			fmt.Printf("Getting new page %s\n", newUrl)
+			fmt.Printf("[%d/%d] Getting new page %s\n", currPageToView, totalPagesToCrawl, newUrl)
 
 			newPageDoc, err := goquery.NewDocumentFromReader(getPage(newUrl))
 			checkErr(err)
@@ -65,14 +67,11 @@ func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 	allBooks := []dtos.BasicGoodReadsBook{}
 	doc.Find("tbody#booksBody").Each(func(i int, bookReviews *goquery.Selection) {
 		bookReviews.Find("tr").Each(func(k int, bookReviewRow *goquery.Selection) {
-
 			title := bookReviewRow.Find("td[class='field title'] a").Text()
 			author := bookReviewRow.Find("td[class='field author'] a").Text()
 
 			currBook := processBook(stripOfFormatting(title), stripOfFormatting(author))
 			allBooks = append(allBooks, currBook)
-
-			// fmt.Printf("%+v\n", currBook)
 		})
 	})
 	return allBooks
