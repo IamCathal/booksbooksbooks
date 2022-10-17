@@ -84,3 +84,8 @@ func divmod(big, little int) (int, int) {
 	remainder := big % little
 	return quotient, remainder
 }
+
+func getFakeReferrerPage(URL string) string {
+	splitStringByShelfParam := strings.Split(URL, "?")
+	return splitStringByShelfParam[0]
+}

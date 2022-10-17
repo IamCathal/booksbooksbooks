@@ -78,7 +78,21 @@ func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 }
 
 func getPage(pageURL string) io.ReadCloser {
-	res, err := http.Get(pageURL)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", pageURL, nil)
 	checkErr(err)
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Host", "www.goodreads.com")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Referer", getFakeReferrerPage(pageURL))
+
+	res, err := client.Do(req)
+	checkErr(err)
+	fmt.Printf("%+v\n", res)
 	return res.Body
 }
