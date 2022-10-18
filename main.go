@@ -31,9 +31,12 @@ func main() {
 	searchResults := thebookshop.SearchForBooks(allBooks[:3])
 	potentialMatches := search.SearchAll(searchResults)
 
-	fmt.Printf("%d matches\n", len(potentialMatches))
-	for i, potentialMatch := range potentialMatches {
-		fmt.Printf("(%d) %+v\n", i, potentialMatch)
+	for key, potentialMatchList := range potentialMatches {
+		fmt.Printf("%s: ", key)
+		for i, potentialMatch := range potentialMatchList.SearchResultBooks {
+			fmt.Printf("%d - %+v", i, potentialMatch)
+		}
+		fmt.Printf("\n")
 	}
 	// appConfig := initConfig()
 	// endpoints.InitConfig(appConfig)
