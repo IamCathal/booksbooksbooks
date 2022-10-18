@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
+var (
+	SLEEP_DURATION = time.Duration(1 * time.Second)
+)
+
 func GetBooksFromShelf(shelfURL string) []dtos.BasicGoodReadsBook {
-	// is a shelf URL ?
 	if isShelfURL := checkIsShelfURL(shelfURL); !isShelfURL {
 		return []dtos.BasicGoodReadsBook{}
 	}
-	extractedBooks := extractBooksFromShelfPage(shelfURL)
-	return extractedBooks
+	return extractBooksFromShelfPage(shelfURL)
 }
 
 func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
@@ -34,25 +37,25 @@ func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
 	allBooks = append(allBooks, extractBooksFromHTML(doc)...)
 	fmt.Printf("First page done %d/%d books gathered\n", loadedInView, totalBooks)
 
-	// if len(allBooks) < totalBooks {
-	// 	totalPagesToCrawl := totalPagesToCrawl(totalBooks)
-	// 	fmt.Printf("%d pages will need to be crawled\n", totalPagesToCrawl)
-	// 	currPageToView := 2
-	// 	for {
-	// 		if len(allBooks) == totalBooks {
-	// 			break
-	// 		}
-	// 		newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
-	// 		fmt.Printf("[%d/%d] Getting new page %s\n", currPageToView, totalPagesToCrawl, newUrl)
+	if len(allBooks) < totalBooks {
+		totalPagesToCrawl := totalPagesToCrawl(totalBooks)
+		fmt.Printf("%d pages will need to be crawled\n", totalPagesToCrawl)
+		currPageToView := 2
+		for {
+			if len(allBooks) == totalBooks {
+				break
+			}
+			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
+			fmt.Printf("[%d/%d] Getting new page %s\n", currPageToView, totalPagesToCrawl, newUrl)
 
-	// 		newPageDoc, err := goquery.NewDocumentFromReader(getPage(newUrl))
-	// 		checkErr(err)
+			newPageDoc, err := goquery.NewDocumentFromReader(getPage(newUrl))
+			checkErr(err)
 
-	// 		allBooks = append(allBooks, extractBooksFromHTML(newPageDoc)...)
-	// 		currPageToView++
-	// 		time.Sleep(2 * time.Second)
-	// 	}
-	// }
+			allBooks = append(allBooks, extractBooksFromHTML(newPageDoc)...)
+			currPageToView++
+			time.Sleep(SLEEP_DURATION)
+		}
+	}
 
 	fmt.Printf("Captured %d books\n", len(allBooks))
 	for i, book := range allBooks {

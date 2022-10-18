@@ -24,3 +24,9 @@ type TheBookshopBook struct {
 	Price  string `json:"price"`
 	Link   string `json:"link"`
 }
+
+type BookShopBookSearchResult struct {
+	SearchResultBooks []TheBookshopBook `json:"searchResultBooks"`
+}
+
+type AllBookshopBooksSearchResults map[string]BookShopBookSearchResult

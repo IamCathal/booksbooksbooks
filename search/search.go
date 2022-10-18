@@ -7,15 +7,17 @@ import (
 	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
-func Search(goodReadsBook dtos.BasicGoodReadsBook, theBookshopResults []dtos.TheBookshopBook) []dtos.TheBookshopBook {
+func SearchAll(allBookSearchResults dtos.AllBookshopBooksSearchResults) []dtos.TheBookshopBook {
 	potentialMatches := []dtos.TheBookshopBook{}
-	fmt.Printf("Searching for %s\n", goodReadsBook.Title)
 
-	for _, searchResult := range theBookshopResults {
-		if fuzzy.Match(goodReadsBook.Title, searchResult.Title) {
-			potentialMatches = append(potentialMatches, searchResult)
+	for key, searchResult := range allBookSearchResults {
+		fmt.Printf("Searching for %s\n", key)
+
+		for _, possibleBook := range searchResult.SearchResultBooks {
+			if fuzzy.Match(key, possibleBook.Title) {
+				potentialMatches = append(potentialMatches, possibleBook)
+			}
 		}
 	}
-
 	return potentialMatches
 }

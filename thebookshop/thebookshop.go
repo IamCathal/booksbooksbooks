@@ -13,19 +13,31 @@ var (
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
 )
 
-func SearchForBook(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook {
+func SearchForBooks(searchBooks []dtos.BasicGoodReadsBook) dtos.AllBookshopBooksSearchResults {
+	searchResults := make(dtos.AllBookshopBooksSearchResults)
+
+	for _, bookInfo := range searchBooks {
+		searchResults[bookInfo.Title] = SearchForBook(bookInfo)
+	}
+
+	return searchResults
+}
+
+func SearchForBook(bookInfo dtos.BasicGoodReadsBook) dtos.BookShopBookSearchResult {
 	allBooks := searchTheBookshop(bookInfo)
 	// for i, book := range allBooks {
 	// 	fmt.Printf("[%d] %+v\n", i, book)
 	// }
-	return allBooks
+	return dtos.BookShopBookSearchResult{
+		SearchResultBooks: allBooks,
+	}
 }
 
 func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
 	doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
 	checkErr(err)
-
+	fmt.Printf("Search for %s\n", searchURL)
 	allBooks := []dtos.TheBookshopBook{}
 
 	doc.Find("ul[class='productGrid']").Each(func(i int, bookReviews *goquery.Selection) {

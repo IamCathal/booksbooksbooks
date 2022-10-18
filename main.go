@@ -23,8 +23,13 @@ func initConfig() dtos.AppConfig {
 func main() {
 
 	allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
-	searchResults := thebookshop.SearchForBook(allBooks[25])
-	potentialMatches := search.Search(allBooks[25], searchResults)
+	allBooks[0] = dtos.BasicGoodReadsBook{
+		Title:      "The Return of the King",
+		Author:     "Tolkien, J.R.R.",
+		SeriesText: "(The Lord of the Rings, #1)",
+	}
+	searchResults := thebookshop.SearchForBooks(allBooks[:3])
+	potentialMatches := search.SearchAll(searchResults)
 
 	fmt.Printf("%d matches\n", len(potentialMatches))
 	for i, potentialMatch := range potentialMatches {
