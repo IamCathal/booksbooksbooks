@@ -1,13 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
-	"github.com/iamcathal/booksbooksbooks/search"
-	"github.com/iamcathal/booksbooksbooks/thebookshop"
 )
 
 var (
@@ -22,22 +19,24 @@ func initConfig() dtos.AppConfig {
 
 func main() {
 
-	allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
-	allBooks[0] = dtos.BasicGoodReadsBook{
-		Title:      "The Return of the King",
-		Author:     "Tolkien, J.R.R.",
-		SeriesText: "(The Lord of the Rings, #1)",
-	}
-	searchResults := thebookshop.SearchForBooks(allBooks[:3])
-	potentialMatches := search.SearchAll(searchResults)
+	goodreads.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
+	// allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
+	// allBooks[0] = dtos.BasicGoodReadsBook{
+	// 	Title:      "The Return of the King",
+	// 	Author:     "Tolkien, J.R.R.",
+	// 	SeriesText: "(The Lord of the Rings, #1)",
+	// }
+	// searchResults := thebookshop.SearchForBooks(allBooks[:3])
+	// potentialMatches := search.SearchAll(searchResults)
 
-	for key, potentialMatchList := range potentialMatches {
-		fmt.Printf("%s: ", key)
-		for i, potentialMatch := range potentialMatchList.SearchResultBooks {
-			fmt.Printf("%d - %+v", i, potentialMatch)
-		}
-		fmt.Printf("\n")
-	}
+	// for key, potentialMatchList := range potentialMatches {
+	// 	fmt.Printf("%s: ", key)
+	// 	for i, potentialMatch := range potentialMatchList.SearchResultBooks {
+	// 		fmt.Printf("%d - %+v", i, potentialMatch)
+	// 	}
+	// 	fmt.Printf("\n")
+	// }
+
 	// appConfig := initConfig()
 	// endpoints.InitConfig(appConfig)
 	// port := "2945"

@@ -30,3 +30,5 @@ type BookShopBookSearchResult struct {
 }
 
 type AllBookshopBooksSearchResults map[string]BookShopBookSearchResult
+
+// Engine data structures

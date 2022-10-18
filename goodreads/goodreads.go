@@ -11,17 +11,32 @@ import (
 )
 
 var (
-	SLEEP_DURATION = time.Duration(1 * time.Second)
+	lastRequestMade time.Time
+	SLEEP_DURATION  = time.Duration(1 * time.Second)
 )
 
-func GetBooksFromShelf(shelfURL string) []dtos.BasicGoodReadsBook {
+func init() {
+	lastRequestMade = time.Now()
+}
+
+func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	if isShelfURL := checkIsShelfURL(shelfURL); !isShelfURL {
 		return []dtos.BasicGoodReadsBook{}
 	}
-	return extractBooksFromShelfPage(shelfURL)
+	return extractBooksFromShelfPage(shelfURL, shelfStats, booksFoundFromGoodReadsChan)
 }
 
-func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
+// func getTotalBooksAndPageSource(shelfURL string) (int, *goquery.Document) {
+// 	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
+// 	checkErr(err)
+// 	totalBooks := 0
+// 	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {
+// 		_, totalBooks = extractLoadedCount(loadedCount.Text())
+// 	})
+// 	return totalBooks, doc
+// }
+
+func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
 	checkErr(err)
 
@@ -34,7 +49,14 @@ func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
 		fmt.Println(loadedInView, totalBooks)
 	})
 
-	allBooks = append(allBooks, extractBooksFromHTML(doc)...)
+	shelfStats <- totalBooks
+
+	extractedBooks := extractBooksFromHTML(doc)
+	for _, book := range extractedBooks {
+		booksFoundFromGoodReadsChan <- book
+	}
+	allBooks = append(allBooks, extractedBooks...)
+
 	fmt.Printf("First page done %d/%d books gathered\n", loadedInView, totalBooks)
 
 	if len(allBooks) < totalBooks {
@@ -46,23 +68,40 @@ func extractBooksFromShelfPage(shelfURL string) []dtos.BasicGoodReadsBook {
 				break
 			}
 			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
-			fmt.Printf("[%d/%d] Getting new page %s\n", currPageToView, totalPagesToCrawl, newUrl)
+			// fmt.Printf("[%d/%d] Getting new page %s\n", currPageToView, totalPagesToCrawl, newUrl)
 
 			newPageDoc, err := goquery.NewDocumentFromReader(getPage(newUrl))
 			checkErr(err)
 
+			extractedBooks := extractBooksFromHTML(newPageDoc)
+			for _, book := range extractedBooks {
+				booksFoundFromGoodReadsChan <- book
+			}
 			allBooks = append(allBooks, extractBooksFromHTML(newPageDoc)...)
 			currPageToView++
-			time.Sleep(SLEEP_DURATION)
+			sleepIfLongerThanAllotedTimeSinceLastRequest()
 		}
 	}
 
-	fmt.Printf("Captured %d books\n", len(allBooks))
-	for i, book := range allBooks {
-		fmt.Printf("[%d] %+v\n", i, book)
-	}
+	// fmt.Printf("Captured %d books\n", len(allBooks))
+	// for i, book := range allBooks {
+	// 	fmt.Printf("[%d] %+v\n", i, book)
+	// }
 
 	return allBooks
+}
+
+func sleepIfLongerThanAllotedTimeSinceLastRequest() {
+	fmt.Printf("[goodreads] Time since was %+v Default is %+v\n", time.Since(lastRequestMade), SLEEP_DURATION)
+	if time.Since(lastRequestMade) > SLEEP_DURATION {
+		lastRequestMade = time.Now()
+		fmt.Printf("[goodreads] Was more, not sleeping\n")
+		return
+	}
+	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
+	fmt.Printf("[goodreads] Was less, sleeping for %+v\n", timeDifference)
+	time.Sleep(timeDifference)
+	lastRequestMade = time.Now()
 }
 
 func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {

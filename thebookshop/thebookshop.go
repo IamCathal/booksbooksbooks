@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iamcathal/booksbooksbooks/dtos"
@@ -11,29 +12,40 @@ import (
 
 var (
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
+	lastRequestMade       time.Time
+	SLEEP_DURATION        = time.Duration(1 * time.Second)
 )
+
+func init() {
+	lastRequestMade = time.Now()
+}
 
 func SearchForBooks(searchBooks []dtos.BasicGoodReadsBook) dtos.AllBookshopBooksSearchResults {
 	searchResults := make(dtos.AllBookshopBooksSearchResults)
 
-	for _, bookInfo := range searchBooks {
-		searchResults[bookInfo.Title] = SearchForBook(bookInfo)
-	}
+	// for _, bookToSearch := range searchBooks {
+	// 	go searchForBookWithThrottling(bookToSearch)
+	// }
+
+	// for _, bookInfo := range searchBooks {
+	// 	searchResults[bookInfo.Title] = SearchForBook(bookInfo)
+	// }
 
 	return searchResults
 }
 
-func SearchForBook(bookInfo dtos.BasicGoodReadsBook) dtos.BookShopBookSearchResult {
-	allBooks := searchTheBookshop(bookInfo)
+func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.AllBookshopBooksSearchResults) dtos.BookShopBookSearchResult {
+	allBooks := searchTheBookshop(bookInfo, bookSearchResultsChan)
 	// for i, book := range allBooks {
 	// 	fmt.Printf("[%d] %+v\n", i, book)
 	// }
+	sleepIfLongerThanAllotedTimeSinceLastRequest()
 	return dtos.BookShopBookSearchResult{
 		SearchResultBooks: allBooks,
 	}
 }
 
-func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook {
+func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.AllBookshopBooksSearchResults) []dtos.TheBookshopBook {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
 	doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
 	checkErr(err)
@@ -64,7 +76,27 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook) []dtos.TheBookshopBook 
 		})
 	})
 
+	searchResult := make(dtos.AllBookshopBooksSearchResults)
+	returnedBooks := dtos.BookShopBookSearchResult{
+		SearchResultBooks: allBooks,
+	}
+	searchResult[bookInfo.Title] = returnedBooks
+	bookSearchResultsChan <- searchResult
+
 	return allBooks
+}
+
+func sleepIfLongerThanAllotedTimeSinceLastRequest() {
+	fmt.Printf("[thebookshop] Time since was %+v Default is %+v\n", time.Since(lastRequestMade), SLEEP_DURATION)
+	if time.Since(lastRequestMade) > SLEEP_DURATION {
+		lastRequestMade = time.Now()
+		fmt.Printf("[thebookshop] Was more, not sleeping\n")
+		return
+	}
+	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
+	fmt.Printf("[thebookshop] Was less, sleeping for %+v\n", timeDifference)
+	time.Sleep(timeDifference)
+	lastRequestMade = time.Now()
 }
 
 func getPage(pageURL string) io.ReadCloser {
