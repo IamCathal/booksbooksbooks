@@ -41,6 +41,6 @@ func SearchAllAuthorAndTitle(bookInfo dtos.BasicGoodReadsBook, searchResults []d
 	return dtos.EnchancedSearchResult{
 		SearchBook:    bookInfo,
 		AuthorMatches: potentialAuthorMatches,
-		TitleMatchces: potentialTitleMatches,
+		TitleMatches:  potentialTitleMatches,
 	}
 }

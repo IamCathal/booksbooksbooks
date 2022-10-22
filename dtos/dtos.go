@@ -38,7 +38,7 @@ type AllBookshopBooksSearchResults map[string]BookShopBookSearchResult
 type EnchancedSearchResult struct {
 	SearchBook    BasicGoodReadsBook `json:"searchBook"`
 	AuthorMatches []TheBookshopBook  `json:"authorMatches"`
-	TitleMatchces []TheBookshopBook  `json:"titleMatches"`
+	TitleMatches  []TheBookshopBook  `json:"titleMatches"`
 }
 
 // Ws data structures
