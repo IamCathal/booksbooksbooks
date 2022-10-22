@@ -31,4 +31,25 @@ type BookShopBookSearchResult struct {
 
 type AllBookshopBooksSearchResults map[string]BookShopBookSearchResult
 
-// Engine data structures
+// Ws data structures
+
+type CrawlStats struct {
+	TotalBooks    int `json:"totalBooks"`
+	BooksCrawled  int `json:"booksCrawled"`
+	BooksSearched int `json:"booksSearched"`
+}
+
+type WsTotalBooks struct {
+	TotalBooks int        `json:"totalBooks"`
+	CrawlStats CrawlStats `json:"crawlStats"`
+}
+
+type WsGoodreadsBook struct {
+	BookInfo   BasicGoodReadsBook `json:"bookinfo"`
+	CrawlStats CrawlStats         `json:"crawlStats"`
+}
+
+type WsBookshopSearchResult struct {
+	Result     AllBookshopBooksSearchResults `json:"result"`
+	CrawlStats CrawlStats                    `json:"crawlStats"`
+}

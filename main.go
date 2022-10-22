@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
-	"github.com/iamcathal/booksbooksbooks/goodreads"
+	"github.com/iamcathal/booksbooksbooks/endpoints"
 )
 
 var (
@@ -19,7 +22,7 @@ func initConfig() dtos.AppConfig {
 
 func main() {
 
-	goodreads.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
+	// engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
 	// allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
 	// allBooks[0] = dtos.BasicGoodReadsBook{
 	// 	Title:      "The Return of the King",
@@ -37,18 +40,18 @@ func main() {
 	// 	fmt.Printf("\n")
 	// }
 
-	// appConfig := initConfig()
-	// endpoints.InitConfig(appConfig)
-	// port := "2945"
+	appConfig := initConfig()
+	endpoints.InitConfig(appConfig)
+	port := "2945"
 
-	// router := endpoints.SetupRouter()
+	router := endpoints.SetupRouter()
 
-	// srv := &http.Server{
-	// 	Handler:      router,
-	// 	Addr:         ":" + fmt.Sprint(port),
-	// 	WriteTimeout: 10 * time.Second,
-	// 	ReadTimeout:  10 * time.Second,
-	// }
-	// fmt.Println("serving requests on :" + port)
-	// log.Fatal(srv.ListenAndServe())
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         ":" + fmt.Sprint(port),
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  10 * time.Second,
+	}
+	fmt.Println("serving requests on :" + port)
+	log.Fatal(srv.ListenAndServe())
 }
