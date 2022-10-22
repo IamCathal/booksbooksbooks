@@ -20,7 +20,7 @@ func init() {
 }
 
 func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
-	if isShelfURL := checkIsShelfURL(shelfURL); !isShelfURL {
+	if isShelfURL := CheckIsShelfURL(shelfURL); !isShelfURL {
 		return []dtos.BasicGoodReadsBook{}
 	}
 	return extractBooksFromShelfPage(shelfURL, shelfStats, booksFoundFromGoodReadsChan)
@@ -110,8 +110,11 @@ func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 		bookReviews.Find("tr").Each(func(k int, bookReviewRow *goquery.Selection) {
 			title := bookReviewRow.Find("td[class='field title'] a").Text()
 			author := bookReviewRow.Find("td[class='field author'] a").Text()
+			cover, _ := bookReviewRow.Find("td[class='field cover'] img").Attr("src")
+			isbn13 := bookReviewRow.Find("td[class='field isbn13'] div").Text()
+			asin := bookReviewRow.Find("td[class='field asin'] div").Text()
 
-			currBook := processBook(stripOfFormatting(title), stripOfFormatting(author))
+			currBook := processBook(title, author, cover, isbn13, asin)
 			allBooks = append(allBooks, currBook)
 		})
 	})
