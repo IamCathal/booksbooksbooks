@@ -50,10 +50,12 @@ function writeBook(book) {
     document.getElementById("goodReadsBooksCol").innerHTML += `
     <div class="row goodReadsBookBox mt-2" id="${book.id}-goodreadsInfo">
         <div class="col-1 text-center">
-                <img
-                    src="${book.cover}"
-                    style="width: 3rem"
-                >
+                <a href="${book.link}">
+                    <img
+                        src="${book.cover}"
+                        style="width: 3rem"
+                    >
+                </a>
         </div>
         <div class="col-4">
             <div class="row bookTitle" >
@@ -66,15 +68,8 @@ function writeBook(book) {
                 ${book.author}
             </div>
         </div>
-        <div class="col-4" id="${book.id}-theBookshopResults">
+        <div class="col" id="${book.id}-theBookshopResults">
 
-        </div>
-        <div class="col-1">
-            <img 
-                src="static/images/icons8-tick-box.svg"
-                style="width: 4.3rem; filter: sepia(60%)"
-                class="tickIconDefault"
-            >
         </div>
     </div>
     `
@@ -82,7 +77,9 @@ function writeBook(book) {
 
 function fillInSearchResult(msg) {
     console.log(msg)
-
+    if (msg.titleMatches.length > 1) {
+        console.debug(msg)
+    }
     if (msg.titleMatches.length == 0) {
         msg.titleMatches[0] = {
             "title":"",
@@ -94,49 +91,49 @@ function fillInSearchResult(msg) {
     }
 
     document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
-    <div class="row">
-        <div class="col"style="border: 2px solid red" >
-            <div class="row justify-content-md-center titleMatch" style="border: 1px dashed black">
-                Title Match
-            </div>
-            <div class="row">
-                <div class="col searchResultBook" style="border: 1px dotted black">
                     <div class="row">
-                        <div class="col-3 pl-2" style="border: 1px solid blue">
-                            <a href="${msg.titleMatches[0].link}">
-                                <img
-                                    src="${msg.titleMatches[0].cover}"
-                                    style="width: 3rem"
-                                >
-                            </a>
+                        <div class="col"style="border: 2px solid red" >
+                            <div class="row justify-content-md-center titleMatch" style="border: 1px dashed black">
+                                Possible Match
+                            </div>
+                            <div class="row">
+                                <div class="col searchResultBook" style="border: 1px dotted black">
+                                    <div class="row">
+                                        <div class="col-3 pl-2" style="border: 1px solid blue">
+                                            <a href="${msg.titleMatches[0].link}">
+                                                <img
+                                                    src="${msg.titleMatches[0].cover}"
+                                                    style="width: 3rem"
+                                                >
+                                            </a>
+                                        </div>
+                                        <div class="col" style="border: 1px solid green">
+                                            <div class="row" style="font-weight: bold; font-size: 0.8rem">
+                                            ${msg.titleMatches[0].title}
+                                            </div>
+                                            <div class="row" style="font-size: 0.6rem">
+                                            
+                                            </div>
+                                            <div class="row" style="font-size: 0.6rem">
+                                                ${msg.titleMatches[0].author}
+                                            </div>
+                                            <div class="row" style="font-weight: bold; font-size: 0.7rem">
+                                                ${msg.titleMatches[0].price}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col" style="border: 1px solid green">
-                            <div class="row" style="font-weight: bold; font-size: 0.8rem">
-                               ${msg.titleMatches[0].title}
+                        <div class="col"style="border: 2px solid purple" >
+                            <div class="row justify-content-md-center authorMatch" style="border: 1px dashed black">
+                                Other books from author
                             </div>
-                            <div class="row" style="font-size: 0.6rem">
-                               
-                            </div>
-                            <div class="row" style="font-size: 0.6rem">
-                                ${msg.titleMatches[0].author}
-                            </div>
-                            <div class="row" style="font-weight: bold; font-size: 0.7rem">
-                                ${msg.titleMatches[0].price}
+                            <div class="row authorMatches">
+                                ${generateHTMLForAuthorMatches(msg.authorMatches)}
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col"style="border: 2px solid purple" >
-            <div class="row justify-content-md-center authorMatch" style="border: 1px dashed black">
-                Author Matches
-            </div>
-            <div class="row authorMatches">
-                ${generateHTMLForAuthorMatches(msg.authorMatches)}
-            </div>
-        </div>
-    </div>
     `
 }
 
@@ -160,7 +157,12 @@ function generateHTMLForAuthorMatches(authorMatches) {
 }
 
 function updateStats(crawlStats) {
-    document.getElementById("crawlInfoBox").textContent = `${crawlStats.booksSearched}/${crawlStats.totalBooks}`
+
+    document.getElementById("statsBookFound").textContent = crawlStats.totalBooks
+    document.getElementById("statsBooksCrawled").textContent = crawlStats.booksCrawled
+    document.getElementById("statsBooksSearched").textContent = crawlStats.booksSearched
+    document.getElementById("statsBookMatchesFound").textContent = crawlStats.bookMatchFound
+
     document.getElementById("crawlProgressBarSpanID").style.width = `${Math.floor((crawlStats.booksSearched/crawlStats.totalBooks)*100)}%`
     console.log(document.getElementById("crawlProgressBarSpanID").style.width)
 }

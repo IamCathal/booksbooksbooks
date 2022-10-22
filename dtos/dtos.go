@@ -45,9 +45,10 @@ type EnchancedSearchResult struct {
 // Ws data structures
 
 type CrawlStats struct {
-	TotalBooks    int `json:"totalBooks"`
-	BooksCrawled  int `json:"booksCrawled"`
-	BooksSearched int `json:"booksSearched"`
+	TotalBooks     int `json:"totalBooks"`
+	BooksCrawled   int `json:"booksCrawled"`
+	BooksSearched  int `json:"booksSearched"`
+	BookMatchFound int `json:"bookMatchFound"`
 }
 
 type WsTotalBooks struct {

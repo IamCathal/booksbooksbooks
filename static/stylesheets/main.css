@@ -40,9 +40,14 @@
     }
   }
 
-#crawlInfoBox {
-  font-size: 2.5rem;
+.crawlInfoCol {
+  font-size: 1.4rem;
   font-size: bold;
+  margin-right: 0.8rem;
+  margin-left: 0.8rem;
+
+  border: 2px solid black;
+  border-radius: 0.5rem;
 }
 
 
