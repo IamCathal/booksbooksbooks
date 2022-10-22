@@ -50,9 +50,11 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 	})
 
 	shelfStats <- totalBooks
+	close(shelfStats)
 
 	extractedBooks := extractBooksFromHTML(doc)
 	for _, book := range extractedBooks {
+		// fmt.Printf("[%d] %d putting in new book %s from page %d\n", len(booksFoundFromGoodReadsChan), i+1, book.Title, 1)
 		booksFoundFromGoodReadsChan <- book
 	}
 	allBooks = append(allBooks, extractedBooks...)
@@ -68,16 +70,17 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 				break
 			}
 			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
-			// fmt.Printf("[%d/%d] Getting new page %s\n", currPageToView, totalPagesToCrawl, newUrl)
 
 			newPageDoc, err := goquery.NewDocumentFromReader(getPage(newUrl))
 			checkErr(err)
 
-			extractedBooks := extractBooksFromHTML(newPageDoc)
-			for _, book := range extractedBooks {
+			extractedBooksFromNewPage := extractBooksFromHTML(newPageDoc)
+			// fmt.Printf("\n\nGot %d new books from page %d (%s)\n\n", len(extractedBooksFromNewPage), currPageToView, newUrl)
+			for _, book := range extractedBooksFromNewPage {
+				// fmt.Printf("[%d] Putting in new book %s from page %d\n", len(booksFoundFromGoodReadsChan), book.Title, currPageToView)
 				booksFoundFromGoodReadsChan <- book
 			}
-			allBooks = append(allBooks, extractBooksFromHTML(newPageDoc)...)
+			allBooks = append(allBooks, extractedBooksFromNewPage...)
 			currPageToView++
 			sleepIfLongerThanAllotedTimeSinceLastRequest()
 		}

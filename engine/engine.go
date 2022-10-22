@@ -21,7 +21,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 	shelfStatsChan := make(chan int, 1)
 	booksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
-	searchResultsFromTheBookshopChan := make(chan dtos.AllBookshopBooksSearchResults, 200)
+	searchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
 	fmt.Printf("Retrieving books from shelf: %s\n", shelfURL)
 	goodreads.GetBooksFromShelf(shelfURL, shelfStatsChan, booksFoundFromGoodReadsChan)
@@ -41,25 +41,31 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		}
 
 		select {
-		case totalBooks := <-shelfStatsChan:
-			currCrawlStats.TotalBooks = totalBooks
-			writeTotalBooksMsg(currCrawlStats, ws)
-			close(shelfStatsChan)
+		case totalBooks, open := <-shelfStatsChan:
+			if !open {
+				shelfStatsChan = nil
+			} else {
+				currCrawlStats.TotalBooks = totalBooks
+				writeTotalBooksMsg(currCrawlStats, ws)
+			}
 
 		case bookFromGoodReads := <-booksFoundFromGoodReadsChan:
 			currCrawlStats.BooksCrawled++
-			fmt.Printf("(%d) found a book: %+v\n", booksFound, bookFromGoodReads)
+			fmt.Printf("[%d](%d) found a book: %+v by %v\n", len(booksFoundFromGoodReadsChan), currCrawlStats.BooksCrawled, bookFromGoodReads.Title, bookFromGoodReads.Author)
 			writeGoodReadsBookMsg(bookFromGoodReads, currCrawlStats, ws)
-			thebookshop.SearchForBook(bookFromGoodReads, searchResultsFromTheBookshopChan)
+			go thebookshop.SearchForBook(bookFromGoodReads, searchResultsFromTheBookshopChan)
 
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
-			fmt.Printf("\nSearch result found: %+v\n\n", searchResultFromTheBookshop)
-			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
+			fmt.Printf("%d author and %d title matches for %s\n", len(searchResultFromTheBookshop.AuthorMatches),
+				len(searchResultFromTheBookshop.TitleMatchces), searchResultFromTheBookshop.SearchBook.Title)
+			go writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 
 		}
 	}
 	fmt.Printf("Exiting. All books queried from Goodreads")
+	close(booksFoundFromGoodReadsChan)
+	close(searchResultsFromTheBookshopChan)
 }
 
 func allBooksFound(crawlStats dtos.CrawlStats) bool {

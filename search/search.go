@@ -24,3 +24,23 @@ func SearchAll(allBookSearchResults dtos.AllBookshopBooksSearchResults) dtos.All
 	}
 	return potentialMatches
 }
+
+func SearchAllAuthorAndTitle(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.TheBookshopBook) dtos.EnchancedSearchResult {
+	potentialAuthorMatches := []dtos.TheBookshopBook{}
+	potentialTitleMatches := []dtos.TheBookshopBook{}
+
+	for _, searchResult := range searchResults {
+		if fuzzy.MatchFold(bookInfo.Title, searchResult.Title) {
+			potentialTitleMatches = append(potentialTitleMatches, searchResult)
+		}
+		if fuzzy.MatchFold(bookInfo.Author, searchResult.Author) {
+			potentialAuthorMatches = append(potentialAuthorMatches, searchResult)
+		}
+	}
+
+	return dtos.EnchancedSearchResult{
+		SearchBook:    bookInfo,
+		AuthorMatches: potentialAuthorMatches,
+		TitleMatchces: potentialTitleMatches,
+	}
+}

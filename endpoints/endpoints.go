@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/iamcathal/booksbooksbooks/engine"
 )
 
 var (
@@ -53,7 +55,7 @@ func liveFeed(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("\nshelf url was %s\n", shelfUrl)
 
-	// engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy", ws)
+	engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy", ws)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +75,9 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
+		if contains := strings.Contains("/static", r.URL.Path); !contains {
+			fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
+		}
 		next.ServeHTTP(w, r)
 	})
 }

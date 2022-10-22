@@ -35,6 +35,12 @@ type BookShopBookSearchResult struct {
 
 type AllBookshopBooksSearchResults map[string]BookShopBookSearchResult
 
+type EnchancedSearchResult struct {
+	SearchBook    BasicGoodReadsBook `json:"searchBook"`
+	AuthorMatches []TheBookshopBook  `json:"authorMatches"`
+	TitleMatchces []TheBookshopBook  `json:"titleMatches"`
+}
+
 // Ws data structures
 
 type CrawlStats struct {
@@ -54,6 +60,6 @@ type WsGoodreadsBook struct {
 }
 
 type WsBookshopSearchResult struct {
-	Result     AllBookshopBooksSearchResults `json:"result"`
-	CrawlStats CrawlStats                    `json:"crawlStats"`
+	Result     EnchancedSearchResult `json:"result"`
+	CrawlStats CrawlStats            `json:"crawlStats"`
 }

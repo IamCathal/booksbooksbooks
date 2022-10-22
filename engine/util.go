@@ -2,9 +2,14 @@ package engine
 
 import (
 	"encoding/json"
+	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+)
+
+var (
+	websocketWriteLock sync.Mutex
 )
 
 func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
@@ -31,7 +36,7 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 	WriteMsg(jsonStr, ws)
 }
 
-func writeSearchResultReturnedMsg(searchResult dtos.AllBookshopBooksSearchResults, stats dtos.CrawlStats, ws *websocket.Conn) {
+func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats dtos.CrawlStats, ws *websocket.Conn) {
 	searchResultMsg := dtos.WsBookshopSearchResult{
 		Result:     searchResult,
 		CrawlStats: stats,
@@ -44,6 +49,8 @@ func writeSearchResultReturnedMsg(searchResult dtos.AllBookshopBooksSearchResult
 }
 
 func WriteMsg(msg []byte, ws *websocket.Conn) {
+	websocketWriteLock.Lock()
+	defer websocketWriteLock.Unlock()
 	err := ws.WriteMessage(1, msg)
 	if err != nil {
 		panic(err)

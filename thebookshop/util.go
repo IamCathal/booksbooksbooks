@@ -36,5 +36,4 @@ func extractAuthorFromTitle(fullBookTitle string) (string, string) {
 	}
 
 	return splitUpByDash[0], splitUpByDash[0]
-	// panic(fmt.Sprintf("failed to split up %s", fullBookTitle))
 }

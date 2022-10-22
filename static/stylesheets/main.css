@@ -1,0 +1,66 @@
+#mainInputBox {
+    border: 3px solid black; 
+    border-radius: 0.3rem; 
+
+    padding: 0.4rem;
+    
+    width: 80%; 
+    font-size: 1.1rem
+}
+
+.recentBox {
+    border: 2px soild red;
+    border-radius: 0.3rem;
+}
+
+/* Crawl progress bar */
+.crawlProgressBar {
+    margin: 0rem 0.2rem;
+    height: 0.7rem;
+    background: #e1e4e8;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .progressBarSpan{
+    width: 12%;
+    display: block;
+    height: 100%;
+    background: linear-gradient(32deg,#ffd33d,#ea4aaa 20%,#b34bff 30%,#4787dc 50%,#ffd33d 70%,#ea4aaa 80%,#b34bff);
+    background-size: 300% 100%;
+    animation: progress-animation 3s linear infinite;
+  }
+  
+  @keyframes progress-animation {
+    0% {
+      background-position: 100%;
+    }
+    100% {
+      background-position: 0;
+    }
+  }
+
+
+.goodReadsBookBox {
+    border-radius: 0.3rem;
+    border: 1px solid black;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
+.bookTitle {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.bookSeriesText {
+    font-size: 0.7rem;
+}
+
+.bookAuthor {
+    font-size: 0.7rem;
+}
+
+.tickIconDefault {
+    
+}

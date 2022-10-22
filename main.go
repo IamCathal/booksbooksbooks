@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/endpoints"
 )
@@ -21,6 +22,7 @@ func initConfig() dtos.AppConfig {
 }
 
 func main() {
+	db.ConnectToRedis()
 
 	// engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
 	// allBooks := goodreads.GetBooksFromShelf("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
