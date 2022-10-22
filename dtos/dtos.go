@@ -26,6 +26,7 @@ type TheBookshopBook struct {
 	Author string `json:"author"`
 	Price  string `json:"price"`
 	Link   string `json:"link"`
+	Cover  string `json:"cover"`
 }
 
 type BookShopBookSearchResult struct {

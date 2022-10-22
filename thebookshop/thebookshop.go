@@ -64,6 +64,8 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 			bookPrice := bookProduct.Find("span[data-product-price-without-tax='']").Text()
 			// fmt.Printf("Title: '%s' Price: '%s' Link: %s\n", bookTitle, bookPrice, bookLink)
 
+			cover, _ := bookProduct.Find("img[class='card-image']").Attr("src")
+
 			author, title := extractAuthorFromTitle(bookTitle)
 
 			foundBook := dtos.TheBookshopBook{
@@ -71,6 +73,7 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 				Author: author,
 				Price:  bookPrice,
 				Link:   bookLink,
+				Cover:  cover,
 			}
 			allBooks = append(allBooks, foundBook)
 		})
