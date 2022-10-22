@@ -22,8 +22,8 @@
     overflow: hidden;
   }
   
-  .progressBarSpan{
-    width: 12%;
+  .crawlProgressBarSpan{
+    /* width: 12%; */
     display: block;
     height: 100%;
     background: linear-gradient(32deg,#ffd33d,#ea4aaa 20%,#b34bff 30%,#4787dc 50%,#ffd33d 70%,#ea4aaa 80%,#b34bff);
@@ -39,6 +39,11 @@
       background-position: 0;
     }
   }
+
+#crawlInfoBox {
+  font-size: 2.5rem;
+  font-size: bold;
+}
 
 
 .goodReadsBookBox {

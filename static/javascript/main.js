@@ -160,5 +160,7 @@ function generateHTMLForAuthorMatches(authorMatches) {
 }
 
 function updateStats(crawlStats) {
-    document.getElementById("crawlInfoBox").textContent = `${crawlStats.booksCrawled}/${crawlStats.totalBooks}`
+    document.getElementById("crawlInfoBox").textContent = `${crawlStats.booksSearched}/${crawlStats.totalBooks}`
+    document.getElementById("crawlProgressBarSpanID").style.width = `${Math.floor((crawlStats.booksSearched/crawlStats.totalBooks)*100)}%`
+    console.log(document.getElementById("crawlProgressBarSpanID").style.width)
 }
