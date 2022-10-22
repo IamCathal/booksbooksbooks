@@ -27,7 +27,7 @@ func checkErr(err error) {
 	}
 }
 
-func checkIsShelfURL(checkURL string) bool {
+func CheckIsShelfURL(checkURL string) bool {
 	hasPrefix := strings.HasPrefix(checkURL, GOODREADS_SHELF_URL_PREFIX)
 	properURL, err := url.Parse(checkURL)
 	checkErr(err)

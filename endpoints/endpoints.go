@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/iamcathal/booksbooksbooks/dtos"
-	"github.com/iamcathal/booksbooksbooks/engine"
 )
 
 var (
@@ -50,7 +49,11 @@ func liveFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy", ws)
+	shelfUrl := r.URL.Query().Get("shelfurl")
+
+	fmt.Printf("\nshelf url was %s\n", shelfUrl)
+
+	// engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy", ws)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
