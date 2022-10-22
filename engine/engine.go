@@ -58,7 +58,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
 			fmt.Printf("%d author and %d title matches for %s\n", len(searchResultFromTheBookshop.AuthorMatches),
-				len(searchResultFromTheBookshop.TitleMatchces), searchResultFromTheBookshop.SearchBook.Title)
+				len(searchResultFromTheBookshop.TitleMatches), searchResultFromTheBookshop.SearchBook.Title)
 			go writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 
 		}

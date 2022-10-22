@@ -13,6 +13,7 @@ type UptimeResponse struct {
 }
 
 type BasicGoodReadsBook struct {
+	ID         string `json:"id"`
 	Title      string `json:"title"`
 	Author     string `json:"author"`
 	SeriesText string `json:"seriesText"`
@@ -60,6 +61,6 @@ type WsGoodreadsBook struct {
 }
 
 type WsBookshopSearchResult struct {
-	Result     EnchancedSearchResult `json:"result"`
-	CrawlStats CrawlStats            `json:"crawlStats"`
+	SearchResult EnchancedSearchResult `json:"searchResult"`
+	CrawlStats   CrawlStats            `json:"crawlStats"`
 }

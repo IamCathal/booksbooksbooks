@@ -64,3 +64,11 @@
 .tickIconDefault {
     
 }
+
+.titleMatch, .authorMatch {
+  font-size: 0.6rem;
+}
+
+.searchResultBook {
+  width: 2rem;
+}

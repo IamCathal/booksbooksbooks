@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/segmentio/ksuid"
 )
 
 var (
@@ -45,6 +46,7 @@ func processBook(fullTitle, author, cover, isbn13, asin string) dtos.BasicGoodRe
 
 	bookTitle, seriesInfo := extractTitleDetailsIfPossible(fullTitle)
 	newBook := dtos.BasicGoodReadsBook{
+		ID:         ksuid.New().String(),
 		Title:      bookTitle,
 		Author:     author,
 		SeriesText: seriesInfo,

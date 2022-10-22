@@ -16,7 +16,7 @@ var (
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
 	lastRequestMade       time.Time
 	bookshopRequestLock   sync.Mutex
-	SLEEP_DURATION        = time.Duration(1 * time.Second)
+	SLEEP_DURATION        = time.Duration(600 * time.Millisecond)
 )
 
 func init() {

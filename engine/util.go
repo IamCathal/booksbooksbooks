@@ -38,8 +38,8 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 
 func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats dtos.CrawlStats, ws *websocket.Conn) {
 	searchResultMsg := dtos.WsBookshopSearchResult{
-		Result:     searchResult,
-		CrawlStats: stats,
+		SearchResult: searchResult,
+		CrawlStats:   stats,
 	}
 	jsonStr, err := json.Marshal(searchResultMsg)
 	if err != nil {
