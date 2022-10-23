@@ -12,7 +12,7 @@ body {
 }
 
 #mainInputBox {
-    border: 3px solid #c0c0c0; 
+    border: 1px solid #c0c0c0; 
     /* border-radius: 0.3rem;  */
     padding: 0.4rem;
     background-color: #22242f;
@@ -20,6 +20,10 @@ body {
     
     width: 60%; 
     font-size: 1.1rem
+}
+
+.toggleBox {
+  border: 2px solid #c0c0c0;
 }
 
 /* Crawl progress bar */
@@ -56,13 +60,11 @@ body {
   margin-left: 0.15rem;
 
   border: 2px solid #c0c0c0;
-  border-radius: 0.5rem;
 }
 
 
 .goodReadsBookBox {
-    border-radius: 0.3rem;
-    border: 1px solid #c0c0c0;
+    border: 2px solid #c0c0c0;
     padding-top: 0.3rem;
     padding-bottom: 0.3rem;
 }

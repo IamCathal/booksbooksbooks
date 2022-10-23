@@ -9,6 +9,8 @@ let singleBook = {
     "authorMatches": {}
 }
 
+giveSwayaaangBordersToItems()
+
 document.getElementById("mainInputBox").addEventListener("keyup", function(event) {
     const shelfUrl = document.getElementById("mainInputBox").value
     if (event.key === "Enter") {
@@ -84,7 +86,7 @@ function isSearchResult(msg) {
 
 function writeBook(book) {
     document.getElementById("goodReadsBooksCol").innerHTML += `
-    <div class="row goodReadsBookBox mt-2" id="${book.id}-goodreadsInfo">
+    <div class="row goodReadsBookBox mt-2 pr-2" id="${book.id}-goodreadsInfo" style="${swayaaangBorders(0.8)}">
         <div class="col-1 text-center pt-2">
                 <a href="${book.link}">
                     <img
@@ -351,4 +353,35 @@ function updateStats(crawlStats) {
 
 function clearCurrentCrawlIfThereIsOne() {
     document.getElementById("goodReadsBooksCol").innerHTML = "";
+}
+
+function giveSwayaaangBordersToItems() {
+    const statBoxes = document.querySelectorAll(".crawlInfoCol")
+    statBoxes.forEach(box => {
+        box.style = swayaaangBorders(0.6)
+    })
+    const toggleBoxes = document.querySelectorAll(".toggleBox")
+    toggleBoxes.forEach(box => {
+        box.style = swayaaangBorders(0.6)
+    })
+
+    
+}
+
+function swayaaangBorders(borderRadius) {
+    const borderArr = [
+        `border-top-right-radius: ${borderRadius}rem;`, 
+        `border-bottom-right-radius: ${borderRadius}rem;`,
+        `border-top-left-radius: ${borderRadius}rem;`,
+        `border-bottom-left-radius: ${borderRadius}rem;`,
+    ]
+
+    let borderRadiuses = "";
+    for (let k = 0; k < 4; k++) {
+        const randNum = Math.floor(Math.random() * 2)
+        if (randNum % 2 == 0) {
+            borderRadiuses += borderArr[k]
+        }
+    } 
+    return borderRadiuses
 }
