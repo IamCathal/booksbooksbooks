@@ -17,6 +17,7 @@ document.getElementById("mainInputBox").addEventListener("keyup", function(event
         initWebsocketConn(shelfUrl)
         clearCurrentCrawlIfThereIsOne()
         showCrawlInfoElements()
+        enableBackGroundVisualToggle("naturalOrderToggle")
         // https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy
 
     }
@@ -30,16 +31,46 @@ function showCrawlInfoElements() {
 
 document.getElementById("naturalOrderToggle").addEventListener("click", () => {
     currOrdering = "natural"
+    showToggleVisuals()
     renderBooksInNewOrder()
 })
 document.getElementById("titleMatchOrderToggle").addEventListener("click", () => {
     currOrdering = "title"
+    showToggleVisuals()
     renderBooksInNewOrder()
 })
 document.getElementById("authorMatchOrderToggle").addEventListener("click", () => {
     currOrdering = "author"
+    showToggleVisuals()
     renderBooksInNewOrder()
 })
+
+function showToggleVisuals() {
+    disableBackgroundVisualToggle("naturalOrderToggle")
+    disableBackgroundVisualToggle("titleMatchOrderToggle")
+    disableBackgroundVisualToggle("authorMatchOrderToggle")
+    switch (currOrdering) {
+        case "natural":
+            enableBackGroundVisualToggle("naturalOrderToggle")
+            break
+        case "title":
+            enableBackGroundVisualToggle("titleMatchOrderToggle")
+            break
+        case "author":
+            enableBackGroundVisualToggle("authorMatchOrderToggle")
+            break
+    }
+
+}
+
+function enableBackGroundVisualToggle(buttonID) {
+    document.getElementById(buttonID).style.backgroundColor = "#c0c0c0"
+    document.getElementById(buttonID).style.color = "#22242f"
+}
+function disableBackgroundVisualToggle(buttonID) {
+    document.getElementById(buttonID).style.backgroundColor = "#22242f"
+    document.getElementById(buttonID).style.color = "#c0c0c0"
+}
 
 function initWebsocketConn(shelfURL) {
     let booksFound = 0
@@ -390,14 +421,12 @@ function clearCurrentCrawlIfThereIsOne() {
 function giveSwayaaangBordersToItems() {
     const statBoxes = document.querySelectorAll(".crawlInfoCol")
     statBoxes.forEach(box => {
-        box.style = swayaaangBorders(0.6)
+        box.style += swayaaangBorders(0.6)
     })
     const toggleBoxes = document.querySelectorAll(".toggleBox")
     toggleBoxes.forEach(box => {
-        box.style = swayaaangBorders(0.6)
+        box.style += swayaaangBorders(0.6)
     })
-
-    
 }
 
 function swayaaangBorders(borderRadius) {
