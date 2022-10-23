@@ -9,6 +9,17 @@ let singleBook = {
     "authorMatches": {}
 }
 
+// experiment()
+// function experiment() {
+//     let tableContent = `<table style="width: 100%"><tr style="border: 1px solid #606060">`
+
+//     for (let i = 0; i < 53; i++) {
+//         tableContent += `<td style="background-color: ${i % 2 == 0 ? '#22242f' : 'green'}; height: 0.5rem"></td>`
+//     }
+//     tableContent += `</tr></table>`
+//     document.getElementById("tdExperiment").innerHTML = tableContent
+// }
+
 giveSwayaaangBordersToItems()
 
 document.getElementById("mainInputBox").addEventListener("keyup", function(event) {
@@ -167,8 +178,8 @@ function fillInSearchResult(msg) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
         <div class="col">
-            <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
-                Title Match
+            <div class="row justify-content-md-center titleMatch">
+                Possible Matches
             </div>
             <div class="row" style="height: 6rem">
                 <div class="col-5 searchResultBook">
@@ -206,8 +217,8 @@ function fillInSearchResult(msg) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
         <div class="col">
-            <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
-                Title Match
+            <div class="row justify-content-md-center titleMatch">
+                Possible Matches
             </div>
             <div class="row" style="height: 6rem">
                 <div class="col-5 searchResultBook">
@@ -259,8 +270,8 @@ function fillInSearchResult(msg) {
     if (msg.titleMatches.length >= 2) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
         <div class="row">
-        <div class="col" style="border: 1px solid #c0c0c0">
-            <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
+        <div class="col">
+            <div class="row justify-content-md-center titleMatch">
                 Title Match
             </div>
             <div class="row" style="height: 6rem">
