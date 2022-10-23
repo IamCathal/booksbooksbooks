@@ -16,24 +16,28 @@ document.getElementById("mainInputBox").addEventListener("keyup", function(event
     if (event.key === "Enter") {
         initWebsocketConn(shelfUrl)
         clearCurrentCrawlIfThereIsOne()
+        showCrawlInfoElements()
         // https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy
 
     }
 });
 
+function showCrawlInfoElements() {
+    document.getElementById("crawlInfoBox").style.display = 'inline'
+    document.getElementById("crawlProgressDiv").style.backgroundColor = '#e1e4e8';
+    document.getElementById("orderingButtons").style.display = 'flex'
+}
+
 document.getElementById("naturalOrderToggle").addEventListener("click", () => {
     currOrdering = "natural"
-    console.log(currOrdering)
     renderBooksInNewOrder()
 })
 document.getElementById("titleMatchOrderToggle").addEventListener("click", () => {
     currOrdering = "title"
-    console.log(currOrdering)
     renderBooksInNewOrder()
 })
 document.getElementById("authorMatchOrderToggle").addEventListener("click", () => {
     currOrdering = "author"
-    console.log(currOrdering)
     renderBooksInNewOrder()
 })
 
@@ -119,21 +123,58 @@ function writeBook(book) {
 function fillInSearchResult(msg) {
     console.log(msg)
 
+    // if (msg.titleMatches.length == 0) {
+    //     msg.titleMatches = [{
+    //         "title":"",
+    //         "author":"",
+    //         "price":"",
+    //         "link":"",
+    //         "cover":""
+    //     }]
+    // }
     if (msg.titleMatches.length == 0) {
-        msg.titleMatches = [{
-            "title":"",
-            "author":"",
-            "price":"",
-            "link":"",
-            "cover":""
-        }]
-    }
-
-    if (msg.titleMatches.length == 1) {
-        console.log("only had one title match")
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
-        <div class="col" style="border: 1px solid #c0c0c0" >
+        <div class="col">
+            <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
+                Title Match
+            </div>
+            <div class="row" style="height: 6rem">
+                <div class="col-5 searchResultBook">
+                    <div class="row">
+                        <div class="col-3 pl-2 pt-2">
+                            <a href="">
+                                <img
+                                    src=""
+                                    style="width: 3rem"
+                                >
+                            </a>
+                        </div>
+                        <div class="col">
+                            <div class="row" style="font-weight: bold; font-size: 0.8rem">
+                               
+                            </div>
+                            <div class="row" style="font-size: 0.6rem">
+                               
+                            </div>
+                            <div class="row" style="font-size: 0.6rem">
+                               
+                            </div>
+                            <div class="row" style="font-weight: bold; font-size: 0.7rem">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+    }
+    if (msg.titleMatches.length == 1) {
+        document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
+    <div class="row">
+        <div class="col">
             <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
                 Title Match
             </div>
@@ -169,7 +210,6 @@ function fillInSearchResult(msg) {
     </div>
     `
     if (msg.authorMatches.length >= 1) {
-        console.log(`had > 1 author matches (${msg.authorMatches.length})`)
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
             <div class="row">
                 <div class="col text-center" style="font-size: 0.6rem">
@@ -181,14 +221,11 @@ function fillInSearchResult(msg) {
             </div>
         </div>
         `
-    } else {
-        console.log(`did NOT > 1 author matches (${msg.authorMatches.length})`)
     }
     return
     }
 
     if (msg.titleMatches.length >= 2) {
-        console.log(`filling in the 1st and 2nd title matches (${msg.titleMatches.length})`)
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
         <div class="row">
         <div class="col" style="border: 1px solid #c0c0c0">
@@ -252,7 +289,6 @@ function fillInSearchResult(msg) {
     }
 
     if (msg.authorMatches.length >= 1) {
-        console.log(`had > 1 author matches (${msg.authorMatches.length})`)
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
             <div class="row">
                 <div class="col text-center" style="font-size: 0.6rem">
@@ -264,10 +300,7 @@ function fillInSearchResult(msg) {
             </div>
         </div>
         `
-    } else {
-        console.log(`did NOT > 1 author matches (${msg.authorMatches.length})`)
     }
-
 }
 
 function addSearchResultsToBookArr(searchResult, allBooksArr) {
@@ -348,7 +381,6 @@ function updateStats(crawlStats) {
     document.getElementById("statsBookMatchesFound").textContent = crawlStats.bookMatchFound
 
     document.getElementById("crawlProgressBarSpanID").style.width = `${Math.floor((crawlStats.booksSearched/crawlStats.totalBooks)*100)}%`
-    console.log(document.getElementById("crawlProgressBarSpanID").style.width)
 }
 
 function clearCurrentCrawlIfThereIsOne() {

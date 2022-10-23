@@ -30,7 +30,8 @@ body {
 .crawlProgressBar {
     margin: 0rem 0.2rem;
     height: 0.7rem;
-    background: #e1e4e8;
+    background: #22242f;
+    /* background: #e1e4e8; */
     border-radius: 3px;
     overflow: hidden;
   }
