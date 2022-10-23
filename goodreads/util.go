@@ -17,9 +17,11 @@ var (
 	TITLE_AND_SERIES_INFO_SEPERATOR = regexp.MustCompile("[ ]{3,}")
 	// Goodreads returns 30 books per page
 	BOOK_COUNT_PER_PAGE = 30
+	// Base URL that book links are built on
+	GOODREADS_BASE_BOOK_URL = "https://www.goodreads.com"
 	// Crude to check if a roughly  valid
 	// shelf URL is being queried
-	GOODREADS_SHELF_URL_PREFIX = "https://www.goodreads.com/review/list/"
+	GOODREADS_SHELF_URL_PREFIX = GOODREADS_BASE_BOOK_URL + "/review/list/"
 )
 
 func checkErr(err error) {
@@ -37,13 +39,14 @@ func CheckIsShelfURL(checkURL string) bool {
 	return hasPrefix && shelfParam != ""
 }
 
-func processBook(fullTitle, author, cover, isbn13, asin, rating string) dtos.BasicGoodReadsBook {
+func processBook(fullTitle, author, cover, isbn13, asin, rating, link string) dtos.BasicGoodReadsBook {
 	fullTitle = stripOfFormatting(fullTitle)
 	author = stripOfFormatting(author)
 	cover = stripOfFormatting(cover)
 	isbn13 = stripOfFormatting(isbn13)
 	asin = stripOfFormatting(asin)
 	rating = stripOfFormatting(rating)
+	link = GOODREADS_BASE_BOOK_URL + link
 
 	value, err := strconv.ParseFloat(rating, 32)
 	if err != nil {
@@ -56,6 +59,7 @@ func processBook(fullTitle, author, cover, isbn13, asin, rating string) dtos.Bas
 		Title:      bookTitle,
 		Author:     author,
 		SeriesText: seriesInfo,
+		Link:       link,
 		Cover:      cover,
 		Isbn13:     isbn13,
 		Asin:       asin,

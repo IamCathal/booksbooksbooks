@@ -17,6 +17,7 @@ type BasicGoodReadsBook struct {
 	Title      string  `json:"title"`
 	Author     string  `json:"author"`
 	SeriesText string  `json:"seriesText"`
+	Link       string  `json:"link"`
 	Cover      string  `json:"cover"`
 	Isbn13     string  `json:"isbn13"`
 	Asin       string  `json:"asin"`

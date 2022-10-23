@@ -67,15 +67,15 @@
 
 .bookTitle {
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 .bookSeriesText {
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .bookAuthor, .bookRating {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 .titleMatch, .authorMatch {

@@ -49,16 +49,16 @@ function isSearchResult(msg) {
 function writeBook(book) {
     document.getElementById("goodReadsBooksCol").innerHTML += `
     <div class="row goodReadsBookBox mt-2" id="${book.id}-goodreadsInfo">
-        <div class="col-1 text-center">
+        <div class="col-1 text-center pt-2">
                 <a href="${book.link}">
                     <img
                         src="${book.cover}"
-                        style="width: 3rem"
+                        style="width: 4rem"
                     >
                 </a>
         </div>
-        <div class="col-4">
-            <div class="row bookTitle" >
+        <div class="col-4 pt-1">
+            <div class="row bookTitle bold" >
                 ${book.title}
             </div>
             <div class="row bookSeriesText">
@@ -66,6 +66,9 @@ function writeBook(book) {
             </div>
             <div class="row bookAuthor">
                 ${book.author}
+            </div>
+            <div class="row bookRating">
+                ${book.rating} stars
             </div>
         </div>
         <div class="col" id="${book.id}-theBookshopResults">
