@@ -71,3 +71,10 @@ type WsBookshopSearchResult struct {
 	SearchResult EnchancedSearchResult `json:"searchResult"`
 	CrawlStats   CrawlStats            `json:"crawlStats"`
 }
+
+// db related data structures
+
+type RecentCrawl struct {
+	CrawlKey string `json:"crawlKey"`
+	ShelfURL string `json:"shelfURL"`
+}
