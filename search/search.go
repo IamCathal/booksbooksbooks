@@ -7,35 +7,24 @@ import (
 	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
-func SearchAll(allBookSearchResults dtos.AllBookshopBooksSearchResults) dtos.AllBookshopBooksSearchResults {
-	potentialMatches := make(dtos.AllBookshopBooksSearchResults)
-
-	for key, searchResult := range allBookSearchResults {
-		fmt.Printf("Searching for %s\n", key)
-		searchResultMatches := dtos.BookShopBookSearchResult{}
-
-		for _, possibleBook := range searchResult.SearchResultBooks {
-			if fuzzy.Match(key, possibleBook.Title) {
-				searchResultMatches.SearchResultBooks = append(searchResultMatches.SearchResultBooks, possibleBook)
-			}
-		}
-
-		potentialMatches[key] = searchResultMatches
-	}
-	return potentialMatches
-}
-
-func SearchAllAuthorAndTitle(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.TheBookshopBook) dtos.EnchancedSearchResult {
+func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.TheBookshopBook) dtos.EnchancedSearchResult {
 	potentialAuthorMatches := []dtos.TheBookshopBook{}
 	potentialTitleMatches := []dtos.TheBookshopBook{}
 
 	for _, searchResult := range searchResults {
-		if fuzzy.MatchFold(bookInfo.Title, searchResult.Title) {
+		titleAndAuthorTheBookshop := fmt.Sprintf("%s %s", searchResult.Author, searchResult.Title)
+		titleAndAuthorGoodReads := fmt.Sprintf("%s %s", bookInfo.Author, bookInfo.Title)
+
+		if fuzzy.MatchFold(titleAndAuthorGoodReads, titleAndAuthorTheBookshop) {
 			potentialTitleMatches = append(potentialTitleMatches, searchResult)
 		}
 		if fuzzy.MatchFold(bookInfo.Author, searchResult.Author) {
 			potentialAuthorMatches = append(potentialAuthorMatches, searchResult)
 		}
+	}
+
+	if len(potentialTitleMatches) >= 2 {
+		fmt.Printf("%d potential matches found for book: %+v matches: %+v\n", len(potentialAuthorMatches), bookInfo, potentialTitleMatches)
 	}
 
 	return dtos.EnchancedSearchResult{
