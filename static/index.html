@@ -18,7 +18,7 @@
 
 <body>
 
-    <div class="container mt-5 swankyBorders" style="border: 2px solid rgb(192, 192, 192)">
+    <div class="container mt-5 swankyBorders" style="border: 2px solid #c0c0c0">
         <div class="row">
             <div class="col">
                 <div class="col pl-3 pb-5" style="border-top-left-radius: 2rem; border-bottom-right-radius: 2rem;">
@@ -68,6 +68,17 @@
                      </div>
                      <div class="row crawlProgressBar mt-1">
                         <span class="crawlProgressBarSpan" id="crawlProgressBarSpanID"></span>
+                    </div>
+                    <div class="row pt-2 pb-2 justify-content-md-center" style="border: 1px dashed green">
+                        <div class="col-2 mr-2 text-center" id="naturalOrderToggle" style="border: 1px dashed red">
+                            Natural Order
+                        </div>
+                        <div class="col-2 mr-2 text-center" id="titleMatchOrderToggle" style="border: 1px dashed red">
+                            Most Title Matches
+                        </div>
+                        <div class="col-2 mr-2 text-center" id="authorMatchOrderToggle" style="border: 1px dashed red">
+                            Most Author Matches
+                        </div>
                     </div>
                     <div>
                         <div class="col" id="goodReadsBooksCol" style="padding-top: 0.8rem">

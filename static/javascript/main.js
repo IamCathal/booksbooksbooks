@@ -1,15 +1,42 @@
-console.log(`yahooo`);
+let allBooks = []
+let allBooksNaturalOrdering = []
+let currOrdering = "natural"
+
+let singleBook = {
+    "sequentialID": 0,
+    "bookInfo": {},
+    "titleMatches": {},
+    "authorMatches": {}
+}
 
 document.getElementById("mainInputBox").addEventListener("keyup", function(event) {
     const shelfUrl = document.getElementById("mainInputBox").value
     if (event.key === "Enter") {
         initWebsocketConn(shelfUrl)
+        clearCurrentCrawlIfThereIsOne()
         // https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy
 
     }
 });
 
+document.getElementById("naturalOrderToggle").addEventListener("click", () => {
+    currOrdering = "natural"
+    console.log(currOrdering)
+    renderBooksInNewOrder()
+})
+document.getElementById("titleMatchOrderToggle").addEventListener("click", () => {
+    currOrdering = "title"
+    console.log(currOrdering)
+    renderBooksInNewOrder()
+})
+document.getElementById("authorMatchOrderToggle").addEventListener("click", () => {
+    currOrdering = "author"
+    console.log(currOrdering)
+    renderBooksInNewOrder()
+})
+
 function initWebsocketConn(shelfURL) {
+    let booksFound = 0
     const ws = new WebSocket(`ws://localhost:2945/ws?shelfurl=${encodeURIComponent(shelfURL)}`);
 
     ws.onopen = function(e) {
@@ -21,9 +48,17 @@ function initWebsocketConn(shelfURL) {
 
         if (isNewBookFromGoodReads(msg)) {
             writeBook(msg.bookinfo)
+            allBooks.push({
+                "sequentialID": booksFound,
+                "bookInfo": msg.bookinfo,
+                "titleMatches": {},
+                "authorMatches": {}
+            })
+            booksFound++
         }
         if (isSearchResult(msg)) {
             fillInSearchResult(msg.searchResult)
+            addSearchResultsToBookArr(msg.searchResult, allBooks)
         }
 
         updateStats(msg.crawlStats)
@@ -34,6 +69,7 @@ function initWebsocketConn(shelfURL) {
             console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
         } else {
             console.log('[close] Connection died');
+            console.log(allBooks)
         }
     };
 }
@@ -158,7 +194,7 @@ function fillInSearchResult(msg) {
                 Title Match
             </div>
             <div class="row" style="height: 6rem">
-                <div class="col-5 searchResultBook" style="border: 1px solid #c0c0c0">
+                <div class="col-5 searchResultBook">
                     <div class="row">
                         <div class="col-3 pl-2">
                             <a href="${msg.titleMatches[0].link}">
@@ -185,7 +221,7 @@ function fillInSearchResult(msg) {
                     </div>
                 </div>
                 <div class="col"></div>
-                <div class="col-5 searchResultBook" style="border: 1px solid #c0c0c0"">
+                <div class="col-5 searchResultBook">
                     <div class="row">
                         <div class="col-3 pl-2">
                             <a href="${msg.titleMatches[1].link}">
@@ -232,6 +268,61 @@ function fillInSearchResult(msg) {
 
 }
 
+function addSearchResultsToBookArr(searchResult, allBooksArr) {
+    let matchFound = true;
+    for (let i = 0; i < allBooksArr.length; i++) {
+        if (allBooks[i].bookInfo.id === searchResult.searchBook.id) {
+            allBooks[i].titleMatches = searchResult.titleMatches
+            allBooks[i].authorMatches = searchResult.authorMatches
+        }
+    }
+    if (!matchFound) {
+        console.error(`no match found for ${searchResult.searchBook}`)
+    }
+}
+
+function renderBooksInNewOrder() {
+    let newOrdering = allBooks
+    switch (currOrdering) {
+        case "natural":
+            newOrdering = naturalOrderBooksRanks(newOrdering)
+            break
+        case "title":
+            newOrdering = mostTitleMatchesRank(newOrdering)
+            break
+        case "author":
+            newOrdering = mostAuthorMatchesRank(newOrdering)
+            break
+    }
+
+    clearCurrentCrawlIfThereIsOne()
+    renderBookList(newOrdering)
+}
+
+function naturalOrderBooksRanks(bookList) {
+    return bookList.sort((a,b) => (a.sequentialID > b.sequentialID) ? 1 : -1 )
+}
+
+function mostTitleMatchesRank(bookList) {
+    return bookList.sort((a,b) => (a.titleMatches.length < b.titleMatches.length) ? 1 : -1 )
+}
+
+function mostAuthorMatchesRank(bookList) {
+    return bookList.sort((a,b) => (a.authorMatches.length < b.authorMatches.length) ? 1 : -1 )
+}
+
+function renderBookList(newBookList) {
+    for (let i = 0; i < newBookList.length; i++) {
+        writeBook(newBookList[i].bookInfo)
+        fillInSearchResult({
+            "searchBook": newBookList[i].bookInfo,
+            "titleMatches": newBookList[i].titleMatches,
+            "authorMatches": newBookList[i].authorMatches
+        })
+    }
+}
+
+
 function generateMoreFromAuthorCards(authorMatches) {
     let resultHTML = "";
     const numMatches = authorMatches.length
@@ -256,4 +347,8 @@ function updateStats(crawlStats) {
 
     document.getElementById("crawlProgressBarSpanID").style.width = `${Math.floor((crawlStats.booksSearched/crawlStats.totalBooks)*100)}%`
     console.log(document.getElementById("crawlProgressBarSpanID").style.width)
+}
+
+function clearCurrentCrawlIfThereIsOne() {
+    document.getElementById("goodReadsBooksCol").innerHTML = "";
 }
