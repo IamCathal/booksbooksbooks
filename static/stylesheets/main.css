@@ -1,10 +1,17 @@
+* {
+  font-family: 'Grotesk Regular';
+}
+
+.bold {
+  font-family: 'Grotesk Bold';
+}
+
 #mainInputBox {
     border: 3px solid black; 
-    border-radius: 0.3rem; 
-
+    /* border-radius: 0.3rem;  */
     padding: 0.4rem;
     
-    width: 80%; 
+    width: 60%; 
     font-size: 1.1rem
 }
 
@@ -43,8 +50,8 @@
 .crawlInfoCol {
   font-size: 1.4rem;
   font-size: bold;
-  margin-right: 0.8rem;
-  margin-left: 0.8rem;
+  margin-right: 0.15rem;
+  margin-left: 0.15rem;
 
   border: 2px solid black;
   border-radius: 0.5rem;
@@ -77,4 +84,16 @@
 
 .searchResultBook {
   width: 2rem;
+}
+
+@font-face {
+  font-family: 'Grotesk Regular';
+  /* src: url(../fonts/NotoSansKR-Regular.otf); */
+  src: local('Grotesk Regular'), url(../fonts/FamiljenGrotesk-Regular.ttf);
+}
+
+@font-face {
+  font-family: 'Grotesk Bold';
+  /* src: url(../fonts/NotoSansKR-Regular.otf); */
+  src: local('Grotesk Bold'), url(../fonts/FamiljenGrotesk-Bold.ttf);
 }

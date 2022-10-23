@@ -88,14 +88,15 @@ function fillInSearchResult(msg) {
         }]
     }
 
-
-    document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
+    if (msg.titleMatches.length == 1) {
+        console.log("only had one title match")
+        document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
-        <div class="col"style="border: 2px solid red" >
+        <div class="col" style="border: 2px solid red" >
             <div class="row justify-content-md-center titleMatch" style="border: 1px dashed black">
                 Title Match
             </div>
-            <div class="row">
+            <div class="row" style="height: 6rem">
                 <div class="col-5 searchResultBook" style="border: 1px dotted black">
                     <div class="row">
                         <div class="col-3 pl-2" style="border: 1px solid blue">
@@ -126,20 +127,61 @@ function fillInSearchResult(msg) {
         </div>
     </div>
     `
-
-    if (msg.titleMatches.length == 1) {
-        console.log("only had one title match")
+    if (msg.authorMatches.length >= 1) {
+        console.log(`had > 1 author matches (${msg.authorMatches.length})`)
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
-                    </div>
+            <div class="row">
+                <div class="col text-center" style="font-size: 0.6rem">
+                    <details>
+                        <summary> More from ${msg.searchBook.author} </summary>
+                        ${generateMoreFromAuthorCards(msg.authorMatches)}
+                    </details>
                 </div>
             </div>
-        </div>`
+        </div>
+        `
+    } else {
+        console.log(`did NOT > 1 author matches (${msg.authorMatches.length})`)
+    }
+    return
     }
 
     if (msg.titleMatches.length >= 2) {
         console.log(`filling in the 1st and 2nd title matches (${msg.titleMatches.length})`)
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
-            <div class="col"></div>
+        <div class="row">
+        <div class="col" style="border: 2px solid red" >
+            <div class="row justify-content-md-center titleMatch" style="border: 1px dashed black">
+                Title Match
+            </div>
+            <div class="row" style="height: 6rem">
+                <div class="col-5 searchResultBook" style="border: 1px dotted black">
+                    <div class="row">
+                        <div class="col-3 pl-2" style="border: 1px solid blue">
+                            <a href="${msg.titleMatches[0].link}">
+                                <img
+                                    src="${msg.titleMatches[0].cover}"
+                                    style="width: 3rem"
+                                >
+                            </a>
+                        </div>
+                        <div class="col" style="border: 1px solid green">
+                            <div class="row" style="font-weight: bold; font-size: 0.8rem">
+                               ${msg.titleMatches[0].title}
+                            </div>
+                            <div class="row" style="font-size: 0.6rem">
+                               
+                            </div>
+                            <div class="row" style="font-size: 0.6rem">
+                                ${msg.titleMatches[0].author}
+                            </div>
+                            <div class="row" style="font-weight: bold; font-size: 0.7rem">
+                                ${msg.titleMatches[0].price}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col"></div>
                 <div class="col-5 searchResultBook" style="border: 1px dotted black">
                     <div class="row">
                         <div class="col-3 pl-2" style="border: 1px solid blue">
@@ -163,9 +205,10 @@ function fillInSearchResult(msg) {
                         </div>
                     </div>
                 </div>
-        `
+            </div>
+        </div>
+    </div>`
     }
-
 
     if (msg.authorMatches.length >= 1) {
         console.log(`had > 1 author matches (${msg.authorMatches.length})`)
@@ -183,6 +226,7 @@ function fillInSearchResult(msg) {
     } else {
         console.log(`did NOT > 1 author matches (${msg.authorMatches.length})`)
     }
+
 }
 
 function generateMoreFromAuthorCards(authorMatches) {
