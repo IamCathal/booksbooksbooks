@@ -71,7 +71,7 @@ function writeBook(book) {
                 ${book.rating} stars
             </div>
         </div>
-        <div class="col" id="${book.id}-theBookshopResults">
+        <div class="col pr-3" id="${book.id}-theBookshopResults">
 
         </div>
     </div>
@@ -95,14 +95,14 @@ function fillInSearchResult(msg) {
         console.log("only had one title match")
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
-        <div class="col" style="border: 2px solid red" >
-            <div class="row justify-content-md-center titleMatch" style="border: 1px dashed black">
+        <div class="col" style="border: 1px solid #c0c0c0" >
+            <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
                 Title Match
             </div>
             <div class="row" style="height: 6rem">
-                <div class="col-5 searchResultBook" style="border: 1px dotted black">
+                <div class="col-5 searchResultBook">
                     <div class="row">
-                        <div class="col-3 pl-2" style="border: 1px solid blue">
+                        <div class="col-3 pl-2 pt-2">
                             <a href="${msg.titleMatches[0].link}">
                                 <img
                                     src="${msg.titleMatches[0].cover}"
@@ -110,7 +110,7 @@ function fillInSearchResult(msg) {
                                 >
                             </a>
                         </div>
-                        <div class="col" style="border: 1px solid green">
+                        <div class="col">
                             <div class="row" style="font-weight: bold; font-size: 0.8rem">
                                ${msg.titleMatches[0].title}
                             </div>
@@ -153,14 +153,14 @@ function fillInSearchResult(msg) {
         console.log(`filling in the 1st and 2nd title matches (${msg.titleMatches.length})`)
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
         <div class="row">
-        <div class="col" style="border: 2px solid red" >
-            <div class="row justify-content-md-center titleMatch" style="border: 1px dashed black">
+        <div class="col" style="border: 1px solid #c0c0c0">
+            <div class="row justify-content-md-center titleMatch" style="border: 1px solid #c0c0c0">
                 Title Match
             </div>
             <div class="row" style="height: 6rem">
-                <div class="col-5 searchResultBook" style="border: 1px dotted black">
+                <div class="col-5 searchResultBook" style="border: 1px solid #c0c0c0">
                     <div class="row">
-                        <div class="col-3 pl-2" style="border: 1px solid blue">
+                        <div class="col-3 pl-2">
                             <a href="${msg.titleMatches[0].link}">
                                 <img
                                     src="${msg.titleMatches[0].cover}"
@@ -168,7 +168,7 @@ function fillInSearchResult(msg) {
                                 >
                             </a>
                         </div>
-                        <div class="col" style="border: 1px solid green">
+                        <div class="col">
                             <div class="row" style="font-weight: bold; font-size: 0.8rem">
                                ${msg.titleMatches[0].title}
                             </div>
@@ -185,14 +185,14 @@ function fillInSearchResult(msg) {
                     </div>
                 </div>
                 <div class="col"></div>
-                <div class="col-5 searchResultBook" style="border: 1px dotted black">
+                <div class="col-5 searchResultBook" style="border: 1px solid #c0c0c0"">
                     <div class="row">
-                        <div class="col-3 pl-2" style="border: 1px solid blue">
+                        <div class="col-3 pl-2">
                             <a href="${msg.titleMatches[1].link}">
                                 <img src="${msg.titleMatches[1].cover}" style="width: 3rem">
                             </a>
                         </div>
-                        <div class="col" style="border: 1px solid green">
+                        <div class="col">
                             <div class="row" style="font-weight: bold; font-size: 0.8rem">
                             ${msg.titleMatches[1].title}
                             </div>
