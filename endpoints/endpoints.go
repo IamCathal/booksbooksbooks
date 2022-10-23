@@ -50,12 +50,8 @@ func liveFeed(w http.ResponseWriter, r *http.Request) {
 		SendBasicInvalidResponse(w, r, "unable to upgrade websocket", http.StatusBadRequest)
 		return
 	}
-
-	shelfUrl := r.URL.Query().Get("shelfurl")
-
-	fmt.Printf("\nshelf url was %s\n", shelfUrl)
-
-	engine.Worker("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy", ws)
+	engine.Worker(r.URL.Query().Get("shelfurl"), ws)
+	ws.Close()
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +71,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if contains := strings.Contains("/static", r.URL.Path); !contains {
+		if contains := strings.Contains("static", r.URL.Path); !contains {
 			fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
 		}
 		next.ServeHTTP(w, r)

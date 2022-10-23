@@ -46,6 +46,10 @@ type EnchancedSearchResult struct {
 
 // Ws data structures
 
+type WsErrorMsg struct {
+	Error string `json:"error"`
+}
+
 type CrawlStats struct {
 	TotalBooks     int `json:"totalBooks"`
 	BooksCrawled   int `json:"booksCrawled"`

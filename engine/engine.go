@@ -15,9 +15,10 @@ var (
 )
 
 func Worker(shelfURL string, ws *websocket.Conn) {
-
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
-		panic("invalid shelf url")
+		errorMsg := fmt.Sprintf("Invalid shelfURL '%s' given", shelfURL)
+		writeErrorMsg(errorMsg, ws)
+		return
 	}
 
 	shelfStatsChan := make(chan int, 1)
@@ -70,11 +71,11 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 			}
 			fmt.Printf("%d author and %d title matches for %s\n", len(searchResultFromTheBookshop.AuthorMatches),
 				len(searchResultFromTheBookshop.TitleMatches), searchResultFromTheBookshop.SearchBook.Title)
-			go writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
+			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 
 		}
 	}
-	fmt.Printf("Exiting. All books queried from Goodreads")
+	fmt.Printf("Exiting. All books queried from Goodreads\n")
 	close(booksFoundFromGoodReadsChan)
 	close(searchResultsFromTheBookshopChan)
 }

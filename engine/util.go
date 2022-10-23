@@ -12,6 +12,17 @@ var (
 	websocketWriteLock sync.Mutex
 )
 
+func writeErrorMsg(msg string, ws *websocket.Conn) {
+	errorMsg := dtos.WsErrorMsg{
+		Error: msg,
+	}
+	jsonStr, err := json.Marshal(errorMsg)
+	if err != nil {
+		panic(err)
+	}
+	WriteMsg(jsonStr, ws)
+}
+
 func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
 	totalBooksMsg := dtos.WsTotalBooks{
 		TotalBooks: stats.TotalBooks,

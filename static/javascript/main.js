@@ -37,7 +37,6 @@ document.getElementById("mainInputBox").addEventListener("keyup", function(event
 function showCrawlInfoElements() {
     document.getElementById("crawlInfoBox").style.display = 'inline'
     document.getElementById("crawlProgressDiv").style.backgroundColor = '#e1e4e8';
-    document.getElementById("orderingButtons").style.display = 'flex'
 }
 
 document.getElementById("naturalOrderToggle").addEventListener("click", () => {
@@ -92,7 +91,10 @@ function initWebsocketConn(shelfURL) {
 
     ws.onmessage = function(event) {
         const msg = JSON.parse(event.data)
-        console.log(msg)
+
+        if (isErrorMsg(msg)) {
+            console.error(`Error returned from backend: ${msg.error}`)
+        }
 
         if (isNewBookFromGoodReads(msg)) {
             writeBook(msg.bookinfo)
@@ -104,6 +106,7 @@ function initWebsocketConn(shelfURL) {
             })
             booksFound++
         }
+
         if (isSearchResult(msg)) {
             fillInSearchResult(msg.searchResult)
             addSearchResultsToBookArr(msg.searchResult, allBooks)
@@ -116,10 +119,15 @@ function initWebsocketConn(shelfURL) {
         if (event.wasClean) {
             console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
         } else {
-            console.log('[close] Connection died');
-            console.log(allBooks)
+            console.log('Connection was closed by backend');
+            document.getElementById("orderingButtons").style.display = 'flex'
+            document.getElementById("crawlProgressDiv").style.display = 'none';
         }
     };
+}
+
+function isErrorMsg(msg) {
+    return msg.error != undefined
 }
 
 function isNewBookFromGoodReads(msg) {
@@ -163,17 +171,6 @@ function writeBook(book) {
 }
 
 function fillInSearchResult(msg) {
-    console.log(msg)
-
-    // if (msg.titleMatches.length == 0) {
-    //     msg.titleMatches = [{
-    //         "title":"",
-    //         "author":"",
-    //         "price":"",
-    //         "link":"",
-    //         "cover":""
-    //     }]
-    // }
     if (msg.titleMatches.length == 0) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
