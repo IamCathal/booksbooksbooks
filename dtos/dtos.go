@@ -13,13 +13,14 @@ type UptimeResponse struct {
 }
 
 type BasicGoodReadsBook struct {
-	ID         string `json:"id"`
-	Title      string `json:"title"`
-	Author     string `json:"author"`
-	SeriesText string `json:"seriesText"`
-	Cover      string `json:"cover"`
-	Isbn13     string `json:"isbn13"`
-	Asin       string `json:"asin"`
+	ID         string  `json:"id"`
+	Title      string  `json:"title"`
+	Author     string  `json:"author"`
+	SeriesText string  `json:"seriesText"`
+	Cover      string  `json:"cover"`
+	Isbn13     string  `json:"isbn13"`
+	Asin       string  `json:"asin"`
+	Rating     float32 `json:"rating"`
 }
 
 type TheBookshopBook struct {

@@ -60,19 +60,15 @@
 
 .bookTitle {
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .bookSeriesText {
-    font-size: 0.7rem;
+    font-size: 0.9rem;
 }
 
-.bookAuthor {
-    font-size: 0.7rem;
-}
-
-.tickIconDefault {
-    
+.bookAuthor, .bookRating {
+    font-size: 0.8rem;
 }
 
 .titleMatch, .authorMatch {

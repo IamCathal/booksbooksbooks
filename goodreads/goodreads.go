@@ -116,8 +116,9 @@ func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 			cover, _ := bookReviewRow.Find("td[class='field cover'] img").Attr("src")
 			isbn13 := bookReviewRow.Find("td[class='field isbn13'] div").Text()
 			asin := bookReviewRow.Find("td[class='field asin'] div").Text()
+			rating := bookReviewRow.Find("td[class='field avg_rating'] div").Text()
 
-			currBook := processBook(title, author, cover, isbn13, asin)
+			currBook := processBook(title, author, cover, isbn13, asin, rating)
 			allBooks = append(allBooks, currBook)
 		})
 	})

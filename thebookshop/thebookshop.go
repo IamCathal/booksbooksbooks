@@ -38,7 +38,7 @@ func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<
 }
 
 func FindAuthorAndOrTitleMatches(bookInfo dtos.BasicGoodReadsBook, searchResult []dtos.TheBookshopBook) dtos.EnchancedSearchResult {
-	return search.SearchAllAuthorAndTitle(bookInfo, searchResult)
+	return search.SearchAllRankFind(bookInfo, searchResult)
 }
 
 func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) []dtos.TheBookshopBook {

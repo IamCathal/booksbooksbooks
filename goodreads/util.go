@@ -37,12 +37,18 @@ func CheckIsShelfURL(checkURL string) bool {
 	return hasPrefix && shelfParam != ""
 }
 
-func processBook(fullTitle, author, cover, isbn13, asin string) dtos.BasicGoodReadsBook {
+func processBook(fullTitle, author, cover, isbn13, asin, rating string) dtos.BasicGoodReadsBook {
 	fullTitle = stripOfFormatting(fullTitle)
 	author = stripOfFormatting(author)
 	cover = stripOfFormatting(cover)
 	isbn13 = stripOfFormatting(isbn13)
 	asin = stripOfFormatting(asin)
+	rating = stripOfFormatting(rating)
+
+	value, err := strconv.ParseFloat(rating, 32)
+	if err != nil {
+		panic(err)
+	}
 
 	bookTitle, seriesInfo := extractTitleDetailsIfPossible(fullTitle)
 	newBook := dtos.BasicGoodReadsBook{
@@ -53,6 +59,7 @@ func processBook(fullTitle, author, cover, isbn13, asin string) dtos.BasicGoodRe
 		Cover:      cover,
 		Isbn13:     isbn13,
 		Asin:       asin,
+		Rating:     float32(value),
 	}
 	return newBook
 }
