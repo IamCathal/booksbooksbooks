@@ -45,12 +45,10 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
 	doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
 	checkErr(err)
-	// fmt.Printf("Search for %s\n", searchURL)
 	allBooks := []dtos.TheBookshopBook{}
 
 	doc.Find("ul[class='productGrid']").Each(func(i int, bookReviews *goquery.Selection) {
 		bookReviews.Find("li[class='product']").Each(func(k int, bookProduct *goquery.Selection) {
-
 			bookTitle := bookProduct.Find("h4[class='card-title']").Text()
 			bookLink, ok := bookProduct.Find("h4[class='card-title'] a").Attr("href")
 			if !ok {
@@ -58,12 +56,8 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 			}
 
 			bookPrice := bookProduct.Find("span[data-product-price-without-tax='']").Text()
-			// fmt.Printf("Title: '%s' Price: '%s' Link: %s\n", bookTitle, bookPrice, bookLink)
-
 			cover, _ := bookProduct.Find("img[class='card-image']").Attr("src")
-
 			author, title := extractAuthorFromTitle(bookTitle)
-
 			foundBook := dtos.TheBookshopBook{
 				Title:  title,
 				Author: author,
@@ -74,13 +68,6 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 			allBooks = append(allBooks, foundBook)
 		})
 	})
-
-	// searchResult := make(dtos.AllBookshopBooksSearchResults)
-	// returnedBooks := dtos.BookShopBookSearchResult{
-	// 	SearchResultBooks: allBooks,
-	// }
-	// searchResult[bookInfo.Title] = returnedBooks
-	// bookSearchResultsChan <- searchResult
 
 	refinedSearchResults := FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 	bookSearchResultsChan <- refinedSearchResults

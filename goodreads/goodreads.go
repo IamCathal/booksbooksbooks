@@ -26,16 +26,6 @@ func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoo
 	return extractBooksFromShelfPage(shelfURL, shelfStats, booksFoundFromGoodReadsChan)
 }
 
-// func getTotalBooksAndPageSource(shelfURL string) (int, *goquery.Document) {
-// 	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
-// 	checkErr(err)
-// 	totalBooks := 0
-// 	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {
-// 		_, totalBooks = extractLoadedCount(loadedCount.Text())
-// 	})
-// 	return totalBooks, doc
-// }
-
 func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
 	checkErr(err)
@@ -54,7 +44,6 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 
 	extractedBooks := extractBooksFromHTML(doc)
 	for _, book := range extractedBooks {
-		// fmt.Printf("[%d] %d putting in new book %s from page %d\n", len(booksFoundFromGoodReadsChan), i+1, book.Title, 1)
 		booksFoundFromGoodReadsChan <- book
 	}
 	allBooks = append(allBooks, extractedBooks...)
@@ -75,9 +64,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 			checkErr(err)
 
 			extractedBooksFromNewPage := extractBooksFromHTML(newPageDoc)
-			// fmt.Printf("\n\nGot %d new books from page %d (%s)\n\n", len(extractedBooksFromNewPage), currPageToView, newUrl)
 			for _, book := range extractedBooksFromNewPage {
-				// fmt.Printf("[%d] Putting in new book %s from page %d\n", len(booksFoundFromGoodReadsChan), book.Title, currPageToView)
 				booksFoundFromGoodReadsChan <- book
 			}
 			allBooks = append(allBooks, extractedBooksFromNewPage...)
@@ -85,12 +72,6 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 			sleepIfLongerThanAllotedTimeSinceLastRequest()
 		}
 	}
-
-	// fmt.Printf("Captured %d books\n", len(allBooks))
-	// for i, book := range allBooks {
-	// 	fmt.Printf("[%d] %+v\n", i, book)
-	// }
-
 	return allBooks
 }
 

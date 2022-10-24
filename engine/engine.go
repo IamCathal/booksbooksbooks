@@ -62,8 +62,6 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
-			// fmt.Printf("%d author and %d title matches for %s\n", len(searchResultFromTheBookshop.AuthorMatches),
-			// 	len(searchResultFromTheBookshop.TitleMatches), searchResultFromTheBookshop.SearchBook.Title)
 			shouldNotify := db.SaveBookAndNotifyIfNew(searchResultFromTheBookshop)
 			if shouldNotify {
 				fmt.Printf("*************\n%s: %s is now for sale %s from %s\n\n\n",

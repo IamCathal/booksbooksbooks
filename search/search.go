@@ -26,7 +26,6 @@ func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.Th
 	if len(potentialTitleMatches) >= 2 {
 		fmt.Printf("%d potential matches found for book: %+v matches: %+v\n", len(potentialAuthorMatches), bookInfo, potentialTitleMatches)
 	}
-
 	return dtos.EnchancedSearchResult{
 		SearchBook:    bookInfo,
 		AuthorMatches: potentialAuthorMatches,

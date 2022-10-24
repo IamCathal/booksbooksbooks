@@ -28,25 +28,6 @@ func ConnectToRedis() {
 		panic(response)
 	}
 
-	// err := redisClient.Set(ctx, "key", "value", 0).Err()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// val, err := redisClient.Get(ctx, "key").Result()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println("key", val)
-
-	// val2, err := rdb.Get(ctx, "key2").Result()
-	// if err == redis.Nil {
-	// 	fmt.Println("key2 does not exist")
-	// } else if err != nil {
-	// 	panic(err)
-	// } else {
-	// 	fmt.Println("key2", val2)
-	// }
 	fmt.Printf("Redis connection successfully initialised\n")
 }
 
@@ -65,6 +46,7 @@ func SaveBookAndNotifyIfNew(searchResult dtos.EnchancedSearchResult) bool {
 		saveBook(searchResult.SearchBook, "false")
 	}
 
+	// The book did not exist before and has no matches
 	if currState == "" {
 		saveBook(searchResult.SearchBook, getNewState(searchResult))
 	}
@@ -124,7 +106,6 @@ func SaveRecentCrawlStats(shelfURL string) {
 	if err != nil {
 		panic(err)
 	}
-
 	err = redisClient.Set(ctx, "recentCrawls", jsonCrawls, 0).Err()
 	if err != nil {
 		panic(err)

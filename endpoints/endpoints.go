@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -31,9 +30,7 @@ func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", index).Methods("GET")
 	r.HandleFunc("/status", status).Methods("POST")
-
 	r.HandleFunc("/recentcrawls", getRecentCrawls).Methods("GET")
-
 	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.Use(logMiddleware)
 
@@ -82,9 +79,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if contains := strings.Contains("static", r.URL.Path); !contains {
-			fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
-		}
+		fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
 		next.ServeHTTP(w, r)
 	})
 }
