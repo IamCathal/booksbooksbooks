@@ -3,6 +3,14 @@
   color: white;
 }
 
+/* .col {
+  border: 1px solid aqua;
+}
+
+.row {
+  border: 1px solid orange;
+} */
+
 body {
   background-color: #22242f;
 }
@@ -24,6 +32,24 @@ body {
 
 .toggleBox {
   border: 2px solid #c0c0c0;
+}
+
+#newBookMatchRow {
+  color: #22242f;
+}
+
+.skeleton {
+  opacity: 0.6;
+  animation: skeleton-loading 0.56s linear infinite alternate;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-color: #c0c0c0;
+  }
+  100% {
+    background-color: #74797b;
+  }
 }
 
 /* Crawl progress bar */

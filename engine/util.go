@@ -47,6 +47,18 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 	WriteMsg(jsonStr, ws)
 }
 
+func writeNewAvailableBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlStats, ws *websocket.Conn) {
+	newAvaialbleBookMsg := dtos.WsNewBookAvailable{
+		Book:       bookInfo,
+		CrawlStats: stats,
+	}
+	jsonStr, err := json.Marshal(newAvaialbleBookMsg)
+	if err != nil {
+		panic(err)
+	}
+	WriteMsg(jsonStr, ws)
+}
+
 func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats dtos.CrawlStats, ws *websocket.Conn) {
 	searchResultMsg := dtos.WsBookshopSearchResult{
 		SearchResult: searchResult,

@@ -69,6 +69,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 					searchResultFromTheBookshop.SearchBook.Title,
 					searchResultFromTheBookshop.TitleMatches[0].Price,
 					searchResultFromTheBookshop.TitleMatches[0].Link)
+				writeNewAvailableBookMsg(searchResultFromTheBookshop.SearchBook, currCrawlStats, ws)
 			}
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 

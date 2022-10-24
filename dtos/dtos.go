@@ -72,6 +72,11 @@ type WsBookshopSearchResult struct {
 	CrawlStats   CrawlStats            `json:"crawlStats"`
 }
 
+type WsNewBookAvailable struct {
+	Book       BasicGoodReadsBook `json:"newAvailableBook"`
+	CrawlStats CrawlStats         `json:"crawlStats"`
+}
+
 // db related data structures
 
 type RecentCrawl struct {

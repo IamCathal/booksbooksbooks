@@ -149,6 +149,10 @@ function initWebsocketConn(shelfURL) {
             addSearchResultsToBookArr(msg.searchResult, allBooks)
         }
 
+        if (isNewBookAvailable(msg)) {
+            renderAndAddBookToNewAvailableBookList(msg.newAvailableBook)
+        }
+
         updateStats(msg.crawlStats)
     }
 
@@ -173,6 +177,10 @@ function isNewBookFromGoodReads(msg) {
 
 function isSearchResult(msg) {
     return msg.searchResult != undefined
+}
+
+function isNewBookAvailable(msg) {
+    return msg.newAvailableBook != undefined
 }
 
 function writeBook(book) {
@@ -204,6 +212,36 @@ function writeBook(book) {
 
         </div>
     </div>
+    `
+}
+
+function renderAndAddBookToNewAvailableBookList(newAvailableBook) {
+    document.getElementById("newBookMatchesDiv").style.display = "flex"
+    document.getElementById("newBookAvailableInsertPoint").innerHTML += 
+    `
+                            <div class="col-3">
+                                <div class="row">
+                                    <div class="col-3 pl-2 pt-2">
+                                        <a href="${newAvailableBook.Link}">
+                                            <img src="${newAvailableBook.Cover}" style="width: 3rem;" title="">
+                                        </a>
+                                    </div>
+                                    <div class="col">
+                                        <div class="row pt-1" style="font-weight: bold; font-size: 0.8rem">
+                                            ${newAvailableBook.Title}
+                                        </div>
+                                        <div class="row" style="font-size: 0.6rem">
+                                            
+                                        </div>
+                                        <div class="row" style="font-size: 0.6rem">
+                                            ${newAvailableBook.Author}
+                                        </div>
+                                        <div class="row" style="font-weight: bold; font-size: 0.7rem">
+                                            ${newAvailableBook.Price}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
     `
 }
 
