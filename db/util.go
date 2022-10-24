@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
@@ -29,4 +30,8 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawl) []dtos.RecentC
 		}
 	}
 	return noDuplicateRecentCrawls
+}
+
+func isNotRedisNil(err error) bool {
+	return err != redis.Nil
 }

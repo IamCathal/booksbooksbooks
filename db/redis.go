@@ -65,9 +65,7 @@ func GetRecentCrawls() []dtos.RecentCrawl {
 
 func SaveRecentCrawlStats(shelfURL string) {
 	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
-	if err == redis.Nil {
-		fmt.Printf("no recent crawls\n")
-	} else if err != nil {
+	if err != nil && !isNotRedisNil(err) {
 		panic(err)
 	}
 

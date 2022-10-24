@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gorilla/websocket"
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
@@ -20,6 +21,8 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		writeErrorMsg(errorMsg, ws)
 		return
 	}
+
+	db.SaveRecentCrawlStats(shelfURL)
 
 	shelfStatsChan := make(chan int, 1)
 	booksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
