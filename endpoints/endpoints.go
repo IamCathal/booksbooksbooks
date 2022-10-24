@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/engine"
 )
@@ -30,6 +31,8 @@ func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", index).Methods("GET")
 	r.HandleFunc("/status", status).Methods("POST")
+
+	r.HandleFunc("/recentcrawls", getRecentCrawls).Methods("GET")
 
 	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.Use(logMiddleware)
@@ -52,6 +55,14 @@ func liveFeed(w http.ResponseWriter, r *http.Request) {
 	}
 	engine.Worker(r.URL.Query().Get("shelfurl"), ws)
 	ws.Close()
+}
+
+func getRecentCrawls(w http.ResponseWriter, r *http.Request) {
+	recentCrawls := db.GetRecentCrawls()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(recentCrawls)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {

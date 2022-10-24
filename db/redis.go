@@ -46,6 +46,24 @@ func ConnectToRedis() {
 	fmt.Printf("Redis connection successfully initialised\n")
 }
 
+func GetRecentCrawls() []dtos.RecentCrawl {
+	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
+	if err == redis.Nil {
+		return []dtos.RecentCrawl{}
+	} else if err != nil {
+		panic(err)
+	}
+	recentCrawlsArr := []dtos.RecentCrawl{}
+	if recentCrawls != "" {
+		err = json.Unmarshal([]byte(recentCrawls), &recentCrawlsArr)
+		if err != nil {
+			panic(err)
+		}
+	}
+	fmt.Printf("Returning: %+v\n", recentCrawlsArr)
+	return recentCrawlsArr
+}
+
 func SaveRecentCrawlStats(shelfURL string) {
 	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
 	if err == redis.Nil {
