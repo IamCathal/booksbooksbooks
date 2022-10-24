@@ -46,7 +46,6 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 	doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
 	checkErr(err)
 	// fmt.Printf("Search for %s\n", searchURL)
-	fmt.Println("bookshop search")
 	allBooks := []dtos.TheBookshopBook{}
 
 	doc.Find("ul[class='productGrid']").Each(func(i int, bookReviews *goquery.Selection) {

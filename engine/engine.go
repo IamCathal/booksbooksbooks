@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/gorilla/websocket"
@@ -63,17 +62,16 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
-			if len(searchResultFromTheBookshop.TitleMatches) > 1 {
-				fmt.Printf("=================================\n=================================\n=================================\n")
-
-				json, err := json.Marshal(&searchResultFromTheBookshop)
-				if err != nil {
-					panic(err)
-				}
-				fmt.Printf("%s\n\n", string(json))
+			// fmt.Printf("%d author and %d title matches for %s\n", len(searchResultFromTheBookshop.AuthorMatches),
+			// 	len(searchResultFromTheBookshop.TitleMatches), searchResultFromTheBookshop.SearchBook.Title)
+			shouldNotify := db.SaveBookAndNotifyIfNew(searchResultFromTheBookshop)
+			if shouldNotify {
+				fmt.Printf("*************\n%s: %s is now for sale %s from %s\n\n\n",
+					searchResultFromTheBookshop.SearchBook.Author,
+					searchResultFromTheBookshop.SearchBook.Title,
+					searchResultFromTheBookshop.TitleMatches[0].Price,
+					searchResultFromTheBookshop.TitleMatches[0].Link)
 			}
-			fmt.Printf("%d author and %d title matches for %s\n", len(searchResultFromTheBookshop.AuthorMatches),
-				len(searchResultFromTheBookshop.TitleMatches), searchResultFromTheBookshop.SearchBook.Title)
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 
 		}

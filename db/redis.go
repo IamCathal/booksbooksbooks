@@ -23,6 +23,10 @@ func ConnectToRedis() {
 		DB:       0,
 	})
 	redisClient = rdb
+	response, err := redisClient.Ping(ctx).Result()
+	if err != nil {
+		panic(response)
+	}
 
 	// err := redisClient.Set(ctx, "key", "value", 0).Err()
 	// if err != nil {
@@ -46,6 +50,36 @@ func ConnectToRedis() {
 	fmt.Printf("Redis connection successfully initialised\n")
 }
 
+func SaveBookAndNotifyIfNew(searchResult dtos.EnchancedSearchResult) bool {
+	currState := getCurrentBookState(searchResult.SearchBook)
+
+	// The book is now up for sale when it wasn't before
+	if len(searchResult.TitleMatches) >= 1 && (currState == "false" || currState == "") {
+		saveBook(searchResult.SearchBook, "true")
+		return true
+	}
+
+	// The book is no longer up for sale when it was before
+	if len(searchResult.TitleMatches) == 0 && currState == "true" {
+		fmt.Printf("%s cant be bought anymore notify\n", searchResult.SearchBook.Title)
+		saveBook(searchResult.SearchBook, "false")
+	}
+
+	if currState == "" {
+		saveBook(searchResult.SearchBook, getNewState(searchResult))
+	}
+
+	return false
+}
+
+func saveBook(book dtos.BasicGoodReadsBook, state string) {
+	id := getAppropriateID(book)
+	err := redisClient.Set(ctx, id, state, 0).Err()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func GetRecentCrawls() []dtos.RecentCrawl {
 	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
 	if err == redis.Nil {
@@ -65,7 +99,7 @@ func GetRecentCrawls() []dtos.RecentCrawl {
 
 func SaveRecentCrawlStats(shelfURL string) {
 	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
-	if err != nil && !isNotRedisNil(err) {
+	if err != nil && isNotRedisNil(err) {
 		panic(err)
 	}
 
@@ -76,7 +110,6 @@ func SaveRecentCrawlStats(shelfURL string) {
 			panic(err)
 		}
 	}
-	fmt.Printf("The recent crawls: %+v\n", recentCrawlsArr)
 
 	setNewRecentCrawls := []dtos.RecentCrawl{
 		{
@@ -93,9 +126,7 @@ func SaveRecentCrawlStats(shelfURL string) {
 	}
 
 	err = redisClient.Set(ctx, "recentCrawls", jsonCrawls, 0).Err()
-	if err == redis.Nil {
-		fmt.Printf("couldnt set recentCrawls\n")
-	} else if err != nil {
+	if err != nil {
 		panic(err)
 	}
 }

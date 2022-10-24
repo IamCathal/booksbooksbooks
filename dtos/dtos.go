@@ -78,3 +78,8 @@ type RecentCrawl struct {
 	CrawlKey string `json:"crawlKey"`
 	ShelfURL string `json:"shelfURL"`
 }
+
+type BookPurchase struct {
+	Link         string `json:"link"`
+	Isbn13OrAsin string `json:"isbn13OrAsin"`
+}

@@ -35,3 +35,28 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawl) []dtos.RecentC
 func isNotRedisNil(err error) bool {
 	return err != redis.Nil
 }
+
+func getAppropriateID(book dtos.BasicGoodReadsBook) string {
+	if book.Isbn13 != "" {
+		return book.Isbn13
+	} else if book.Asin != "" {
+		return book.Asin
+	}
+	return fmt.Sprintf("%s/%s", book.Author, book.Title)
+}
+
+func getCurrentBookState(book dtos.BasicGoodReadsBook) string {
+	id := getAppropriateID(book)
+	canBuy, err := redisClient.Get(ctx, id).Result()
+	if err != nil && isNotRedisNil(err) {
+		panic(err)
+	}
+	return canBuy
+}
+
+func getNewState(searchResult dtos.EnchancedSearchResult) string {
+	if len(searchResult.TitleMatches) >= 1 {
+		return "true"
+	}
+	return "false"
+}
