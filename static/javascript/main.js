@@ -9,6 +9,43 @@ let singleBook = {
     "authorMatches": {}
 }
 
+checkToSeeIfShelfURLPreLoaded()
+
+function checkToSeeIfShelfURLPreLoaded() {
+    const urlParams = new URLSearchParams(window.location.search)
+    console.log(urlParams.get("shelfurl"))
+    if (urlParams.get("shelfurl") != null) {
+        document.getElementById("mainInputBox").value = urlParams.get("shelfurl")
+        initWebsocketConn(urlParams.get("shelfurl"))
+        clearCurrentCrawlIfThereIsOne()
+        showCrawlInfoElements()
+        enableBackGroundVisualToggle("naturalOrderToggle")
+    }
+}
+
+loadRecentCrawls()
+
+function loadRecentCrawls() {
+    fetch(`http://localhost:2945/recentcrawls`)
+    .then((res) => res.json())
+    .then((res) => {
+        res.forEach((recentCrawl) => {
+            console.log(recentCrawl)
+            document.getElementById("recentCrawlButtons").innerHTML += 
+            `
+                <a href="?shelfurl=${encodeURIComponent(recentCrawl.shelfURL)}" class="mr-2">
+                    <div class="col text-center recentCrawlBox" style="${swayaaangBorders(0.5)} border: 2px solid #c0c0c0; font-size: 0.8rem" data-shelfURL="${recentCrawl.shelfURL}"> 
+                        ${recentCrawl.crawlKey} 
+                    </div>
+                </a>
+            `
+        })
+
+    }, (err) => {
+        console.log(`err response: ${err}`)
+    });
+}
+
 // experiment()
 // function experiment() {
 //     let tableContent = `<table style="width: 100%"><tr style="border: 1px solid #606060">`
@@ -413,7 +450,6 @@ function generateMoreFromAuthorCards(authorMatches) {
 }
 
 function updateStats(crawlStats) {
-
     document.getElementById("statsBookFound").textContent = crawlStats.totalBooks
     document.getElementById("statsBooksCrawled").textContent = crawlStats.booksCrawled
     document.getElementById("statsBooksSearched").textContent = crawlStats.booksSearched

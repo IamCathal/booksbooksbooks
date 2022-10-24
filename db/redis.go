@@ -60,8 +60,7 @@ func GetRecentCrawls() []dtos.RecentCrawl {
 			panic(err)
 		}
 	}
-	fmt.Printf("Returning: %+v\n", recentCrawlsArr)
-	return recentCrawlsArr
+	return removeDuplicateRecentCrawls(recentCrawlsArr)
 }
 
 func SaveRecentCrawlStats(shelfURL string) {
@@ -88,6 +87,7 @@ func SaveRecentCrawlStats(shelfURL string) {
 		},
 	}
 	setNewRecentCrawls = append(setNewRecentCrawls, recentCrawlsArr...)
+	setNewRecentCrawls = removeDuplicateRecentCrawls(setNewRecentCrawls)
 
 	jsonCrawls, err := json.Marshal(setNewRecentCrawls)
 	if err != nil {
