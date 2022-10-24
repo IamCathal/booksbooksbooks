@@ -45,3 +45,18 @@ func SendBasicInvalidResponse(w http.ResponseWriter, req *http.Request, msg stri
 	}
 	json.NewEncoder(w).Encode(response)
 }
+
+func isActualEndpoint(urlPath string) bool {
+	regularEndpoints := []string{
+		"/",
+		"/status",
+		"/recentcrawl",
+		"/ws",
+	}
+	for _, endpoint := range regularEndpoints {
+		if urlPath == endpoint {
+			return true
+		}
+	}
+	return false
+}

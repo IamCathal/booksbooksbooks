@@ -79,7 +79,9 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
+		if isActualEndpoint := isActualEndpoint(r.URL.Path); isActualEndpoint {
+			fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
+		}
 		next.ServeHTTP(w, r)
 	})
 }
