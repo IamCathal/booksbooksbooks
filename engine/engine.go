@@ -22,6 +22,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	}
 
 	db.SaveRecentCrawlStats(shelfURL)
+	previouslyKnownAvailableBooks := db.GetAvailableBooksMap()
 
 	shelfStatsChan := make(chan int, 1)
 	booksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
@@ -62,14 +63,19 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
-			shouldNotify := db.SaveBookAndNotifyIfNew(searchResultFromTheBookshop)
-			if shouldNotify {
+			// TOOD handle multiple title searches
+			if bookIsNew := bookIsNew(searchResultFromTheBookshop.TitleMatches[0], previouslyKnownAvailableBooks); bookIsNew {
 				fmt.Printf("*************\n%s: %s is now for sale %s from %s\n\n\n",
 					searchResultFromTheBookshop.SearchBook.Author,
 					searchResultFromTheBookshop.SearchBook.Title,
 					searchResultFromTheBookshop.TitleMatches[0].Price,
 					searchResultFromTheBookshop.TitleMatches[0].Link)
 				writeNewAvailableBookMsg(searchResultFromTheBookshop.SearchBook, currCrawlStats, ws)
+				newBook := dtos.AvailableBook{
+					BookInfo:         searchResultFromTheBookshop.SearchBook,
+					BookPurchaseInfo: searchResultFromTheBookshop.TitleMatches[0],
+				}
+				db.AddAvailableBook(newBook)
 			}
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 

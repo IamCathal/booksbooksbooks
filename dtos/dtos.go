@@ -88,3 +88,8 @@ type BookPurchase struct {
 	Link         string `json:"link"`
 	Isbn13OrAsin string `json:"isbn13OrAsin"`
 }
+
+type AvailableBook struct {
+	BookInfo         BasicGoodReadsBook `json:"bookInfo"`
+	BookPurchaseInfo TheBookshopBook    `json:"bookPurchaseInfo"`
+}

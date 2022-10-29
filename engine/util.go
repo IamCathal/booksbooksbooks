@@ -79,3 +79,8 @@ func WriteMsg(msg []byte, ws *websocket.Conn) {
 		panic(err)
 	}
 }
+
+func bookIsNew(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
+	_, exists := availableBooksMap[book.Title]
+	return !exists
+}

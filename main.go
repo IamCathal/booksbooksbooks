@@ -24,6 +24,8 @@ func initConfig() dtos.AppConfig {
 func main() {
 	db.ConnectToRedis()
 
+	// db.GetAvailableBooks()
+
 	// db.SaveRecentCrawlStats("https://www.goodreads.com/review/list/151819645-cathal?ref=nav_mybooks&shelf=to-read")
 	// db.SaveRecentCrawlStats("https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy")
 

@@ -29,8 +29,10 @@ func InitConfig(conf dtos.AppConfig) {
 func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", index).Methods("GET")
+	r.HandleFunc("/available", available).Methods("GET")
 	r.HandleFunc("/status", status).Methods("POST")
 	r.HandleFunc("/recentcrawls", getRecentCrawls).Methods("GET")
+	// r.HandleFunc("/automatedcheck", automaticCheck).Methods("POST")
 	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.Use(logMiddleware)
 
@@ -43,6 +45,20 @@ func SetupRouter() *mux.Router {
 func index(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/index.html")
 }
+
+func available(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/available.html")
+}
+
+// func automaticCheck(w http.ResponseWriter, r *http.Request) {
+// 	previouslyAvailableBooks := db.GetAvailableBooks()
+// 	booksThatAreStillAvailable := []dtos.TheBookshopBook{}
+// 	searchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
+
+// 	for _, book := range previouslyAvailableBooks {
+// 		searchResult := thebookshop.SearchForBook(book, searchResultsFromTheBookshopChan)
+// 	}
+// }
 
 func liveFeed(w http.ResponseWriter, r *http.Request) {
 	ws := setupWebSocket(w, r)

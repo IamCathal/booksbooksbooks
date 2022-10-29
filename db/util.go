@@ -9,6 +9,16 @@ import (
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
+func GetAvailableBooksMap() map[string]bool {
+	availableBooks := GetAvailableBooks()
+	availableBooksMap := make(map[string]bool)
+
+	for _, book := range availableBooks {
+		availableBooksMap[book.BookPurchaseInfo.Title] = true
+	}
+	return availableBooksMap
+}
+
 func getKeyForRecentCrawl(shelfURL string) string {
 	urlObj, err := url.Parse(shelfURL)
 	if err != nil {
@@ -32,8 +42,8 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawl) []dtos.RecentC
 	return noDuplicateRecentCrawls
 }
 
-func isNotRedisNil(err error) bool {
-	return err != redis.Nil
+func isRedisNil(err error) bool {
+	return err == redis.Nil
 }
 
 func getAppropriateID(book dtos.BasicGoodReadsBook) string {
@@ -48,7 +58,7 @@ func getAppropriateID(book dtos.BasicGoodReadsBook) string {
 func getCurrentBookState(book dtos.BasicGoodReadsBook) string {
 	id := getAppropriateID(book)
 	canBuy, err := redisClient.Get(ctx, id).Result()
-	if err != nil && isNotRedisNil(err) {
+	if err != nil && isRedisNil(err) {
 		panic(err)
 	}
 	return canBuy

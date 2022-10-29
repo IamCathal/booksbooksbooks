@@ -12,6 +12,9 @@ import (
 var (
 	ctx         = context.Background()
 	redisClient *redis.Client
+
+	AVAILABLE_BOOKS = "availableBooks"
+	RECENT_CRAWLS   = "recentCrawls"
 )
 
 func ConnectToRedis() {
@@ -31,39 +34,48 @@ func ConnectToRedis() {
 	fmt.Printf("Redis connection successfully initialised\n")
 }
 
-func SaveBookAndNotifyIfNew(searchResult dtos.EnchancedSearchResult) bool {
-	currState := getCurrentBookState(searchResult.SearchBook)
-
-	// The book is now up for sale when it wasn't before
-	if len(searchResult.TitleMatches) >= 1 && (currState == "false" || currState == "") {
-		saveBook(searchResult.SearchBook, "true")
-		return true
-	}
-
-	// The book is no longer up for sale when it was before
-	if len(searchResult.TitleMatches) == 0 && currState == "true" {
-		fmt.Printf("%s cant be bought anymore notify\n", searchResult.SearchBook.Title)
-		saveBook(searchResult.SearchBook, "false")
-	}
-
-	// The book did not exist before and has no matches
-	if currState == "" {
-		saveBook(searchResult.SearchBook, getNewState(searchResult))
-	}
-
-	return false
-}
-
-func saveBook(book dtos.BasicGoodReadsBook, state string) {
-	id := getAppropriateID(book)
-	err := redisClient.Set(ctx, id, state, 0).Err()
+func ResetAvailableBooks() {
+	err := redisClient.Set(ctx, AVAILABLE_BOOKS, []byte(""), 0).Err()
 	if err != nil {
 		panic(err)
 	}
 }
 
+func AddAvailableBook(newBook dtos.AvailableBook) {
+	availableBooks := GetAvailableBooks()
+	// fmt.Printf("curr availableBooks %d %+v\n\n", len(availableBooks), availableBooks)
+	availableBooks = append(availableBooks, newBook)
+	jsonAvailableBooks, err := json.Marshal(availableBooks)
+	if err != nil {
+		panic(err)
+	}
+
+	// fmt.Printf("Adding new available book: %+v\n", newBook)
+	err = redisClient.Set(ctx, AVAILABLE_BOOKS, jsonAvailableBooks, 0).Err()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func GetAvailableBooks() []dtos.AvailableBook {
+	availableBooksStr, err := redisClient.Get(ctx, AVAILABLE_BOOKS).Result()
+	if err == redis.Nil {
+		return []dtos.AvailableBook{}
+	} else if err != nil {
+		panic(err)
+	}
+	availableBooks := []dtos.AvailableBook{}
+	if availableBooksStr != "" {
+		err = json.Unmarshal([]byte(availableBooksStr), &availableBooks)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return availableBooks
+}
+
 func GetRecentCrawls() []dtos.RecentCrawl {
-	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
+	recentCrawls, err := redisClient.Get(ctx, RECENT_CRAWLS).Result()
 	if err == redis.Nil {
 		return []dtos.RecentCrawl{}
 	} else if err != nil {
@@ -80,33 +92,22 @@ func GetRecentCrawls() []dtos.RecentCrawl {
 }
 
 func SaveRecentCrawlStats(shelfURL string) {
-	recentCrawls, err := redisClient.Get(ctx, "recentCrawls").Result()
-	if err != nil && isNotRedisNil(err) {
-		panic(err)
-	}
+	recentCrawls := GetRecentCrawls()
 
-	recentCrawlsArr := []dtos.RecentCrawl{}
-	if recentCrawls != "" {
-		err = json.Unmarshal([]byte(recentCrawls), &recentCrawlsArr)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	setNewRecentCrawls := []dtos.RecentCrawl{
+	newRecentCrawl := []dtos.RecentCrawl{
 		{
 			CrawlKey: getKeyForRecentCrawl(shelfURL),
 			ShelfURL: shelfURL,
 		},
 	}
-	setNewRecentCrawls = append(setNewRecentCrawls, recentCrawlsArr...)
-	setNewRecentCrawls = removeDuplicateRecentCrawls(setNewRecentCrawls)
+	newRecentCrawl = append(newRecentCrawl, recentCrawls...)
+	newRecentCrawl = removeDuplicateRecentCrawls(newRecentCrawl)
 
-	jsonCrawls, err := json.Marshal(setNewRecentCrawls)
+	jsonCrawls, err := json.Marshal(newRecentCrawl)
 	if err != nil {
 		panic(err)
 	}
-	err = redisClient.Set(ctx, "recentCrawls", jsonCrawls, 0).Err()
+	err = redisClient.Set(ctx, RECENT_CRAWLS, jsonCrawls, 0).Err()
 	if err != nil {
 		panic(err)
 	}
