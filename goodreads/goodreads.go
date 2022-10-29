@@ -41,7 +41,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 
 	shelfStats <- totalBooks
 	close(shelfStats)
-
+	fmt.Println("closed stats channel")
 	extractedBooks := extractBooksFromHTML(doc)
 	for _, book := range extractedBooks {
 		booksFoundFromGoodReadsChan <- book

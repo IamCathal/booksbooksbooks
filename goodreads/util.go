@@ -68,6 +68,20 @@ func processBook(fullTitle, author, cover, isbn13, asin, rating, link string) dt
 	return newBook
 }
 
+func GetAvailableBooksFromSearchResult(searchResults []dtos.EnchancedSearchResult) []dtos.AvailableBook {
+	availableBooks := []dtos.AvailableBook{}
+	for _, searchResult := range searchResults {
+		if len(searchResult.TitleMatches) >= 1 {
+			availableBook := dtos.AvailableBook{
+				BookInfo:         searchResult.SearchBook,
+				BookPurchaseInfo: searchResult.TitleMatches[0],
+			}
+			availableBooks = append(availableBooks, availableBook)
+		}
+	}
+	return availableBooks
+}
+
 func stripOfFormatting(input string) string {
 	formatted := strings.ReplaceAll(input, "\n", "")
 	formatted = strings.TrimSpace(formatted)
