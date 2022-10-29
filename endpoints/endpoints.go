@@ -60,7 +60,7 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 
 	cachedBooksThatWereAvailable := db.GetAvailableBooks()
 	cachedBooksThatAreStillAvailableToday := []dtos.AvailableBook{}
-	booksFromShelfThatAreAvailable := []dtos.AvailableBook{}
+	booksFromShelfThatAreAvailableNow := []dtos.AvailableBook{}
 
 	for _, book := range cachedBooksThatWereAvailable {
 		searchResult := thebookshop.SearchForBook(book.BookInfo, stubSearchResultsFromTheBookshopChan)
@@ -95,10 +95,10 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 	for i, res := range searchResults {
 		fmt.Printf("[%d] %+v\n", i, res)
 	}
-	booksFromShelfThatAreAvailable = goodreads.GetAvailableBooksFromSearchResult(searchResults)
+	booksFromShelfThatAreAvailableNow = goodreads.GetAvailableBooksFromSearchResult(searchResults)
 
 	newBooksThatNeedNotification := []dtos.AvailableBook{}
-	for _, availableBook := range booksFromShelfThatAreAvailable {
+	for _, availableBook := range booksFromShelfThatAreAvailableNow {
 		if bookIsNew := bookIsNew(availableBook, cachedBooksThatAreStillAvailableToday); bookIsNew {
 			newBooksThatNeedNotification = append(newBooksThatNeedNotification, availableBook)
 		}
