@@ -9,6 +9,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/endpoints"
+	"go.uber.org/zap"
 )
 
 var (
@@ -24,9 +25,20 @@ func initConfig() dtos.AppConfig {
 func main() {
 	db.ConnectToRedis()
 
+	logConfig := zap.NewProductionConfig()
+	logConfig.OutputPaths = []string{"stdout", "appLog.log"}
+	globalLogFields := make(map[string]interface{})
+	globalLogFields["service"] = "booksbooksbooks"
+	logConfig.InitialFields = globalLogFields
+
+	logger, err := logConfig.Build()
+	if err != nil {
+		panic(err)
+	}
+
 	appConfig := initConfig()
 	endpoints.InitConfig(appConfig)
-	port := "2945"
+	port := 2945
 
 	router := endpoints.SetupRouter()
 
@@ -36,6 +48,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 	}
-	fmt.Println("serving requests on :" + port)
+
+	logger.Sugar().Infof("Service requests on %d", port)
 	log.Fatal(srv.ListenAndServe())
 }

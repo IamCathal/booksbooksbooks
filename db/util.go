@@ -14,7 +14,7 @@ func GetAvailableBooksMap() map[string]bool {
 	availableBooksMap := make(map[string]bool)
 
 	for _, book := range availableBooks {
-		availableBooksMap[book.BookPurchaseInfo.Title.Title] = true
+		availableBooksMap[book.BookPurchaseInfo.Title] = true
 	}
 	return availableBooksMap
 }
