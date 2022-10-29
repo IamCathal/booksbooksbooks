@@ -13,9 +13,11 @@ import (
 	"github.com/iamcathal/booksbooksbooks/engine"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
+	"go.uber.org/zap"
 )
 
 var (
+	logger    *zap.Logger
 	appConfig dtos.AppConfig
 	upgrader  = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -23,8 +25,9 @@ var (
 	}
 )
 
-func InitConfig(conf dtos.AppConfig) {
+func InitConfig(conf dtos.AppConfig, newLogger *zap.Logger) {
 	appConfig = conf
+	logger = newLogger
 }
 
 func SetupRouter() *mux.Router {
@@ -69,8 +72,10 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fmt.Printf("Previously available books: %d\n", len(cachedBooksThatWereAvailable))
-	fmt.Printf("Now available books %d\n", len(cachedBooksThatAreStillAvailableToday))
+	logger.Sugar().Infof("%d cached books that were available from the last automated checkup: %d\n",
+		len(cachedBooksThatWereAvailable), cachedBooksThatWereAvailable)
+	logger.Sugar().Infof("%d Cached froom from the last automated checkup that are still available now: %d\n",
+		len(cachedBooksThatAreStillAvailableToday), cachedBooksThatAreStillAvailableToday)
 
 	shelfURL := "https://www.goodreads.com/review/list/151819645-cathal?ref=nav_mybooks&shelf=yet-to-read"
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
@@ -78,23 +83,18 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("shelfURL is valid\n")
 
 	booksFromShelf := goodreads.GetBooksFromShelf(shelfURL, stubStatsChan, stubBooksFoundFromGoodReadsChan)
+	logger.Sugar().Infof("%d books were found from GoodReads shelf %s\n", len(booksFromShelf), shelfURL)
 	close(stubBooksFoundFromGoodReadsChan)
 
-	fmt.Printf("Got back %d books\n", len(booksFromShelf))
 	searchResults := []dtos.EnchancedSearchResult{}
-
 	for _, book := range booksFromShelf {
 		searchResults = append(searchResults, thebookshop.SearchForBook(book, stubSearchResultsFromTheBookshopChan))
 	}
-
-	fmt.Printf("Here are all of the search results:\n")
-	for i, res := range searchResults {
-		fmt.Printf("[%d] %+v\n", i, res)
-	}
 	booksFromShelfThatAreAvailableNow = goodreads.GetAvailableBooksFromSearchResult(searchResults)
+	logger.Sugar().Infof("%s search queries were made with %d matches found",
+		len(searchResults), len(booksFromShelfThatAreAvailableNow))
 
 	newBooksThatNeedNotification := []dtos.AvailableBook{}
 	for _, availableBook := range booksFromShelfThatAreAvailableNow {
@@ -103,14 +103,15 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	logger.Sugar().Infof("%d new books were found in this search", len(newBooksThatNeedNotification))
 	if len(newBooksThatNeedNotification) > 0 {
 		for _, newBook := range newBooksThatNeedNotification {
 			db.AddAvailableBook(newBook)
 		}
 	}
-	fmt.Printf("%d books were available yesterday\n", len(cachedBooksThatWereAvailable))
-	fmt.Printf("%d books are available today from cache\n", len(cachedBooksThatAreStillAvailableToday))
-	fmt.Printf("These books are brand new from this current crawl: %+v\n", newBooksThatNeedNotification)
+	logger.Sugar().Infof("%d cached books were available yesterday", len(cachedBooksThatWereAvailable))
+	logger.Sugar().Infof("%d books are available today from cache", len(cachedBooksThatAreStillAvailableToday))
+	logger.Sugar().Infof("These books are brand new from this current crawl: %+v\n", newBooksThatNeedNotification)
 
 	fmt.Fprintf(w, "hello world")
 }
@@ -156,7 +157,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if isActualEndpoint := isActualEndpoint(r.URL.Path); isActualEndpoint {
-			fmt.Printf("%v %+v\n", time.Now().Format(time.RFC3339), r)
+			logger.Sugar().Infof("Served request to %s", r.URL.Path,
+				zap.String("requestInfo", fmt.Sprintf("%+v", r)))
 		}
 		next.ServeHTTP(w, r)
 	})

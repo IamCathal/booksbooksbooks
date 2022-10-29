@@ -9,6 +9,10 @@ import (
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/endpoints"
+	"github.com/iamcathal/booksbooksbooks/engine"
+	"github.com/iamcathal/booksbooksbooks/goodreads"
+	"github.com/iamcathal/booksbooksbooks/search"
+	"github.com/iamcathal/booksbooksbooks/thebookshop"
 	"go.uber.org/zap"
 )
 
@@ -23,8 +27,6 @@ func initConfig() dtos.AppConfig {
 }
 
 func main() {
-	db.ConnectToRedis()
-
 	logConfig := zap.NewProductionConfig()
 	logConfig.OutputPaths = []string{"stdout", "appLog.log"}
 	globalLogFields := make(map[string]interface{})
@@ -33,14 +35,21 @@ func main() {
 
 	logger, err := logConfig.Build()
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 
 	appConfig := initConfig()
-	endpoints.InitConfig(appConfig)
+	endpoints.InitConfig(appConfig, logger)
+	db.SetLogger(logger)
+	engine.SetLogger(logger)
+	goodreads.SetLogger(logger)
+	thebookshop.SetLogger(logger)
+	search.SetLogger(logger)
+
 	port := 2945
 
 	router := endpoints.SetupRouter()
+	db.ConnectToRedis()
 
 	srv := &http.Server{
 		Handler:      router,
@@ -49,6 +58,6 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 	}
 
-	logger.Sugar().Infof("Service requests on %d", port)
+	logger.Sugar().Infof("Service requests on :%d", port)
 	log.Fatal(srv.ListenAndServe())
 }

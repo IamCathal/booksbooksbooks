@@ -3,13 +3,14 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	redis "github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"go.uber.org/zap"
 )
 
 var (
+	logger      *zap.Logger
 	ctx         = context.Background()
 	redisClient *redis.Client
 
@@ -17,8 +18,12 @@ var (
 	RECENT_CRAWLS   = "recentCrawls"
 )
 
+func SetLogger(newLogger *zap.Logger) {
+	logger = newLogger
+}
+
 func ConnectToRedis() {
-	fmt.Printf("Connecting to redis...\n")
+	logger.Info("Connecting to redis...")
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -28,31 +33,31 @@ func ConnectToRedis() {
 	redisClient = rdb
 	response, err := redisClient.Ping(ctx).Result()
 	if err != nil {
-		errMsg := fmt.Sprintf("Could not connect to redis. Response: '%s' error: %s", response, err)
-		panic(errMsg)
+		logger.Sugar().Fatalf("Could not connect to redis. Response: '%s' error: '%s'", response, err)
 	}
 
-	fmt.Printf("Redis connection successfully initialised\n")
+	logger.Info("Redis connection successfully initialised")
 }
 
 func ResetAvailableBooks() {
 	err := redisClient.Set(ctx, AVAILABLE_BOOKS, []byte(""), 0).Err()
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 }
 
 func AddAvailableBook(newBook dtos.AvailableBook) {
+	logger.Sugar().Infof("Adding new available book: %+v", newBook)
 	availableBooks := GetAvailableBooks()
 	availableBooks = append(availableBooks, newBook)
 	jsonAvailableBooks, err := json.Marshal(availableBooks)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 
 	err = redisClient.Set(ctx, AVAILABLE_BOOKS, jsonAvailableBooks, 0).Err()
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 }
 
@@ -61,13 +66,13 @@ func GetAvailableBooks() []dtos.AvailableBook {
 	if err == redis.Nil {
 		return []dtos.AvailableBook{}
 	} else if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	availableBooks := []dtos.AvailableBook{}
 	if availableBooksStr != "" {
 		err = json.Unmarshal([]byte(availableBooksStr), &availableBooks)
 		if err != nil {
-			panic(err)
+			logger.Sugar().Fatal(err)
 		}
 	}
 	return availableBooks
@@ -78,13 +83,13 @@ func GetRecentCrawls() []dtos.RecentCrawl {
 	if err == redis.Nil {
 		return []dtos.RecentCrawl{}
 	} else if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	recentCrawlsArr := []dtos.RecentCrawl{}
 	if recentCrawls != "" {
 		err = json.Unmarshal([]byte(recentCrawls), &recentCrawlsArr)
 		if err != nil {
-			panic(err)
+			logger.Sugar().Fatal(err)
 		}
 	}
 	return removeDuplicateRecentCrawls(recentCrawlsArr)
@@ -104,10 +109,10 @@ func SaveRecentCrawlStats(shelfURL string) {
 
 	jsonCrawls, err := json.Marshal(newRecentCrawl)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	err = redisClient.Set(ctx, RECENT_CRAWLS, jsonCrawls, 0).Err()
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 }

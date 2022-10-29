@@ -26,7 +26,7 @@ var (
 
 func checkErr(err error) {
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 }
 
@@ -50,7 +50,7 @@ func processBook(fullTitle, author, cover, isbn13, asin, rating, link string) dt
 
 	value, err := strconv.ParseFloat(rating, 32)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 
 	bookTitle, seriesInfo := extractTitleDetailsIfPossible(fullTitle)
@@ -102,7 +102,8 @@ func extractLoadedCount(loadedCountText string) (int, int) {
 	if len(splitBySpace) == 4 {
 		return strToInt(splitBySpace[0]), strToInt(splitBySpace[2])
 	}
-	panic(splitBySpace)
+	logger.Sugar().Fatal(splitBySpace)
+	return 0, 0
 }
 
 func strToInt(str string) int {

@@ -22,7 +22,7 @@ func GetAvailableBooksMap() map[string]bool {
 func getKeyForRecentCrawl(shelfURL string) string {
 	urlObj, err := url.Parse(shelfURL)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	name := strings.Split(urlObj.Path, "-")
 	return fmt.Sprintf("%s-%s", name[len(name)-1], urlObj.Query().Get("shelf"))
@@ -55,7 +55,7 @@ func getCurrentBookState(book dtos.BasicGoodReadsBook) string {
 	id := getAppropriateID(book)
 	canBuy, err := redisClient.Get(ctx, id).Result()
 	if err != nil && isRedisNil(err) {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	return canBuy
 }

@@ -18,7 +18,7 @@ func writeErrorMsg(msg string, ws *websocket.Conn) {
 	}
 	jsonStr, err := json.Marshal(errorMsg)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	WriteMsg(jsonStr, ws)
 }
@@ -30,7 +30,7 @@ func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
 	}
 	jsonStr, err := json.Marshal(totalBooksMsg)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	WriteMsg(jsonStr, ws)
 }
@@ -42,7 +42,7 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 	}
 	jsonStr, err := json.Marshal(goodReadsBookMsg)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	WriteMsg(jsonStr, ws)
 }
@@ -54,7 +54,7 @@ func writeNewAvailableBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.Crawl
 	}
 	jsonStr, err := json.Marshal(newAvaialbleBookMsg)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	WriteMsg(jsonStr, ws)
 }
@@ -66,7 +66,7 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 	}
 	jsonStr, err := json.Marshal(searchResultMsg)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 	WriteMsg(jsonStr, ws)
 }
@@ -76,7 +76,7 @@ func WriteMsg(msg []byte, ws *websocket.Conn) {
 	defer websocketWriteLock.Unlock()
 	err := ws.WriteMessage(1, msg)
 	if err != nil {
-		panic(err)
+		logger.Sugar().Fatal(err)
 	}
 }
 

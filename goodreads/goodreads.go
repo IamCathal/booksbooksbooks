@@ -8,15 +8,21 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"go.uber.org/zap"
 )
 
 var (
+	logger          *zap.Logger
 	lastRequestMade time.Time
 	SLEEP_DURATION  = time.Duration(1 * time.Second)
 )
 
 func init() {
 	lastRequestMade = time.Now()
+}
+
+func SetLogger(newLogger *zap.Logger) {
+	logger = newLogger
 }
 
 func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
@@ -31,28 +37,26 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 	checkErr(err)
 
 	allBooks := []dtos.BasicGoodReadsBook{}
-	loadedInView := 0
 	totalBooks := 0
 
 	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {
-		loadedInView, totalBooks = extractLoadedCount(loadedCount.Text())
-		fmt.Println(loadedInView, totalBooks)
+		_, totalBooks = extractLoadedCount(loadedCount.Text())
+		logger.Sugar().Infof("Shelf %s has %d total books to crawl", shelfURL, totalBooks)
 	})
 
 	shelfStats <- totalBooks
 	close(shelfStats)
-	fmt.Println("closed stats channel")
 	extractedBooks := extractBooksFromHTML(doc)
 	for _, book := range extractedBooks {
 		booksFoundFromGoodReadsChan <- book
 	}
 	allBooks = append(allBooks, extractedBooks...)
 
-	fmt.Printf("First page done %d/%d books gathered\n", loadedInView, totalBooks)
+	logger.Sugar().Infof("Extracted all %d books on page 1\n", len(extractedBooks))
 
 	if len(allBooks) < totalBooks {
 		totalPagesToCrawl := totalPagesToCrawl(totalBooks)
-		fmt.Printf("%d pages will need to be crawled\n", totalPagesToCrawl)
+		logger.Sugar().Info("Shelf had >%d books, %d pages will need to be crawled", BOOK_COUNT_PER_PAGE, totalPagesToCrawl)
 		currPageToView := 2
 		for {
 			if len(allBooks) == totalBooks {
@@ -76,14 +80,17 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 }
 
 func sleepIfLongerThanAllotedTimeSinceLastRequest() {
-	fmt.Printf("[goodreads] Time since was %+v Default is %+v\n", time.Since(lastRequestMade), SLEEP_DURATION)
+	logger.Sugar().Debugf("Time since last goodreads request was %+v Default is %+v", time.Since(lastRequestMade), SLEEP_DURATION,
+		zap.String("dignostics", "goodReadsEngine"))
 	if time.Since(lastRequestMade) > SLEEP_DURATION {
 		lastRequestMade = time.Now()
-		fmt.Printf("[goodreads] Was more, not sleeping\n")
+		logger.Sugar().Debugf("[goodreads] Time since last request more than %d, not sleeping", SLEEP_DURATION,
+			zap.String("dignostics", "goodReadsEngine"))
 		return
 	}
 	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
-	fmt.Printf("[goodreads] Was less, sleeping for %+v\n", timeDifference)
+	logger.Sugar().Debugf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference,
+		zap.String("dignostics", "goodReadsEngine"))
 	time.Sleep(timeDifference)
 	lastRequestMade = time.Now()
 }

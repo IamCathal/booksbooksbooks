@@ -8,11 +8,17 @@ import (
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
+	"go.uber.org/zap"
 )
 
 var (
+	logger                   *zap.Logger
 	BOOKS_DISPLAYED_PER_PAGE = 30
 )
+
+func SetLogger(newLogger *zap.Logger) {
+	logger = newLogger
+}
 
 func Worker(shelfURL string, ws *websocket.Conn) {
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
@@ -28,7 +34,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	booksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
 	searchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
-	fmt.Printf("Retrieving books from shelf: %s\n", shelfURL)
+	logger.Sugar().Infof("Retrieving books from shelf: %s\n", shelfURL)
 	goodreads.GetBooksFromShelf(shelfURL, shelfStatsChan, booksFoundFromGoodReadsChan)
 
 	booksFound := 0
@@ -39,7 +45,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		BooksCrawled:  booksFound,
 		BooksSearched: searchResultsReturned,
 	}
-
+	newBooksFound := 0
 	for {
 		if allBooksFound(currCrawlStats) {
 			break
@@ -56,7 +62,9 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 		case bookFromGoodReads := <-booksFoundFromGoodReadsChan:
 			currCrawlStats.BooksCrawled++
-			fmt.Printf("[%d](%d) found a book: %+v by %v\n", len(booksFoundFromGoodReadsChan), currCrawlStats.BooksCrawled, bookFromGoodReads.Title, bookFromGoodReads.Author)
+			logger.Sugar().Infof("[booksFound: %d][booksCrawled: %d] Found a GoodReads book: %+v by %v",
+				len(booksFoundFromGoodReadsChan), currCrawlStats.BooksCrawled,
+				bookFromGoodReads.Title, bookFromGoodReads.Author)
 			writeGoodReadsBookMsg(bookFromGoodReads, currCrawlStats, ws)
 			go thebookshop.SearchForBook(bookFromGoodReads, searchResultsFromTheBookshopChan)
 
@@ -65,9 +73,10 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
 			// TOOD handle multiple title searches
 			if bookIsNew := bookIsNew(searchResultFromTheBookshop.TitleMatches[0], previouslyKnownAvailableBooks); bookIsNew {
-				fmt.Printf("*************\n%s: %s is now for sale %s from %s\n\n\n",
-					searchResultFromTheBookshop.SearchBook.Author,
+				newBooksFound++
+				logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
 					searchResultFromTheBookshop.SearchBook.Title,
+					searchResultFromTheBookshop.SearchBook.Author,
 					searchResultFromTheBookshop.TitleMatches[0].Price,
 					searchResultFromTheBookshop.TitleMatches[0].Link)
 				writeNewAvailableBookMsg(searchResultFromTheBookshop.SearchBook, currCrawlStats, ws)
@@ -82,7 +91,8 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		}
 	}
 
-	fmt.Printf("Exiting. All books queried from Goodreads\n")
+	logger.Sugar().Infof("Finished. Crawled %d books from GoodReads and made %d searches to TheBookshop.ie which had %d new books",
+		currCrawlStats.BooksCrawled, currCrawlStats.BooksSearched, newBooksFound)
 	close(booksFoundFromGoodReadsChan)
 	close(searchResultsFromTheBookshopChan)
 }

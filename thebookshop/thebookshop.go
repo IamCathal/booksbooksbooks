@@ -10,9 +10,11 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/search"
+	"go.uber.org/zap"
 )
 
 var (
+	logger                *zap.Logger
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
 	lastRequestMade       time.Time
 	bookshopRequestLock   sync.Mutex
@@ -23,15 +25,20 @@ func init() {
 	lastRequestMade = time.Now()
 }
 
+func SetLogger(newLogger *zap.Logger) {
+	logger = newLogger
+}
+
 func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
-	// startTime := time.Now()
+	startTime := time.Now()
 	bookshopRequestLock.Lock()
 	for {
 		if time.Since(lastRequestMade) > SLEEP_DURATION {
 			lastRequestMade = time.Now()
 			allBooks := searchTheBookshop(bookInfo, bookSearchResultsChan)
 			bookshopRequestLock.Unlock()
-			// fmt.Printf("\t\t\t\tWaited %v\n", time.Since(startTime))
+			logger.Sugar().Debugf("Waited %v before executing TheBookshop.ie search request", time.Since(startTime),
+				zap.String("dignostics", "theBookshopEngine"))
 			return FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 		}
 	}
@@ -52,7 +59,7 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 			bookTitle := bookProduct.Find("h4[class='card-title']").Text()
 			bookLink, ok := bookProduct.Find("h4[class='card-title'] a").Attr("href")
 			if !ok {
-				panic(fmt.Sprintf("no bookLink found for %+v with query %s", bookInfo, searchURL))
+				logger.Sugar().Fatalf("no link found on TheBookshop for GoodReads book: %+v with query %s", bookInfo, searchURL)
 			}
 
 			bookPrice := bookProduct.Find("span[data-product-price-without-tax='']").Text()
