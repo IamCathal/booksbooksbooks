@@ -28,7 +28,8 @@ func ConnectToRedis() {
 	redisClient = rdb
 	response, err := redisClient.Ping(ctx).Result()
 	if err != nil {
-		panic(response)
+		errMsg := fmt.Sprintf("Could not connect to redis. Response: '%s' error: %s", response, err)
+		panic(errMsg)
 	}
 
 	fmt.Printf("Redis connection successfully initialised\n")
@@ -43,14 +44,12 @@ func ResetAvailableBooks() {
 
 func AddAvailableBook(newBook dtos.AvailableBook) {
 	availableBooks := GetAvailableBooks()
-	// fmt.Printf("curr availableBooks %d %+v\n\n", len(availableBooks), availableBooks)
 	availableBooks = append(availableBooks, newBook)
 	jsonAvailableBooks, err := json.Marshal(availableBooks)
 	if err != nil {
 		panic(err)
 	}
 
-	// fmt.Printf("Adding new available book: %+v\n", newBook)
 	err = redisClient.Set(ctx, AVAILABLE_BOOKS, jsonAvailableBooks, 0).Err()
 	if err != nil {
 		panic(err)

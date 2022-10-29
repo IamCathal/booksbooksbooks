@@ -51,8 +51,11 @@ func isActualEndpoint(urlPath string) bool {
 	regularEndpoints := []string{
 		"/",
 		"/status",
-		"/recentcrawl",
+		"/getrecentcrawls",
 		"/ws",
+		"/available",
+		"/automatedcheck",
+		"/getavailablebooks",
 	}
 	for _, endpoint := range regularEndpoints {
 		if urlPath == endpoint {

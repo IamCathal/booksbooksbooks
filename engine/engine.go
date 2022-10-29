@@ -81,6 +81,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 		}
 	}
+
 	fmt.Printf("Exiting. All books queried from Goodreads\n")
 	close(booksFoundFromGoodReadsChan)
 	close(searchResultsFromTheBookshopChan)

@@ -6,12 +6,6 @@ type AppConfig struct {
 	ApplicationStartUpTime time.Time
 }
 
-type UptimeResponse struct {
-	Status      string        `json:"status,omitempty"`
-	Uptime      time.Duration `json:"uptime,omitempty"`
-	StartUpTime int64         `json:"startuptime,omitempty"`
-}
-
 type BasicGoodReadsBook struct {
 	ID         string  `json:"id"`
 	Title      string  `json:"title"`
@@ -44,7 +38,15 @@ type EnchancedSearchResult struct {
 	TitleMatches  []TheBookshopBook  `json:"titleMatches"`
 }
 
-// Ws data structures
+// Endpoints DTOs
+
+type UptimeResponse struct {
+	Status      string        `json:"status,omitempty"`
+	Uptime      time.Duration `json:"uptime,omitempty"`
+	StartUpTime int64         `json:"startuptime,omitempty"`
+}
+
+// Websocket DTOs
 
 type WsErrorMsg struct {
 	Error string `json:"error"`
@@ -77,16 +79,11 @@ type WsNewBookAvailable struct {
 	CrawlStats CrawlStats         `json:"crawlStats"`
 }
 
-// db related data structures
+// Database related data structures
 
 type RecentCrawl struct {
 	CrawlKey string `json:"crawlKey"`
 	ShelfURL string `json:"shelfURL"`
-}
-
-type BookPurchase struct {
-	Link         string `json:"link"`
-	Isbn13OrAsin string `json:"isbn13OrAsin"`
 }
 
 type AvailableBook struct {

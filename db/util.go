@@ -14,7 +14,7 @@ func GetAvailableBooksMap() map[string]bool {
 	availableBooksMap := make(map[string]bool)
 
 	for _, book := range availableBooks {
-		availableBooksMap[book.BookPurchaseInfo.Title] = true
+		availableBooksMap[book.BookPurchaseInfo.Title.Title] = true
 	}
 	return availableBooksMap
 }
@@ -42,10 +42,6 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawl) []dtos.RecentC
 	return noDuplicateRecentCrawls
 }
 
-func isRedisNil(err error) bool {
-	return err == redis.Nil
-}
-
 func getAppropriateID(book dtos.BasicGoodReadsBook) string {
 	if book.Isbn13 != "" {
 		return book.Isbn13
@@ -64,9 +60,6 @@ func getCurrentBookState(book dtos.BasicGoodReadsBook) string {
 	return canBuy
 }
 
-func getNewState(searchResult dtos.EnchancedSearchResult) string {
-	if len(searchResult.TitleMatches) >= 1 {
-		return "true"
-	}
-	return "false"
+func isRedisNil(err error) bool {
+	return err == redis.Nil
 }

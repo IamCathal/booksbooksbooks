@@ -3,7 +3,6 @@ package endpoints
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -31,12 +30,12 @@ func InitConfig(conf dtos.AppConfig) {
 func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", index).Methods("GET")
-	r.HandleFunc("/available", available).Methods("GET")
+	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.HandleFunc("/status", status).Methods("POST")
-	r.HandleFunc("/recentcrawls", getRecentCrawls).Methods("GET")
+	r.HandleFunc("/available", available).Methods("GET")
+	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
 	r.HandleFunc("/automatedcheck", automatedCheck).Methods("POST")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
-	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -148,13 +147,10 @@ func status(w http.ResponseWriter, r *http.Request) {
 		Uptime:      time.Duration(time.Since(appConfig.ApplicationStartUpTime).Milliseconds()),
 		StartUpTime: appConfig.ApplicationStartUpTime.Unix(),
 	}
-	jsonObj, err := json.MarshalIndent(req, "", "\t")
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(string(jsonObj))
+	json.NewEncoder(w).Encode(req)
 }
 
 func logMiddleware(next http.Handler) http.Handler {
