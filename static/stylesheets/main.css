@@ -36,6 +36,18 @@ body {
     font-size: 1.1rem
 }
 
+.automatedCheckShelfURLInput {
+  border: 1px solid #c0c0c0; 
+  /* border-radius: 0.3rem;  */
+  padding: 0.4rem;
+  background-color: #22242f;
+  color: #c0c0c0;
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  width: 100%; 
+  font-size: 0.8rem;
+}
+
 .toggleBox {
   border: 2px solid #c0c0c0;
 }

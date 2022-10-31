@@ -40,6 +40,8 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/automatedcheck", automatedCheck).Methods("POST")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
+	r.HandleFunc("/getautomatedbookshelfcheckurl", getautomatedbookshelfcheckurl).Methods("GET")
+	r.HandleFunc("/setautomatedbookshelfcheckurl", setautomatedbookshelfcheckurl).Methods("GET")
 	r.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -78,7 +80,7 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 	logger.Sugar().Infof("%d Cached froom from the last automated checkup that are still available now: %d\n",
 		len(cachedBooksThatAreStillAvailableToday), cachedBooksThatAreStillAvailableToday)
 
-	shelfURL := "https://www.goodreads.com/review/list/151819645-cathal?ref=nav_mybooks&shelf=yet-to-read"
+	shelfURL := db.GetAutomatedBookShelfCheck()
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
 		errorMsg := fmt.Sprintf("Invalid shelfURL '%s' given", shelfURL)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
@@ -146,6 +148,29 @@ func getRecentCrawls(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(recentCrawls)
+}
+
+func getautomatedbookshelfcheckurl(w http.ResponseWriter, r *http.Request) {
+	bookShelfURL := db.GetAutomatedBookShelfCheck()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dtos.AutomatedShelfCheckURLResponse{ShelURL: bookShelfURL})
+}
+
+func setautomatedbookshelfcheckurl(w http.ResponseWriter, r *http.Request) {
+	bookShelfURL := r.URL.Query().Get("shelfurl")
+	if isValidShelfURL := goodreads.CheckIsShelfURL(bookShelfURL); !isValidShelfURL {
+		errorMsg := fmt.Sprintf("Invalid shelfurl '%s' given", bookShelfURL)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+
+	db.SetAutomatedBookShelfCheck(bookShelfURL)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(bookShelfURL)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {

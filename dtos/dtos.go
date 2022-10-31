@@ -46,6 +46,10 @@ type UptimeResponse struct {
 	StartUpTime int64         `json:"startuptime,omitempty"`
 }
 
+type AutomatedShelfCheckURLResponse struct {
+	ShelURL string `json:"shelfURL"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {

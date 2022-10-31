@@ -15,8 +15,9 @@ var (
 	ctx         = context.Background()
 	redisClient *redis.Client
 
-	AVAILABLE_BOOKS = "availableBooks"
-	RECENT_CRAWLS   = "recentCrawls"
+	AVAILABLE_BOOKS            = "availableBooks"
+	RECENT_CRAWLS              = "recentCrawls"
+	AUTOMATED_BOOK_SHELF_CHECK = "automatedBookShelfCheck"
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -116,4 +117,21 @@ func SaveRecentCrawlStats(shelfURL string) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
+}
+
+func SetAutomatedBookShelfCheck(shelfURL string) {
+	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK, shelfURL, 0).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetAutomatedBookShelfCheck() string {
+	shelfURL, err := redisClient.Get(ctx, AUTOMATED_BOOK_SHELF_CHECK).Result()
+	if err == redis.Nil {
+		return ""
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return shelfURL
 }

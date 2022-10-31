@@ -1,6 +1,7 @@
 let availableBooks = []
 
 giveSwayaaangBordersToItems()
+getAndRenderAutomatedShelfCheckURL()
 
 getAvailableBooks().then((res) => {
     availableBooks = res
@@ -18,6 +19,15 @@ document.getElementById("clearList").addEventListener("click", () => {
         console.error(err)
     })
 })
+
+function getAndRenderAutomatedShelfCheckURL() {
+    getAutomatedShelfCheckURL().then(url => {
+        console.log(url)
+        document.getElementById("automatedCheckShelfInput").value = url
+    }, (err) => {
+        console.error(err)
+    })
+}
 
 function renderAvailableBooks() {
     document.getElementById("availableBooks").innerHTML = ""
@@ -69,6 +79,40 @@ function getAvailableBooks() {
         });
     })
 }
+
+function getAutomatedShelfCheckURL(){
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/getautomatedbookshelfcheckurl`)
+        .then((res) => res.json())
+        .then((res) => {
+            resolve(res.shelfURL)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setAutomatedShelfCheckURL(shelfURL){
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
+        .then((res) => {
+            resolve(res)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+document.getElementById("automatedCheckShelfInput").addEventListener("keyup", function(event) {
+    const shelfUrl = document.getElementById("automatedCheckShelfInput").value
+    if (event.key === "Enter") {
+        setAutomatedShelfCheckURL(shelfUrl).then((res) => {
+            console.log(res)
+        }, (err) => {
+            console.error(err)
+        })
+    }
+});
 
 function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
