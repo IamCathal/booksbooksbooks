@@ -28,32 +28,19 @@ services:
     networks:
       - elk
 
-  zincsearch:
-    image: public.ecr.aws/zinclabs/zinc:latest
-    user: root
-    environment:
-      ZINC_DATA_PATH: /zincData
-      ZINC_FIRST_ADMIN_USER: admin
-      ZINC_FIRST_ADMIN_PASSWORD: galahads
-    volumes:
-      - ./data/:/data
-    ports:
-      - "4080:4080"
-    networks:
-    - elk
-    depends_on:
-      - redis
-
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.4.3
     container_name: filebeat-container
     volumes:
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./logs/:/logs/
+    environment:
+      ZINCSEARCH_PASS: $ZINCSEARCH_PASS
+      ZINCSEARCH_INSTANCE_IP: $ZINCSEARCH_INSTANCE_IP
     networks:
     - elk
     depends_on:
-      - zincsearch
+      - booksbooksbooks
 
 
 volumes:
