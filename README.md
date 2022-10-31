@@ -2,6 +2,10 @@
 
 I use GoodReads for my book reccomendations and I buy my books mostly from TheBookshop.ie. I made this project to be able to automatically check if books on my "shopping list" are available on TheBookshop.
 
+|      |  |
+| ----------- | ----------- |
+| ![](https://i.imgur.com/TEFxUnN.png)     | ![](https://i.imgur.com/vzhiiJ1.png)   |
+
 ### Usage
 
 `docker-compose up`

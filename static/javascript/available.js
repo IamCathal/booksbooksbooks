@@ -37,7 +37,7 @@ function renderAvailableBooks() {
         console.log(book)
         document.getElementById("availableBooks").innerHTML +=
         `
-                    <div class="col-3 ml-3 pt-3 searchResultBook">
+                    <div class="col-3 pt-3 searchResultBook">
                         <div class="row">
                             <div class="col-3 pl-1">
                                 <a href="${book.bookPurchaseInfo.link}">
