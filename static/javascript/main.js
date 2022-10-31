@@ -509,6 +509,9 @@ function giveSwayaaangBordersToItems() {
     toggleBoxes.forEach(box => {
         box.style += swayaaangBorders(0.6)
     })
+    document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
+    document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
+
 }
 
 function swayaaangBorders(borderRadius) {
