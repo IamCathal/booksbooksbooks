@@ -39,6 +39,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
 	r.HandleFunc("/automatedcheck", automatedCheck).Methods("POST")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
+	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
 	r.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -132,6 +133,11 @@ func getAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(recentCrawls)
+}
+
+func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {
+	db.ResetAvailableBooks()
+	w.WriteHeader(http.StatusOK)
 }
 
 func getRecentCrawls(w http.ResponseWriter, r *http.Request) {
