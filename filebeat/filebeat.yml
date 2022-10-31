@@ -14,7 +14,7 @@ processors:
       fields: ["level", "ts", "caller", "msg", "diagnostics"]
 
 output.elasticsearch:
-  hosts: ["${ZINCSEARCH_INSTANCE_IP}:4080"]
+  hosts: ["${ZINCSEARCH_INSTANCE_IP}"]
   path: "/es/"
   index: "log-datBoyo"
   username: "admin"

@@ -216,7 +216,6 @@ function writeBook(book) {
 }
 
 function renderAndAddBookToNewAvailableBookList(newAvailableBook) {
-    console.log(newAvailableBook)
     document.getElementById("newBookMatchesDiv").style.display = "flex"
     document.getElementById("newBookAvailableInsertPoint").innerHTML += 
     `
