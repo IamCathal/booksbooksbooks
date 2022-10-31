@@ -79,8 +79,8 @@ type WsBookshopSearchResult struct {
 }
 
 type WsNewBookAvailable struct {
-	Book       BasicGoodReadsBook `json:"newAvailableBook"`
-	CrawlStats CrawlStats         `json:"crawlStats"`
+	Book       TheBookshopBook `json:"newAvailableBook"`
+	CrawlStats CrawlStats      `json:"crawlStats"`
 }
 
 // Database related data structures

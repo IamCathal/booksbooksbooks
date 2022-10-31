@@ -130,11 +130,11 @@ func liveFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAvailableBooks(w http.ResponseWriter, r *http.Request) {
-	recentCrawls := db.GetAvailableBooks()
+	availableBooks := db.GetAvailableBooks()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(recentCrawls)
+	json.NewEncoder(w).Encode(availableBooks)
 }
 
 func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {

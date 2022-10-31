@@ -47,7 +47,7 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 	WriteMsg(jsonStr, ws)
 }
 
-func writeNewAvailableBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlStats, ws *websocket.Conn) {
+func writeNewAvailableBookMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlStats, ws *websocket.Conn) {
 	newAvaialbleBookMsg := dtos.WsNewBookAvailable{
 		Book:       bookInfo,
 		CrawlStats: stats,
@@ -81,6 +81,6 @@ func WriteMsg(msg []byte, ws *websocket.Conn) {
 }
 
 func bookIsNew(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
-	_, exists := availableBooksMap[book.Title]
+	_, exists := availableBooksMap[book.Link]
 	return !exists
 }

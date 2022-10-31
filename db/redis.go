@@ -49,10 +49,11 @@ func ResetAvailableBooks() {
 }
 
 func AddAvailableBook(newBook dtos.AvailableBook) {
-	logger.Sugar().Infof("Adding new available book: %+v", newBook)
 	availableBooks := GetAvailableBooks()
 	availableBooks = append(availableBooks, newBook)
-	jsonAvailableBooks, err := json.Marshal(availableBooks)
+
+	availableBooksWithNoDuplicates := removeDuplicateAvailableBooks(availableBooks)
+	jsonAvailableBooks, err := json.Marshal(availableBooksWithNoDuplicates)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}

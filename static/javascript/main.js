@@ -216,28 +216,29 @@ function writeBook(book) {
 }
 
 function renderAndAddBookToNewAvailableBookList(newAvailableBook) {
+    console.log(newAvailableBook)
     document.getElementById("newBookMatchesDiv").style.display = "flex"
     document.getElementById("newBookAvailableInsertPoint").innerHTML += 
     `
                             <div class="col-3">
                                 <div class="row">
                                     <div class="col-3 pl-2 pt-2">
-                                        <a href="${newAvailableBook.Link}">
-                                            <img src="${newAvailableBook.Cover}" style="width: 3rem;" title="">
+                                        <a href="${newAvailableBook.link}">
+                                            <img src="${newAvailableBook.cover}" style="width: 3rem;" title="">
                                         </a>
                                     </div>
                                     <div class="col">
                                         <div class="row pt-1" style="font-weight: bold; font-size: 0.8rem">
-                                            ${newAvailableBook.Title}
+                                            ${newAvailableBook.title}
                                         </div>
                                         <div class="row" style="font-size: 0.6rem">
                                             
                                         </div>
                                         <div class="row" style="font-size: 0.6rem">
-                                            ${newAvailableBook.Author}
+                                            ${newAvailableBook.author}
                                         </div>
                                         <div class="row" style="font-weight: bold; font-size: 0.7rem">
-                                            ${newAvailableBook.Price}
+                                            ${newAvailableBook.price}
                                         </div>
                                     </div>
                                 </div>
@@ -509,8 +510,9 @@ function giveSwayaaangBordersToItems() {
     toggleBoxes.forEach(box => {
         box.style += swayaaangBorders(0.6)
     })
-    document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
-    document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
+    document.getElementById("availableLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
+    document.getElementById("shelfLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
+    document.getElementById("newBookAvailableInsertPoint").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
 
 }
 

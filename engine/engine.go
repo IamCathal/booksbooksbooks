@@ -80,7 +80,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 						searchResultFromTheBookshop.SearchBook.Author,
 						searchResultFromTheBookshop.TitleMatches[0].Price,
 						searchResultFromTheBookshop.TitleMatches[0].Link)
-					writeNewAvailableBookMsg(searchResultFromTheBookshop.SearchBook, currCrawlStats, ws)
+					writeNewAvailableBookMsg(searchResultFromTheBookshop.TitleMatches[0], currCrawlStats, ws)
 					newBook := dtos.AvailableBook{
 						BookInfo:         searchResultFromTheBookshop.SearchBook,
 						BookPurchaseInfo: searchResultFromTheBookshop.TitleMatches[0],
@@ -89,7 +89,6 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 				}
 			}
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
-
 		}
 	}
 

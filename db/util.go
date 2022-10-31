@@ -14,7 +14,7 @@ func GetAvailableBooksMap() map[string]bool {
 	availableBooksMap := make(map[string]bool)
 
 	for _, book := range availableBooks {
-		availableBooksMap[book.BookPurchaseInfo.Title] = true
+		availableBooksMap[book.BookPurchaseInfo.Link] = true
 	}
 	return availableBooksMap
 }
@@ -26,6 +26,20 @@ func getKeyForRecentCrawl(shelfURL string) string {
 	}
 	name := strings.Split(urlObj.Path, "-")
 	return fmt.Sprintf("%s-%s", name[len(name)-1], urlObj.Query().Get("shelf"))
+}
+
+func removeDuplicateAvailableBooks(books []dtos.AvailableBook) []dtos.AvailableBook {
+	seenBooks := make(map[string]bool)
+	noDuplicateAvailableBooks := []dtos.AvailableBook{}
+
+	for _, book := range books {
+		_, exists := seenBooks[book.BookInfo.Title]
+		if !exists {
+			seenBooks[book.BookInfo.Title] = true
+			noDuplicateAvailableBooks = append(noDuplicateAvailableBooks, book)
+		}
+	}
+	return noDuplicateAvailableBooks
 }
 
 func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawl) []dtos.RecentCrawl {
