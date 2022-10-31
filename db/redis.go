@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"os"
 
 	redis "github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
@@ -23,10 +24,10 @@ func SetLogger(newLogger *zap.Logger) {
 }
 
 func ConnectToRedis() {
-	logger.Info("Connecting to redis...")
+	logger.Info("Connecting to redis...", zap.String("diagnostics", "redis"))
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     os.Getenv("REDIS_ADDR"),
 		Password: "",
 		DB:       0,
 	})

@@ -37,7 +37,7 @@ func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<
 			lastRequestMade = time.Now()
 			allBooks := searchTheBookshop(bookInfo, bookSearchResultsChan)
 			bookshopRequestLock.Unlock()
-			logger.Sugar().Debugf("Waited %v before executing TheBookshop.ie search request", time.Since(startTime),
+			logger.Sugar().Debugw(fmt.Sprintf("Waited %v before executing TheBookshop.ie search request", time.Since(startTime)),
 				zap.String("dignostics", "theBookshopEngine"))
 			return FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 		}

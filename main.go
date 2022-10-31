@@ -26,9 +26,27 @@ func initConfig() dtos.AppConfig {
 	}
 }
 
+// type MyCore struct {
+// 	zapcore.Core
+// }
+
+// func (c *MyCore) Check(entry zapcore.Entry, checked *zapcore.CheckedEntry) *zapcore.CheckedEntry {
+// 	// if c.Enabled(entry.Level) {
+// 	// 	return checked.AddCore(entry, c)
+// 	// }
+// 	return checked
+// }
+
+// func (c *MyCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
+// 	if entry.Level == zapcore.ErrorLevel {
+// 		spew.Dump(entry, fields)
+// 	}
+// 	return c.Core.Write(entry, fields)
+// }
+
 func main() {
 	logConfig := zap.NewProductionConfig()
-	logConfig.OutputPaths = []string{"stdout", "appLog.log"}
+	logConfig.OutputPaths = []string{"stdout", "logs/appLog.log"}
 	globalLogFields := make(map[string]interface{})
 	globalLogFields["service"] = "booksbooksbooks"
 	logConfig.InitialFields = globalLogFields
@@ -37,6 +55,18 @@ func main() {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
+	// fmt.Println("ok")
+	// l, err := zap.NewProduction()
+	// if err != nil {
+	// 	fmt.Println("yerooop")
+	// 	panic(err)
+	// }
+	// logger := zap.New(&MyCore{Core: l.Core()})
+
+	// logger = logger.WithOptions(zap.Hooks(func(log zapcore.Entry) error {
+	// 	fmt.Printf("%+v\n", log)
+	// 	return nil
+	// }))
 
 	appConfig := initConfig()
 	endpoints.InitConfig(appConfig, logger)

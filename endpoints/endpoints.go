@@ -157,7 +157,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if isActualEndpoint := isActualEndpoint(r.URL.Path); isActualEndpoint {
-			logger.Sugar().Infof("Served request to %s", r.URL.Path,
+			logger.Sugar().Infow(fmt.Sprintf("Served request to %v", r.URL.Path),
 				zap.String("requestInfo", fmt.Sprintf("%+v", r)))
 		}
 		next.ServeHTTP(w, r)

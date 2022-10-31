@@ -10,7 +10,56 @@ services:
       - '6379:6379'
     volumes:
       - 'redis_data:/bitnami/redis/data'
+    networks:
+      - elk
+
+  booksbooksbooks:
+    build:
+      context: .
+    container_name: booksbooksbooks
+    volumes:
+      - ./logs/:/logs/
+    environment:
+      REDIS_ADDR: "redis:6379"
+    ports:
+      - '2945:2945'
+    depends_on:
+      - redis
+    networks:
+      - elk
+
+  zincsearch:
+    image: public.ecr.aws/zinclabs/zinc:latest
+    user: root
+    environment:
+      ZINC_DATA_PATH: /zincData
+      ZINC_FIRST_ADMIN_USER: admin
+      ZINC_FIRST_ADMIN_PASSWORD: galahads
+    volumes:
+      - ./data/:/data
+    ports:
+      - "4080:4080"
+    networks:
+    - elk
+    depends_on:
+      - redis
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.4.3
+    container_name: filebeat-container
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./logs/:/logs/
+    networks:
+    - elk
+    depends_on:
+      - zincsearch
+
 
 volumes:
   redis_data:
     driver: local
+
+networks:
+  elk:
+    driver: bridge

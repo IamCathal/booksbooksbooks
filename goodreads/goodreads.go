@@ -80,16 +80,16 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 }
 
 func sleepIfLongerThanAllotedTimeSinceLastRequest() {
-	logger.Sugar().Debugf("Time since last goodreads request was %+v Default is %+v", time.Since(lastRequestMade), SLEEP_DURATION,
+	logger.Sugar().Debugw(fmt.Sprintf("Time since last goodreads request was %+v Default is %+v", time.Since(lastRequestMade), SLEEP_DURATION),
 		zap.String("dignostics", "goodReadsEngine"))
 	if time.Since(lastRequestMade) > SLEEP_DURATION {
 		lastRequestMade = time.Now()
-		logger.Sugar().Debugf("[goodreads] Time since last request more than %d, not sleeping", SLEEP_DURATION,
+		logger.Sugar().Debugw(fmt.Sprintf("[goodreads] Time since last request more than %d, not sleeping", SLEEP_DURATION),
 			zap.String("dignostics", "goodReadsEngine"))
 		return
 	}
 	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
-	logger.Sugar().Debugf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference,
+	logger.Sugar().Debugw(fmt.Sprintf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference),
 		zap.String("dignostics", "goodReadsEngine"))
 	time.Sleep(timeDifference)
 	lastRequestMade = time.Now()

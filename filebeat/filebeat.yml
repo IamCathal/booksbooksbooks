@@ -1,0 +1,21 @@
+setup.ilm.enabled: false
+setup.template.name: "log-dat"
+setup.template.pattern: "log-dat*"
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /logs/*.log
+  json.keys_under_root: true
+
+processors:
+  - decode_json_fields:
+      fields: ["level", "ts", "caller", "msg", "diagnostics"]
+
+output.elasticsearch:
+  hosts: ["zincsearch:4080"]
+  path: "/es/"
+  index: "log-datBoyo"
+  username: "admin"
+  password: "galahads"
