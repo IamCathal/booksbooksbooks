@@ -175,14 +175,14 @@ func GetDiscordMessageFormat() string {
 }
 
 func SetAutomatedBookShelfCrawlTime(time string) {
-	err := redisClient.Set(ctx, DISCORD_MESSAGE_FORMAT, time, 0).Err()
+	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CRAWL_TIME, time, 0).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
 func GetAutomatedBookShelfCrawlTime() string {
-	time, err := redisClient.Get(ctx, DISCORD_MESSAGE_FORMAT).Result()
+	time, err := redisClient.Get(ctx, AUTOMATED_BOOK_SHELF_CRAWL_TIME).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {

@@ -19,18 +19,6 @@ document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener(
     })
 })
 
-function getAutomatedShelfCheckURL(){
-    return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/getautomatedbookshelfcheckurl`)
-        .then((res) => res.json())
-        .then((res) => {
-            resolve(res.shelfURL)
-        }, (err) => {
-            reject(err)
-        });
-    })
-}
-
 document.getElementById("shelfCheckURLInputBox").addEventListener("keyup", function(event) {
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
     if (event.key === "Enter") {
@@ -46,17 +34,6 @@ document.getElementById("settingsTestWebhookURLButton").addEventListener("click"
     const webhookURL = document.getElementById("discordWebhookURLInputBox").value
     testDiscordWebhookURL(webhookURL)
 })
-
-function setAutomatedShelfCheckURL(shelfURL){
-    return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
-        .then((res) => {
-            resolve(res)
-        }, (err) => {
-            reject(err)
-        });
-    })
-}
 
 function getAndRenderAutomatedShelfCheckURL() {
     getAutomatedShelfCheckURL().then(url => {
@@ -76,6 +53,7 @@ function getAndRenderDiscordWebhookURL() {
 
 function getAndRenderDiscordMessageFormatPreference() {
     getDiscordMessageFormat().then(format => {
+        console.log(`format was ${format}`)
         if (format == "big") {
             highlightBigStyleMessagePreference()
         } else if (format == "small") {
@@ -155,8 +133,31 @@ function clearList() {
     })
 }
 
+function getAutomatedShelfCheckURL(){
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/getautomatedbookshelfcheckurl`)
+        .then((res) => res.json())
+        .then((res) => {
+            resolve(res.shelfURL)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setAutomatedShelfCheckURL(shelfURL){
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
+        .then((res) => {
+            resolve(res)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
 function testDiscordWebhookURL(webhookURL) {
-    fetch(`http://localhost:2945/testdiscordwebhook?webhookurl=${webhookURL}`, {
+    fetch(`http://localhost:2945/settings/testdiscordwebhook?webhookurl=${webhookURL}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -175,7 +176,6 @@ function getAutomatedCrawlTime() {
             },
         }).then((res) => res.json())
         .then((res) => {
-            console.log(`got back: ${res}`)
             resolve(res.time)
         }, (err) => {
             reject(err)
@@ -202,8 +202,8 @@ function setAutomatedCrawlTime(time) {
 
 function setDiscordWebhookURL(webhookURL) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/setdiscordwebhook?webhookurl=${webhookURL}`, {
-            method: "GET",
+        fetch(`http://localhost:2945/settings/setdiscordwebhook?webhookurl=${webhookURL}`, {
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
@@ -219,7 +219,7 @@ function setDiscordWebhookURL(webhookURL) {
 
 function getDiscordWebhookURL(webhookURL) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/getdiscordwebhook`, {
+        fetch(`http://localhost:2945/settings/getdiscordwebhook`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
