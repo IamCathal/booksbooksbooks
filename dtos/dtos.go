@@ -94,3 +94,50 @@ type AvailableBook struct {
 	BookInfo         BasicGoodReadsBook `json:"bookInfo"`
 	BookPurchaseInfo TheBookshopBook    `json:"bookPurchaseInfo"`
 }
+
+// Discord embed webhook datastructures
+
+type DiscordMsg struct {
+	Content    string         `json:"content,omitempty"`
+	Username   string         `json:"username,omitempty"`
+	Avatar_url string         `json:"avatar_url,omitempty"`
+	Embed      []DiscordEmbed `json:"embeds"`
+}
+
+type DiscordEmbed struct {
+	Title       string       `json:"title,omitempty"`
+	EmbedType   string       `json:"type,omitempty"`
+	Description string       `json:"description,omitempty"`
+	URL         string       `json:"url,omitempty"`
+	Timestamp   string       `json:"timestamp,omitempty"`
+	Color       int          `json:"color,omitempty"`
+	Image       EmbedImage   `json:"image,omitempty"`
+	Thumbnail   EmbedImage   `json:"thumbnail,omitempty"`
+	Fields      []EmbedField `json:"fields,omitempty"`
+	Author      EmbedAuthor  `json:"author,omitempty"`
+	Footer      EmbedFooter  `json:"footer,omitempty"`
+}
+
+type EmbedAuthor struct {
+	Name    string `json:"name,omitempty"`
+	IconURL string `json:"icon_url,omitempty"`
+	URL     string `json:"url,omitempty"`
+}
+
+type EmbedFooter struct {
+	Text    string `json:"text,omitempty"`
+	IconURL string `json:"icon_url,omitempty"`
+}
+
+type EmbedImage struct {
+	URL      string `json:"url,omitempty"`
+	ProxyURL string `json:"proxy_url,omitempty"`
+	Height   string `json:"height,omitempty"`
+	Width    string `json:"width,omitempty"`
+}
+
+type EmbedField struct {
+	Name   string `json:"name,omitempty"`
+	Value  string `json:"value,omitempty"`
+	Inline bool   `json:"inline,omitempty"`
+}

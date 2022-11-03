@@ -8,6 +8,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
+	"github.com/iamcathal/booksbooksbooks/util"
 	"go.uber.org/zap"
 )
 
@@ -86,6 +87,9 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 						BookPurchaseInfo: searchResultFromTheBookshop.TitleMatches[0],
 					}
 					db.AddAvailableBook(newBook)
+					for _, book := range searchResultFromTheBookshop.TitleMatches {
+						util.SendNewBookIsAvailableMessage(book)
+					}
 				}
 			}
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
