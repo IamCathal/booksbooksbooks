@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -227,7 +228,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isActualEndpoint := isActualEndpoint(r.URL.Path); isActualEndpoint {
+		if isStaticContent := strings.HasPrefix(r.URL.Path, "/static/"); !isStaticContent {
 			logger.Sugar().Infow(fmt.Sprintf("Served request to %v", r.URL.Path),
 				zap.String("requestInfo", fmt.Sprintf("%+v", r)))
 		}

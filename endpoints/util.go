@@ -47,31 +47,6 @@ func SendBasicInvalidResponse(w http.ResponseWriter, req *http.Request, msg stri
 	json.NewEncoder(w).Encode(response)
 }
 
-func isActualEndpoint(urlPath string) bool {
-	// This is very bad practice but just a temp fix
-	regularEndpoints := []string{
-		"/",
-		"/ws",
-		"/status",
-		"/available",
-		"/getrecentcrawls",
-		"/automatedcheck",
-		"/getavailablebooks",
-		"/testdiscordwebhook",
-		"/setdiscordwebhook",
-		"/getdiscordwebhook",
-		"/resetavailablebooks",
-		"/getautomatedbookshelfcheckurl",
-		"/setautomatedbookshelfcheckurl",
-	}
-	for _, endpoint := range regularEndpoints {
-		if urlPath == endpoint {
-			return true
-		}
-	}
-	return false
-}
-
 func bookIsNew(newBook dtos.AvailableBook, oldList []dtos.AvailableBook) bool {
 	for _, book := range oldList {
 		if book.BookInfo.Title == newBook.BookInfo.Title {

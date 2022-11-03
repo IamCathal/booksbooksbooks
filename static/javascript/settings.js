@@ -1,5 +1,6 @@
 giveSwayaaangBordersToItems()
 getAndRenderAutomatedShelfCheckURL()
+getAndRenderDiscordWebhookURL()
 
 function getAutomatedShelfCheckURL(){
     return new Promise((resolve, reject) => {
@@ -61,6 +62,15 @@ function getAutomatedShelfCheckURL(){
     })
 }
 
+function getAndRenderDiscordWebhookURL() {
+    getDiscordWebhookURL().then(url => {
+        console.log(url)
+        document.getElementById("discordWebhookURLInputBox").value = url
+    }, (err) => {
+        console.error(err)
+    })
+}
+
 function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
@@ -110,21 +120,35 @@ function testDiscordWebhookURL(webhookURL) {
 }
 
 function setDiscordWebhookURL(webhookURL) {
-    fetch(`http://localhost:2945/setdiscordwebhook?webhookurl=${webhookURL}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/setdiscordwebhook?webhookurl=${webhookURL}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
     })
 }
 
 function getDiscordWebhookURL(webhookURL) {
-    fetch(`http://localhost:2945/getdiscordwebhook?webhookurl=${webhookURL}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/getdiscordwebhook`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.webhook)
+        }, (err) => {
+            reject(err)
+        });
     })
 }
