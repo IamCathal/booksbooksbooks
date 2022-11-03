@@ -13,7 +13,7 @@ import (
 )
 
 func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
-	msgEmbeds := dtos.DiscordMsg{
+	smallerStyleMessage := dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
 		Embed: []dtos.DiscordEmbed{{
@@ -36,16 +36,43 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			Thumbnail: dtos.EmbedImage{
 				URL: book.Cover,
 			},
-			// Image: dtos.EmbedImage{
-			// 	URL: book.Cover,
-			// },
-			// Footer: dtos.EmbedFooter{
-			// 	Text:    "https://github.com/IamCathal/BooksBooksBooks",
-			// 	IconURL: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-			// },
 		}},
 	}
-	DeliverWebHook(msgEmbeds, getDefaultWebhookURL())
+	DeliverWebHook(smallerStyleMessage, getDefaultWebhookURL())
+
+	biggerStyleMessage := dtos.DiscordMsg{
+		Username:   "BooksBooksBooks",
+		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+		Embed: []dtos.DiscordEmbed{{
+			Author: dtos.EmbedAuthor{
+				Name:    "Powered by BooksBooksBooks",
+				IconURL: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+				URL:     "https://github.com/IamCathal/BooksBooksBooks",
+			},
+			Title:       fmt.Sprintf("%s - %s is now available", book.Author, book.Title),
+			Description: book.Link,
+			Fields: []dtos.EmbedField{
+				{
+					Name:   "Price",
+					Value:  book.Price,
+					Inline: false,
+				},
+			},
+			Color:     0x03fc90,
+			Timestamp: time.Now().Format(time.RFC3339),
+			// Thumbnail: dtos.EmbedImage{
+			// 	URL: book.Cover,
+			// },
+			Image: dtos.EmbedImage{
+				URL: book.Cover,
+			},
+			Footer: dtos.EmbedFooter{
+				Text:    "https://github.com/IamCathal/BooksBooksBooks",
+				IconURL: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+			},
+		}},
+	}
+	DeliverWebHook(biggerStyleMessage, getDefaultWebhookURL())
 }
 
 func DeliverWebHook(msg dtos.DiscordMsg, webhookURL string) {

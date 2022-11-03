@@ -1,6 +1,13 @@
 giveSwayaaangBordersToItems()
-getAndRenderAutomatedShelfCheckURL()
-getAndRenderDiscordWebhookURL()
+
+getAndRenderSettings()
+
+function getAndRenderSettings() {
+    getAndRenderAutomatedShelfCheckURL()
+    getAndRenderDiscordWebhookURL()
+    getAndRenderDiscordMessageFormatPreference()
+}
+
 
 function getAutomatedShelfCheckURL(){
     return new Promise((resolve, reject) => {
@@ -43,7 +50,6 @@ function setAutomatedShelfCheckURL(shelfURL){
 
 function getAndRenderAutomatedShelfCheckURL() {
     getAutomatedShelfCheckURL().then(url => {
-        console.log(url)
         document.getElementById("shelfCheckURLInputBox").value = url
     }, (err) => {
         console.error(err)
@@ -64,8 +70,19 @@ function getAutomatedShelfCheckURL(){
 
 function getAndRenderDiscordWebhookURL() {
     getDiscordWebhookURL().then(url => {
-        console.log(url)
         document.getElementById("discordWebhookURLInputBox").value = url
+    }, (err) => {
+        console.error(err)
+    })
+}
+
+function getAndRenderDiscordMessageFormatPreference() {
+    getDiscordMessageFormat().then(format => {
+        if (format == "big") {
+            highlightBigStyleMessagePreference()
+        } else if (format == "small") {
+            highlightSmallStyleMessagePreference()
+        }
     }, (err) => {
         console.error(err)
     })
@@ -75,7 +92,29 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("settingsLinkBox").style = swayaaangBorders(0.8)
+    document.getElementById("bigStyleBox").style = swayaaangBorders(1.6)
+    document.getElementById("smallStyleBox").style = swayaaangBorders(1.6)
 
+}
+
+document.getElementById("bigStyleBox").addEventListener("click", () => {
+    highlightBigStyleMessagePreference()
+    setDiscordMessageFormat("big")
+})
+
+document.getElementById("smallStyleBox").addEventListener("click", () => {
+    highlightSmallStyleMessagePreference()
+    setDiscordMessageFormat("small")
+})
+
+function highlightBigStyleMessagePreference() {
+    document.getElementById("bigStyleBox").classList.add("selectedBackground")
+    document.getElementById("smallStyleBox").classList.remove("selectedBackground")
+}
+
+function highlightSmallStyleMessagePreference() {
+    document.getElementById("smallStyleBox").classList.add("selectedBackground")
+    document.getElementById("bigStyleBox").classList.remove("selectedBackground")
 }
 
 function swayaaangBorders(borderRadius) {
@@ -147,6 +186,40 @@ function getDiscordWebhookURL(webhookURL) {
         }).then((res) => res.json())
         .then((res) => {
             resolve(res.webhook)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setDiscordMessageFormat(messageFormat) {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/setdiscordmessageformat?messageformat=${messageFormat}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getDiscordMessageFormat(webhookURL) {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/getdiscordmessageformat`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.format)
         }, (err) => {
             reject(err)
         });

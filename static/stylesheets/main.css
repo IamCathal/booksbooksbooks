@@ -3,11 +3,11 @@
   color: white;
 }
 
-/* .col {
+/* .border {
   border: 1px solid aqua;
-}
+} */
 
-.row {
+/* .row {
   border: 1px solid orange;
 } */
 
@@ -46,6 +46,18 @@ body {
   padding-bottom: 0.1rem;
   width: 100%; 
   font-size: 0.8rem;
+}
+
+.thinBorder{ 
+  border: 1px solid #c0c0c0;
+}
+
+.selectedBackground {
+  background-color: #c0c0c0;
+}
+
+.unselectedBackground {
+  background-color: #22242f;
 }
 
 .toggleBox {

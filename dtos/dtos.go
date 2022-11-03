@@ -54,6 +54,10 @@ type GetDiscordWebhookResponse struct {
 	WebHook string `json:"webhook"`
 }
 
+type GetDiscordMessageFormatResponse struct {
+	Format string `json:"format"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {

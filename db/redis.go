@@ -19,6 +19,7 @@ var (
 	RECENT_CRAWLS              = "recentCrawls"
 	AUTOMATED_BOOK_SHELF_CHECK = "automatedBookShelfCheck"
 	DISCORD_WEBHOOK_URL        = "discordWebHookURL"
+	DISCORD_MESSAGE_FORMAT     = "discordMessageFormat"
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -147,6 +148,23 @@ func SetDiscordWebhookURL(webhookURL string) {
 
 func GetDiscordWebhookURL() string {
 	shelfURL, err := redisClient.Get(ctx, DISCORD_WEBHOOK_URL).Result()
+	if err == redis.Nil {
+		return ""
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return shelfURL
+}
+
+func SetDiscordMessageFormat(format string) {
+	err := redisClient.Set(ctx, DISCORD_MESSAGE_FORMAT, format, 0).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetDiscordMessageFormat() string {
+	shelfURL, err := redisClient.Get(ctx, DISCORD_MESSAGE_FORMAT).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {

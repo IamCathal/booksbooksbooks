@@ -50,6 +50,11 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/setautomatedbookshelfcheckurl", setautomatedbookshelfcheckurl).Methods("GET")
 	r.Use(logMiddleware)
 
+	settingsRouter := r.PathPrefix("/settings").Subrouter()
+	settingsRouter.HandleFunc("/setdiscordmessageformat", setDiscordMessageFormat).Methods("POST")
+	settingsRouter.HandleFunc("/getdiscordmessageformat", getDiscordMessageFormat).Methods("GET")
+	settingsRouter.Use(logMiddleware)
+
 	r.Handle("/static", http.NotFoundHandler())
 	fs := http.FileServer(http.Dir(""))
 	r.PathPrefix("/").Handler(DisallowFileBrowsing(fs))
@@ -212,6 +217,25 @@ func setautomatedbookshelfcheckurl(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(bookShelfURL)
+}
+
+func getDiscordMessageFormat(w http.ResponseWriter, r *http.Request) {
+	res := dtos.GetDiscordMessageFormatResponse{
+		Format: db.GetDiscordMessageFormat(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func setDiscordMessageFormat(w http.ResponseWriter, r *http.Request) {
+	messageFormat := r.URL.Query().Get("messageformat")
+	if messageFormat != "big" && messageFormat != "small" {
+		errorMsg := fmt.Sprintf("Invalid message format '%s' given", messageFormat)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.SetDiscordMessageFormat(messageFormat)
+	w.WriteHeader(http.StatusOK)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
