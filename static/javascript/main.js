@@ -511,6 +511,7 @@ function giveSwayaaangBordersToItems() {
     })
     document.getElementById("availableLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
     document.getElementById("shelfLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
+    document.getElementById("settingsLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
     document.getElementById("newBookAvailableInsertPoint").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
 
 }

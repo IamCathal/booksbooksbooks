@@ -36,7 +36,7 @@ body {
     font-size: 1.1rem
 }
 
-.automatedCheckShelfURLInput {
+.automatedCheckShelfURLInput, .settingsInputBox {
   border: 1px solid #c0c0c0; 
   /* border-radius: 0.3rem;  */
   padding: 0.4rem;
@@ -145,4 +145,14 @@ body {
   font-family: 'Grotesk Bold';
   /* src: url(../fonts/NotoSansKR-Regular.otf); */
   src: local('Grotesk Bold'), url(../fonts/FamiljenGrotesk-Bold.ttf);
+}
+
+
+.settingsTestButton {
+  color: white;
+  background-color: #22242f;
+  font-size: 0.8rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+  width: 3rem;
 }

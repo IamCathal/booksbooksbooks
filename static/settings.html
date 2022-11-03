@@ -37,14 +37,41 @@
             </div>
         </div>
 
-        <div class="container pt-3 mt-3 swankyBorders" style="border: 2px solid #c0c0c0">
+        <div class="container pt-3 mt-3 pb-3 swankyBorders" style="border: 2px solid #c0c0c0">
             <div class="row">
                 <div class="col text-center bold" style="font-size: 1.4rem">
-                    Available books   
+                    Settings 
                 </div>
             </div>
-            <div class="row" id="availableBooks">
 
+            <div class="row pt-1 pb-1">
+                <div class="col-3">
+                    Automated Check Shelf URL
+                </div>
+                <div class="col">
+                    <input
+                        type="text"
+                        class="settingsInputBox"
+                        id="shelfCheckURLInputBox"
+                    >
+                </div>
+                
+            </div>
+
+            <div class="row pt-1 pb-1">
+                <div class="col-3">
+                    Discord Webhook URL
+                </div>
+                <div class="col">
+                    <input
+                        type="text"
+                        class="settingsInputBox"
+                        id="discordWebhookURLInputBox"
+                    >
+                </div>
+                <div class="col-1" >
+                    <button class="settingsTestButton"> Test </button>
+                </div>
             </div>
 
             <div class="row" id="statsRow">
@@ -52,14 +79,9 @@
                     
                 </div>
             </div>
-            <div class="row justify-content-md-center pb-2">
-                <div class="col-2 text-center" style="font-size: 0.7rem" id="clearList">
-                    Clear List
-                </div>
-            </div>
         </div>
 
-        <script src="static/javascript/available.js"></script>
+        <script src="static/javascript/settings.js"></script>
 
     </body>
 

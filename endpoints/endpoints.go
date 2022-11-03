@@ -35,6 +35,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/", index).Methods("GET")
 	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.HandleFunc("/status", status).Methods("POST")
+	r.HandleFunc("/settings", settings).Methods("GET")
 	r.HandleFunc("/available", available).Methods("GET")
 	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
 	r.HandleFunc("/automatedcheck", automatedCheck).Methods("POST")
@@ -56,6 +57,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func available(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/available.html")
+}
+
+func settings(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/settings.html")
 }
 
 func automatedCheck(w http.ResponseWriter, r *http.Request) {
