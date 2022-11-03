@@ -48,14 +48,21 @@ func SendBasicInvalidResponse(w http.ResponseWriter, req *http.Request, msg stri
 }
 
 func isActualEndpoint(urlPath string) bool {
+	// This is very bad practice but just a temp fix
 	regularEndpoints := []string{
 		"/",
-		"/status",
-		"/getrecentcrawls",
 		"/ws",
+		"/status",
 		"/available",
+		"/getrecentcrawls",
 		"/automatedcheck",
 		"/getavailablebooks",
+		"/testdiscordwebhook",
+		"/setdiscordwebhook",
+		"/getdiscordwebhook",
+		"/resetavailablebooks",
+		"/getautomatedbookshelfcheckurl",
+		"/setautomatedbookshelfcheckurl",
 	}
 	for _, endpoint := range regularEndpoints {
 		if urlPath == endpoint {

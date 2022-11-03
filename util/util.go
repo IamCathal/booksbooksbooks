@@ -45,11 +45,10 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			// },
 		}},
 	}
-	DeliverWebHook(msgEmbeds)
+	DeliverWebHook(msgEmbeds, getDefaultWebhookURL())
 }
 
-func DeliverWebHook(msg dtos.DiscordMsg) {
-	webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
+func DeliverWebHook(msg dtos.DiscordMsg, webhookURL string) {
 	if webhookURL == "" {
 		return
 	}
@@ -63,4 +62,8 @@ func DeliverWebHook(msg dtos.DiscordMsg) {
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
+}
+
+func getDefaultWebhookURL() string {
+	return os.Getenv("DISCORD_WEBHOOK_URL")
 }

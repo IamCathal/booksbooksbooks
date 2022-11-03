@@ -18,6 +18,7 @@ var (
 	AVAILABLE_BOOKS            = "availableBooks"
 	RECENT_CRAWLS              = "recentCrawls"
 	AUTOMATED_BOOK_SHELF_CHECK = "automatedBookShelfCheck"
+	DISCORD_WEBHOOK_URL        = "discordWebHookURL"
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -129,6 +130,23 @@ func SetAutomatedBookShelfCheck(shelfURL string) {
 
 func GetAutomatedBookShelfCheck() string {
 	shelfURL, err := redisClient.Get(ctx, AUTOMATED_BOOK_SHELF_CHECK).Result()
+	if err == redis.Nil {
+		return ""
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return shelfURL
+}
+
+func SetDiscordWebhookURL(webhookURL string) {
+	err := redisClient.Set(ctx, DISCORD_WEBHOOK_URL, webhookURL, 0).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetDiscordWebhookURL() string {
+	shelfURL, err := redisClient.Get(ctx, DISCORD_WEBHOOK_URL).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {

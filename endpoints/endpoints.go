@@ -13,6 +13,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/engine"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
+	"github.com/iamcathal/booksbooksbooks/util"
 	"go.uber.org/zap"
 )
 
@@ -40,6 +41,9 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
 	r.HandleFunc("/automatedcheck", automatedCheck).Methods("POST")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
+	r.HandleFunc("/testdiscordwebhook", testDiscordWebook).Methods("GET")
+	r.HandleFunc("/setdiscordwebhook", setDiscordWebook).Methods("GET")
+	r.HandleFunc("/getdiscordwebhook", getDiscordWebook).Methods("GET")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
 	r.HandleFunc("/getautomatedbookshelfcheckurl", getautomatedbookshelfcheckurl).Methods("GET")
 	r.HandleFunc("/setautomatedbookshelfcheckurl", setautomatedbookshelfcheckurl).Methods("GET")
@@ -140,6 +144,37 @@ func getAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(availableBooks)
+}
+
+func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
+	discordWebhook := r.URL.Query().Get("webhookurl")
+	util.DeliverWebHook(dtos.DiscordMsg{
+		Username:   "BooksBooksBooks",
+		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+		Embed: []dtos.DiscordEmbed{
+			{
+				Title: "BooksBooksBooks is ready to send webhook updates to this channel",
+			},
+		},
+	}, discordWebhook)
+	db.SetDiscordWebhookURL(discordWebhook)
+	w.WriteHeader(http.StatusOK)
+}
+
+func setDiscordWebook(w http.ResponseWriter, r *http.Request) {
+	discordWebhook := r.URL.Query().Get("webhookurl")
+	db.SetDiscordWebhookURL(discordWebhook)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+}
+
+func getDiscordWebook(w http.ResponseWriter, r *http.Request) {
+	res := dtos.GetDiscordWebhookResponse{
+		WebHook: db.GetDiscordWebhookURL(),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }
 
 func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {

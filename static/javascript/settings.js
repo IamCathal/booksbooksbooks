@@ -24,6 +24,11 @@ document.getElementById("shelfCheckURLInputBox").addEventListener("keyup", funct
     }
 });
 
+document.getElementById("settingsTestWebhookURLButton").addEventListener("click", (ev) => {
+    const webhookURL = document.getElementById("discordWebhookURLInputBox").value
+    testDiscordWebhookURL(webhookURL)
+})
+
 function setAutomatedShelfCheckURL(shelfURL){
     return new Promise((resolve, reject) => {
         fetch(`http://localhost:2945/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
@@ -91,5 +96,35 @@ function clearList() {
         }, (err) => {
             reject(err)
         });
+    })
+}
+
+function testDiscordWebhookURL(webhookURL) {
+    fetch(`http://localhost:2945/testdiscordwebhook?webhookurl=${webhookURL}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+    })
+}
+
+function setDiscordWebhookURL(webhookURL) {
+    fetch(`http://localhost:2945/setdiscordwebhook?webhookurl=${webhookURL}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+    })
+}
+
+function getDiscordWebhookURL(webhookURL) {
+    fetch(`http://localhost:2945/getdiscordwebhook?webhookurl=${webhookURL}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
     })
 }

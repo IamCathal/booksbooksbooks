@@ -50,6 +50,10 @@ type AutomatedShelfCheckURLResponse struct {
 	ShelURL string `json:"shelfURL"`
 }
 
+type GetDiscordWebhookResponse struct {
+	WebHook string `json:"webhook"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {
