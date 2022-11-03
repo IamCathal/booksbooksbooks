@@ -11,7 +11,7 @@ filebeat.inputs:
 
 processors:
   - decode_json_fields:
-      fields: ["level", "ts", "caller", "msg", "diagnostics"]
+      fields: ["level", "ts", "caller", "msg", "diagnostics", "requestInfo"]
 
 output.elasticsearch:
   hosts: ["${ZINCSEARCH_INSTANCE_IP}"]

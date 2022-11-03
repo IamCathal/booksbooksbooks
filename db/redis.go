@@ -15,11 +15,12 @@ var (
 	ctx         = context.Background()
 	redisClient *redis.Client
 
-	AVAILABLE_BOOKS            = "availableBooks"
-	RECENT_CRAWLS              = "recentCrawls"
-	AUTOMATED_BOOK_SHELF_CHECK = "automatedBookShelfCheck"
-	DISCORD_WEBHOOK_URL        = "discordWebHookURL"
-	DISCORD_MESSAGE_FORMAT     = "discordMessageFormat"
+	AVAILABLE_BOOKS                 = "availableBooks"
+	RECENT_CRAWLS                   = "recentCrawls"
+	AUTOMATED_BOOK_SHELF_CHECK      = "automatedBookShelfCheck"
+	AUTOMATED_BOOK_SHELF_CRAWL_TIME = "automatedBookShelfCrawlTime"
+	DISCORD_WEBHOOK_URL             = "discordWebHookURL"
+	DISCORD_MESSAGE_FORMAT          = "discordMessageFormat"
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -147,13 +148,13 @@ func SetDiscordWebhookURL(webhookURL string) {
 }
 
 func GetDiscordWebhookURL() string {
-	shelfURL, err := redisClient.Get(ctx, DISCORD_WEBHOOK_URL).Result()
+	webhookURL, err := redisClient.Get(ctx, DISCORD_WEBHOOK_URL).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	return shelfURL
+	return webhookURL
 }
 
 func SetDiscordMessageFormat(format string) {
@@ -164,11 +165,28 @@ func SetDiscordMessageFormat(format string) {
 }
 
 func GetDiscordMessageFormat() string {
-	shelfURL, err := redisClient.Get(ctx, DISCORD_MESSAGE_FORMAT).Result()
+	format, err := redisClient.Get(ctx, DISCORD_MESSAGE_FORMAT).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	return shelfURL
+	return format
+}
+
+func SetAutomatedBookShelfCrawlTime(time string) {
+	err := redisClient.Set(ctx, DISCORD_MESSAGE_FORMAT, time, 0).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetAutomatedBookShelfCrawlTime() string {
+	time, err := redisClient.Get(ctx, DISCORD_MESSAGE_FORMAT).Result()
+	if err == redis.Nil {
+		return ""
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return time
 }

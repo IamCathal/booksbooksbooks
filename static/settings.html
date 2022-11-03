@@ -11,6 +11,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
+
+    <link href="https://rawgit.com/grudus/Timepicker/master/dist/index.css" type="text/css" rel="stylesheet">
+    
+
     <title>BooksBooksBooks</title>
 
 </head>
@@ -30,7 +34,7 @@
                     </div>
                 </a>
                 <a href="/settings">
-                    <div class="col ml-3 text-center linkBox" id="settingsLinkBox">
+                    <div class="col ml-3 text-center linkBox selectedBackground" id="settingsLinkBox">
                         Settings
                     </div>
                 </a>
@@ -55,8 +59,20 @@
                         id="shelfCheckURLInputBox"
                     >
                 </div>
-                
             </div>
+
+            <div class="row pt-1 pb-1">
+                <div class="col-3">
+                    Automated Check Time
+                </div>
+                <div class="col">
+                        Every day at <span id="automatedCheckTime" style="font-weight: bold"> </span>
+                </div>
+                <div class="col">
+                    <button class="settingsTestButton" id="settingsSetAutomatedCheckTimeButton" style="width: 5rem;"> Configure </button>
+                </div>
+            </div>
+
 
             <div class="row pt-3 pb-3">
                 <div class="col">
@@ -72,7 +88,7 @@
                             >
                         </div>
                         <div class="col-1" >
-                            <button class="settingsTestButton" id="settingsTestWebhookURLButton"> Test </button>
+                            <button class="settingsTestButton" id="settingsTestWebhookURLButton" style="width: 3rem;"> Test </button>
                         </div>
                     </div>
                     <div class="row pt-2">
@@ -95,13 +111,9 @@
                 </div>
             </div>
 
-            <div class="row" id="statsRow">
-                <div class="col text-center bold" style="font-size: 2rem" id="priceStatsDiv" >
-                    
-                </div>
-            </div>
         </div>
 
+        <script type="text/javascript" src="https://rawgit.com/grudus/Timepicker/master/dist/grudus-timepicker.es5.js"></script>
         <script src="static/javascript/settings.js"></script>
 
     </body>

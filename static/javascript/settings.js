@@ -1,3 +1,4 @@
+
 giveSwayaaangBordersToItems()
 
 getAndRenderSettings()
@@ -6,8 +7,17 @@ function getAndRenderSettings() {
     getAndRenderAutomatedShelfCheckURL()
     getAndRenderDiscordWebhookURL()
     getAndRenderDiscordMessageFormatPreference()
+    getAndRenderAutomatedCrawlTime()
 }
 
+document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener("click", (ev) => {
+    Timepicker.showPicker({
+        onSubmit: (time) => {
+            document.getElementById("automatedCheckTime").textContent = time.formatted()
+            setAutomatedCrawlTime(time.formatted())
+        }
+    })
+})
 
 function getAutomatedShelfCheckURL(){
     return new Promise((resolve, reject) => {
@@ -56,18 +66,6 @@ function getAndRenderAutomatedShelfCheckURL() {
     })
 }
 
-function getAutomatedShelfCheckURL(){
-    return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/getautomatedbookshelfcheckurl`)
-        .then((res) => res.json())
-        .then((res) => {
-            resolve(res.shelfURL)
-        }, (err) => {
-            reject(err)
-        });
-    })
-}
-
 function getAndRenderDiscordWebhookURL() {
     getDiscordWebhookURL().then(url => {
         document.getElementById("discordWebhookURLInputBox").value = url
@@ -83,6 +81,15 @@ function getAndRenderDiscordMessageFormatPreference() {
         } else if (format == "small") {
             highlightSmallStyleMessagePreference()
         }
+    }, (err) => {
+        console.error(err)
+    })
+}
+
+function getAndRenderAutomatedCrawlTime() {
+    getAutomatedCrawlTime().then(time => {
+        console.log(`time was ${time}`)
+        document.getElementById("automatedCheckTime").textContent = time
     }, (err) => {
         console.error(err)
     })
@@ -158,6 +165,41 @@ function testDiscordWebhookURL(webhookURL) {
     })
 }
 
+function getAutomatedCrawlTime() {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/getautomatedcrawltime`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            console.log(`got back: ${res}`)
+            resolve(res.time)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setAutomatedCrawlTime(time) {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/setautomatedcrawltime?time=${encodeURIComponent(time)}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
 function setDiscordWebhookURL(webhookURL) {
     return new Promise((resolve, reject) => {
         fetch(`http://localhost:2945/setdiscordwebhook?webhookurl=${webhookURL}`, {
@@ -166,7 +208,7 @@ function setDiscordWebhookURL(webhookURL) {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-        }).then((res) => res.json())
+        })
         .then((res) => {
             resolve()
         }, (err) => {
@@ -200,7 +242,7 @@ function setDiscordMessageFormat(messageFormat) {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-        }).then((res) => res.json())
+        })
         .then((res) => {
             resolve()
         }, (err) => {

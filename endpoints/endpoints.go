@@ -53,6 +53,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter := r.PathPrefix("/settings").Subrouter()
 	settingsRouter.HandleFunc("/setdiscordmessageformat", setDiscordMessageFormat).Methods("POST")
 	settingsRouter.HandleFunc("/getdiscordmessageformat", getDiscordMessageFormat).Methods("GET")
+	settingsRouter.HandleFunc("/setautomatedcrawltime", setAutomatedCrawlTime).Methods("POST")
+	settingsRouter.HandleFunc("/getautomatedcrawltime", getAutomatedCrawlTime).Methods("GET")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -236,6 +238,26 @@ func setDiscordMessageFormat(w http.ResponseWriter, r *http.Request) {
 	}
 	db.SetDiscordMessageFormat(messageFormat)
 	w.WriteHeader(http.StatusOK)
+}
+
+func setAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
+	automatedCrawlTime := r.URL.Query().Get("time")
+	_, err := time.Parse("15:04:05", fmt.Sprintf("%s:00", automatedCrawlTime))
+	if err != nil {
+		errorMsg := fmt.Sprintf("Invalid crawl time '%s' given. must be in format hh:mm", automatedCrawlTime)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.SetAutomatedBookShelfCrawlTime(automatedCrawlTime)
+	w.WriteHeader(http.StatusOK)
+}
+
+func getAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
+	res := dtos.GetAutomatedCrawlTime{
+		Time: db.GetAutomatedBookShelfCrawlTime(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {

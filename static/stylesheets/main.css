@@ -53,6 +53,7 @@ body {
 }
 
 .selectedBackground {
+  color: #22242f;
   background-color: #c0c0c0;
 }
 
@@ -166,5 +167,4 @@ body {
   font-size: 0.8rem;
   padding-top: 0rem;
   padding-bottom: 0rem;
-  width: 3rem;
 }

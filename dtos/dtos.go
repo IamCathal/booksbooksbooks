@@ -58,6 +58,10 @@ type GetDiscordMessageFormatResponse struct {
 	Format string `json:"format"`
 }
 
+type GetAutomatedCrawlTime struct {
+	Time string `json:"time"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {
