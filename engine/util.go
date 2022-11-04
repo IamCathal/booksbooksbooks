@@ -3,11 +3,15 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/iamcathal/booksbooksbooks/util"
 )
 
 var (
@@ -107,4 +111,24 @@ func getFormattedTime() string {
 	}
 
 	return fmt.Sprintf("%s:%s", currHourFormatted, currMinuteFormatted)
+}
+
+func sendFreeShippingWebhookIfFreeShippingEligible() {
+	allAvailableBooks := db.GetAvailableBooks()
+	var totalCost float64
+	for _, book := range allAvailableBooks {
+		totalCost += extractFloatPriceFromString(book.BookPurchaseInfo.Price)
+	}
+	if totalCost >= 20 {
+		util.SendFreeShippingTotalHasKickedInMessage(totalCost)
+	}
+}
+
+func extractFloatPriceFromString(priceString string) float64 {
+	stringPriceNoEuroSymbol := strings.ReplaceAll(priceString, "€", "")
+	floatPrice, err := strconv.ParseFloat(stringPriceNoEuroSymbol, 64)
+	if err != nil {
+		panic(err)
+	}
+	return floatPrice
 }

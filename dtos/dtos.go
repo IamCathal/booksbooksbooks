@@ -66,6 +66,10 @@ type SendAlertWhenBookIsNoLongerAvailableResponse struct {
 	Enabled string `json:"enabled"`
 }
 
+type SendAlertOnlyWhenBookFreeShippingKicksInResponse struct {
+	Enabled string `json:"enabled"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {

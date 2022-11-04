@@ -15,13 +15,14 @@ var (
 	ctx         = context.Background()
 	redisClient *redis.Client
 
-	AVAILABLE_BOOKS                          = "availableBooks"
-	RECENT_CRAWLS                            = "recentCrawls"
-	AUTOMATED_BOOK_SHELF_CHECK               = "automatedBookShelfCheck"
-	AUTOMATED_BOOK_SHELF_CRAWL_TIME          = "automatedBookShelfCrawlTime"
-	DISCORD_WEBHOOK_URL                      = "discordWebHookURL"
-	DISCORD_MESSAGE_FORMAT                   = "discordMessageFormat"
-	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE = "sendAlertWhenBookNoLongerAvailable"
+	AVAILABLE_BOOKS                             = "availableBooks"
+	RECENT_CRAWLS                               = "recentCrawls"
+	AUTOMATED_BOOK_SHELF_CHECK                  = "automatedBookShelfCheck"
+	AUTOMATED_BOOK_SHELF_CRAWL_TIME             = "automatedBookShelfCrawlTime"
+	DISCORD_WEBHOOK_URL                         = "discordWebHookURL"
+	DISCORD_MESSAGE_FORMAT                      = "discordMessageFormat"
+	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE    = "sendAlertWhenBookNoLongerAvailable"
+	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "sendAlertWhenFreeShippingKicksIn"
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -201,6 +202,23 @@ func SetSendAlertWhenBookNoLongerAvailable(time string) {
 
 func GetSendAlertWhenBookNoLongerAvailable() string {
 	enabled, err := redisClient.Get(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE).Result()
+	if err == redis.Nil {
+		return ""
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return enabled
+}
+
+func SetSendAlertOnlyWhenFreeShippingKicksIn(time string) {
+	err := redisClient.Set(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN, time, 0).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetSendAlertOnlyWhenFreeShippingKicksIn() string {
+	enabled, err := redisClient.Get(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {

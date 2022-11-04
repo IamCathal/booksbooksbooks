@@ -55,6 +55,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/getdiscordwebhook", getDiscordWebook).Methods("GET")
 	settingsRouter.HandleFunc("/setsendalertwhenbooknolongeravailable", setSendAlertWhenBookNoLongerAvailable).Methods("POST")
 	settingsRouter.HandleFunc("/getsendalertwhenbooknolongeravailable", getSendAlertWhenBookNoLongerAvailable).Methods("GET")
+	settingsRouter.HandleFunc("/setsendalertonlywhenfreeshippingkicksin", setSendAlertOnlyWhenFreeShippingKicksIn).Methods("POST")
+	settingsRouter.HandleFunc("/getsendalertonlywhenfreeshippingkicksin", getSendAlertOnlyWhenFreeShippingKicksIn).Methods("GET")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -203,7 +205,7 @@ func getAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
 func setSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
 	if enabled != "true" && enabled != "false" {
-		errorMsg := fmt.Sprintf("Invalid stats '%s' given", enabled)
+		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
@@ -214,6 +216,25 @@ func setSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Reques
 func getSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
 	res := dtos.SendAlertWhenBookIsNoLongerAvailableResponse{
 		Enabled: db.GetSendAlertWhenBookNoLongerAvailable(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func setSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Request) {
+	enabled := r.URL.Query().Get("enabled")
+	if enabled != "true" && enabled != "false" {
+		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.SetSendAlertOnlyWhenFreeShippingKicksIn(enabled)
+	w.WriteHeader(http.StatusOK)
+}
+
+func getSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Request) {
+	res := dtos.SendAlertOnlyWhenBookFreeShippingKicksInResponse{
+		Enabled: db.GetSendAlertOnlyWhenFreeShippingKicksIn(),
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)

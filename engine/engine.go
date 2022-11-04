@@ -92,6 +92,8 @@ func automatedCheck() {
 	logger.Sugar().Infof("%d cached books were available yesterday", len(cachedBooksThatWereAvailable))
 	logger.Sugar().Infof("%d books are available today from cache", len(cachedBooksThatAreStillAvailableToday))
 	logger.Sugar().Infof("These books are brand new from this current crawl: %+v\n", newBooksThatNeedNotification)
+
+	sendFreeShippingWebhookIfFreeShippingEligible()
 }
 
 func Worker(shelfURL string, ws *websocket.Conn) {

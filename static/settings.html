@@ -61,11 +61,11 @@
                 </div>
             </div>
 
-            <div class="row pt-1 pb-1">
+            <div class="row pt-2 pb-2">
                 <div class="col-3">
                     Automated Check Time
                 </div>
-                <div class="col">
+                <div class="col-2">
                         Every day at <span id="automatedCheckTime" style="font-weight: bold"> </span>
                 </div>
                 <div class="col">
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <div class="row pt-1 pb-1">
+            <div class="row pt-2 pb-2">
                 <div class="col-3">
                     Send an alert when a book is no longer available
                 </div>
@@ -83,10 +83,20 @@
             
             </div>
 
+            <div class="row pt-2 pb-2">
+                <div class="col-3">
+                    Send an alert <span style="font-weight: bolder; text-decoration: underline;">only</span> when the total cost of available books exceeds €20 (free shipping)
+                </div>
+                <div class="col">
+                    <input id="sendWebhookOnlyWhenFreeShippingKicksIn" type="checkbox">
+                </div>
+            
+            </div>
+
 
             <div class="row pt-3 pb-3">
                 <div class="col">
-                    <div class="row">
+                    <div class="row pb-3">
                         <div class="col-3">
                             Discord Webhook URL
                         </div>

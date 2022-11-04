@@ -9,6 +9,7 @@ function getAndRenderSettings() {
     getAndRenderDiscordMessageFormatPreference()
     getAndRenderAutomatedCrawlTime()
     getAndRenderSendAlertsWhenBookNoLongerAvailable()
+    getAndRenderSendAlertOnlyWhenFreeShippingKicksIn()
 }
 
 document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener("click", (ev) => {
@@ -54,7 +55,6 @@ function getAndRenderDiscordWebhookURL() {
 
 function getAndRenderDiscordMessageFormatPreference() {
     getDiscordMessageFormat().then(format => {
-        console.log(`format was ${format}`)
         if (format == "big") {
             highlightBigStyleMessagePreference()
         } else if (format == "small") {
@@ -67,7 +67,6 @@ function getAndRenderDiscordMessageFormatPreference() {
 
 function getAndRenderAutomatedCrawlTime() {
     getAutomatedCrawlTime().then(time => {
-        console.log(`time was ${time}`)
         document.getElementById("automatedCheckTime").textContent = time
     }, (err) => {
         console.error(err)
@@ -85,6 +84,29 @@ function getAndRenderSendAlertsWhenBookNoLongerAvailable() {
         console.error(err)
     })
 }
+
+function getAndRenderSendAlertOnlyWhenFreeShippingKicksIn() {
+    getSendAlertOnlyWhenFreeShippingKicksIn().then(enabled => {
+        if (enabled == "true") {
+            document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").checked = true
+        } else {
+            document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").checked = false
+        }
+    }, (err) => {
+        console.error(err)
+    })
+}
+
+document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").addEventListener("change", (ev) => {
+    if (ev.currentTarget.checked) {
+        setSendAlertOnlyWhenFreeShippingKicksIn("true")
+    } else {
+        setSendAlertOnlyWhenFreeShippingKicksIn("false")
+    }
+})
+
+
+
 
 document.getElementById("sendWebhookWhenNoLongerAvailable").addEventListener("change", (ev) => {
     if (ev.currentTarget.checked) {
@@ -309,6 +331,40 @@ function setSendAlertWhenBookNoLongerAvailable(enabled) {
 function getSendAlertWhenBookNoLongerAvailable() {
     return new Promise((resolve, reject) => {
         fetch(`http://localhost:2945/settings/getsendalertwhenbooknolongeravailable`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.enabled)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setSendAlertOnlyWhenFreeShippingKicksIn(enabled) {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/setsendalertonlywhenfreeshippingkicksin?enabled=${enabled}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getSendAlertOnlyWhenFreeShippingKicksIn() {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/getsendalertonlywhenfreeshippingkicksin`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

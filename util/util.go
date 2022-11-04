@@ -45,7 +45,9 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	DeliverWebHook(message)
+	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == "false" {
+		DeliverWebHook(message)
+	}
 }
 
 func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
@@ -72,6 +74,27 @@ func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
 		message.Embed[0].Image = dtos.EmbedImage{
 			URL: book.Cover,
 		}
+	}
+	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == "false" {
+		DeliverWebHook(message)
+	}
+}
+
+func SendFreeShippingTotalHasKickedInMessage(totalCostOfBooks float64) {
+	message := dtos.DiscordMsg{
+		Username:   "BooksBooksBooks",
+		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+		Embed: []dtos.DiscordEmbed{{
+			Author: dtos.EmbedAuthor{
+				Name:    "Powered by BooksBooksBooks",
+				IconURL: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+				URL:     "https://github.com/IamCathal/BooksBooksBooks",
+			},
+			Title:       fmt.Sprintf("Available books total cost exceeds €20 (it's €%.2f). You can now get free shipping", totalCostOfBooks),
+			Description: "http://localhost:2945/available",
+			Color:       0x6a2ebf,
+			Timestamp:   time.Now().Format(time.RFC3339),
+		}},
 	}
 	DeliverWebHook(message)
 }
