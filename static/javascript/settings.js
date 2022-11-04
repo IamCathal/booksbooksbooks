@@ -165,7 +165,7 @@ function swayaaangBorders(borderRadius) {
 
 function clearList() {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/resetavailablebooks`, {
+        fetch(`/resetavailablebooks`, {
             method: 'POST',
         })
         .then((res) => {
@@ -178,7 +178,7 @@ function clearList() {
 
 function getAutomatedShelfCheckURL(){
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/getautomatedbookshelfcheckurl`)
+        fetch(`/settings/getautomatedbookshelfcheckurl`)
         .then((res) => res.json())
         .then((res) => {
             resolve(res.shelfURL)
@@ -190,7 +190,7 @@ function getAutomatedShelfCheckURL(){
 
 function setAutomatedShelfCheckURL(shelfURL){
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
+        fetch(`/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
         .then((res) => {
             resolve(res)
         }, (err) => {
@@ -200,7 +200,7 @@ function setAutomatedShelfCheckURL(shelfURL){
 }
 
 function testDiscordWebhookURL(webhookURL) {
-    fetch(`http://localhost:2945/settings/testdiscordwebhook?webhookurl=${webhookURL}`, {
+    fetch(`/settings/testdiscordwebhook?webhookurl=${webhookURL}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -211,7 +211,7 @@ function testDiscordWebhookURL(webhookURL) {
 
 function getAutomatedCrawlTime() {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/getautomatedcrawltime`, {
+        fetch(`/settings/getautomatedcrawltime`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -228,7 +228,7 @@ function getAutomatedCrawlTime() {
 
 function setAutomatedCrawlTime(time) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/setautomatedcrawltime?time=${encodeURIComponent(time)}`, {
+        fetch(`/settings/setautomatedcrawltime?time=${encodeURIComponent(time)}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -245,7 +245,7 @@ function setAutomatedCrawlTime(time) {
 
 function setDiscordWebhookURL(webhookURL) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/setdiscordwebhook?webhookurl=${webhookURL}`, {
+        fetch(`/settings/setdiscordwebhook?webhookurl=${webhookURL}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -262,7 +262,7 @@ function setDiscordWebhookURL(webhookURL) {
 
 function getDiscordWebhookURL(webhookURL) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/getdiscordwebhook`, {
+        fetch(`/settings/getdiscordwebhook`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -279,7 +279,7 @@ function getDiscordWebhookURL(webhookURL) {
 
 function setDiscordMessageFormat(messageFormat) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/setdiscordmessageformat?messageformat=${messageFormat}`, {
+        fetch(`/settings/setdiscordmessageformat?messageformat=${messageFormat}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -296,7 +296,7 @@ function setDiscordMessageFormat(messageFormat) {
 
 function getDiscordMessageFormat(webhookURL) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/getdiscordmessageformat`, {
+        fetch(`/settings/getdiscordmessageformat`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -313,7 +313,7 @@ function getDiscordMessageFormat(webhookURL) {
 
 function setSendAlertWhenBookNoLongerAvailable(enabled) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/setsendalertwhenbooknolongeravailable?enabled=${enabled}`, {
+        fetch(`/settings/setsendalertwhenbooknolongeravailable?enabled=${enabled}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -330,7 +330,7 @@ function setSendAlertWhenBookNoLongerAvailable(enabled) {
 
 function getSendAlertWhenBookNoLongerAvailable() {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/getsendalertwhenbooknolongeravailable`, {
+        fetch(`/settings/getsendalertwhenbooknolongeravailable`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -347,7 +347,7 @@ function getSendAlertWhenBookNoLongerAvailable() {
 
 function setSendAlertOnlyWhenFreeShippingKicksIn(enabled) {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/setsendalertonlywhenfreeshippingkicksin?enabled=${enabled}`, {
+        fetch(`/settings/setsendalertonlywhenfreeshippingkicksin?enabled=${enabled}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -364,7 +364,7 @@ function setSendAlertOnlyWhenFreeShippingKicksIn(enabled) {
 
 function getSendAlertOnlyWhenFreeShippingKicksIn() {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/settings/getsendalertonlywhenfreeshippingkicksin`, {
+        fetch(`/settings/getsendalertonlywhenfreeshippingkicksin`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

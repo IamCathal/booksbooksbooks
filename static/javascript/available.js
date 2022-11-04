@@ -60,7 +60,7 @@ function getBookCost(bookCostString) {
 
 function getAvailableBooks() {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/getavailablebooks`)
+        fetch(`/getavailablebooks`)
         .then((res) => res.json())
         .then((res) => {
             resolve(res)
@@ -96,7 +96,7 @@ function swayaaangBorders(borderRadius) {
 
 function clearList() {
     return new Promise((resolve, reject) => {
-        fetch(`http://localhost:2945/resetavailablebooks`, {
+        fetch(`/resetavailablebooks`, {
             method: 'POST',
         })
         .then((res) => {

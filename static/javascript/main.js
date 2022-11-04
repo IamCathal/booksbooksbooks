@@ -26,7 +26,7 @@ function checkToSeeIfShelfURLPreLoaded() {
 loadRecentCrawls()
 
 function loadRecentCrawls() {
-    fetch(`http://localhost:2945/getrecentcrawls`)
+    fetch(`/getrecentcrawls`)
     .then((res) => res.json())
     .then((res) => {
         res.forEach((recentCrawl) => {
