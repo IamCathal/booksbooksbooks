@@ -10,7 +10,6 @@ import (
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
 	"github.com/iamcathal/booksbooksbooks/util"
-	"github.com/rs/zerolog/log"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +26,7 @@ func AutomatedCheckEngine() {
 	for {
 		currTime := getFormattedTime()
 		if currTime == db.GetAutomatedBookShelfCrawlTime() {
-			log.Info("Beginning automated crawl")
+			logger.Info("Beginning automated crawl")
 			go automatedCheck()
 		}
 		time.Sleep(60 * time.Second)

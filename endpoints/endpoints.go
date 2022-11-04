@@ -95,6 +95,7 @@ func getAvailableBooks(w http.ResponseWriter, r *http.Request) {
 
 func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
 	discordWebhook := r.URL.Query().Get("webhookurl")
+	db.SetDiscordWebhookURL(discordWebhook)
 	util.DeliverWebHook(dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
@@ -103,7 +104,7 @@ func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
 				Title: "BooksBooksBooks is ready to send webhook updates to this channel",
 			},
 		},
-	}, discordWebhook)
+	})
 	db.SetDiscordWebhookURL(discordWebhook)
 	w.WriteHeader(http.StatusOK)
 }
