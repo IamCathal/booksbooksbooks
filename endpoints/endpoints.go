@@ -55,6 +55,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/testdiscordwebhook", testDiscordWebook).Methods("GET")
 	settingsRouter.HandleFunc("/setdiscordwebhook", setDiscordWebook).Methods("POST")
 	settingsRouter.HandleFunc("/getdiscordwebhook", getDiscordWebook).Methods("GET")
+	settingsRouter.HandleFunc("/setsendalertwhenbooknolongeravailable", setSendAlertWhenBookNoLongerAvailable).Methods("POST")
+	settingsRouter.HandleFunc("/getsendalertwhenbooknolongeravailable", getSendAlertWhenBookNoLongerAvailable).Methods("GET")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -94,8 +96,15 @@ func automatedCheck(w http.ResponseWriter, r *http.Request) {
 
 	logger.Sugar().Infof("%d cached books that were available from the last automated checkup: %d\n",
 		len(cachedBooksThatWereAvailable), cachedBooksThatWereAvailable)
-	logger.Sugar().Infof("%d Cached froom from the last automated checkup that are still available now: %d\n",
+	logger.Sugar().Infof("%d Cached from from the last automated checkup that are still available now: %d\n",
 		len(cachedBooksThatAreStillAvailableToday), cachedBooksThatAreStillAvailableToday)
+
+	if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks == "true" {
+		booksThatAreNowNotAvailable := util.FindBooksThatAreNowNotAvailable(cachedBooksThatWereAvailable, cachedBooksThatAreStillAvailableToday)
+		for _, book := range booksThatAreNowNotAvailable {
+			util.SendNewBookIsAvailableMessage(book.BookPurchaseInfo)
+		}
+	}
 
 	shelfURL := db.GetAutomatedBookShelfCheck()
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
@@ -253,8 +262,27 @@ func setAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
-	res := dtos.GetAutomatedCrawlTime{
+	res := dtos.GetAutomatedCrawlTimeResponse{
 		Time: db.GetAutomatedBookShelfCrawlTime(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func setSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
+	enabled := r.URL.Query().Get("enabled")
+	if enabled != "true" && enabled != "false" {
+		errorMsg := fmt.Sprintf("Invalid stats '%s' given", enabled)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.SetSendAlertWhenBookNoLongerAvailable(enabled)
+	w.WriteHeader(http.StatusOK)
+}
+
+func getSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
+	res := dtos.SendAlertWhenBookIsNoLongerAvailableResponse{
+		Enabled: db.GetSendAlertWhenBookNoLongerAvailable(),
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)

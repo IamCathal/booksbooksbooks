@@ -58,8 +58,12 @@ type GetDiscordMessageFormatResponse struct {
 	Format string `json:"format"`
 }
 
-type GetAutomatedCrawlTime struct {
+type GetAutomatedCrawlTimeResponse struct {
 	Time string `json:"time"`
+}
+
+type SendAlertWhenBookIsNoLongerAvailableResponse struct {
+	Enabled string `json:"enabled"`
 }
 
 // Websocket DTOs

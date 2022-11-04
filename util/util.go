@@ -39,7 +39,6 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			},
 		}},
 	}
-
 	messageFormat := db.GetDiscordMessageFormat()
 	if messageFormat == "big" {
 		message.Embed[0].Thumbnail = dtos.EmbedImage{}
@@ -47,7 +46,34 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
+	DeliverWebHook(message, getDefaultWebhookURL())
+}
 
+func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
+	message := dtos.DiscordMsg{
+		Username:   "BooksBooksBooks",
+		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+		Embed: []dtos.DiscordEmbed{{
+			Author: dtos.EmbedAuthor{
+				Name:    "Powered by BooksBooksBooks",
+				IconURL: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
+				URL:     "https://github.com/IamCathal/BooksBooksBooks",
+			},
+			Title:     fmt.Sprintf("%s - %s is no longer available", book.Author, book.Title),
+			Color:     0xe60728,
+			Timestamp: time.Now().Format(time.RFC3339),
+			Thumbnail: dtos.EmbedImage{
+				URL: book.Cover,
+			},
+		}},
+	}
+	messageFormat := db.GetDiscordMessageFormat()
+	if messageFormat == "big" {
+		message.Embed[0].Thumbnail = dtos.EmbedImage{}
+		message.Embed[0].Image = dtos.EmbedImage{
+			URL: book.Cover,
+		}
+	}
 	DeliverWebHook(message, getDefaultWebhookURL())
 }
 
@@ -69,4 +95,21 @@ func DeliverWebHook(msg dtos.DiscordMsg, webhookURL string) {
 
 func getDefaultWebhookURL() string {
 	return os.Getenv("DISCORD_WEBHOOK_URL")
+}
+
+func FindBooksThatAreNowNotAvailable(yesterdaysBooks, todaysBooks []dtos.AvailableBook) []dtos.AvailableBook {
+	booksThatAreNowNotAvailable := []dtos.AvailableBook{}
+	yesterdaysBooksMap := make(map[string]bool)
+
+	for _, book := range yesterdaysBooks {
+		yesterdaysBooksMap[book.BookInfo.ID] = true
+	}
+
+	for _, book := range todaysBooks {
+		if _, exists := yesterdaysBooksMap[book.BookInfo.ID]; !exists {
+			booksThatAreNowNotAvailable = append(booksThatAreNowNotAvailable, book)
+		}
+	}
+
+	return booksThatAreNowNotAvailable
 }

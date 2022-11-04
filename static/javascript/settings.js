@@ -8,6 +8,7 @@ function getAndRenderSettings() {
     getAndRenderDiscordWebhookURL()
     getAndRenderDiscordMessageFormatPreference()
     getAndRenderAutomatedCrawlTime()
+    getAndRenderSendAlertsWhenBookNoLongerAvailable()
 }
 
 document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener("click", (ev) => {
@@ -72,6 +73,26 @@ function getAndRenderAutomatedCrawlTime() {
         console.error(err)
     })
 }
+
+function getAndRenderSendAlertsWhenBookNoLongerAvailable() {
+    getSendAlertWhenBookNoLongerAvailable().then(enabled => {
+        if (enabled == "true") {
+            document.getElementById("sendWebhookWhenNoLongerAvailable").checked = true
+        } else {
+            document.getElementById("sendWebhookWhenNoLongerAvailable").checked = false
+        }
+    }, (err) => {
+        console.error(err)
+    })
+}
+
+document.getElementById("sendWebhookWhenNoLongerAvailable").addEventListener("change", (ev) => {
+    if (ev.currentTarget.checked) {
+        setSendAlertWhenBookNoLongerAvailable("true")
+    } else {
+        setSendAlertWhenBookNoLongerAvailable("false")
+    }
+})
 
 function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
@@ -262,6 +283,40 @@ function getDiscordMessageFormat(webhookURL) {
         }).then((res) => res.json())
         .then((res) => {
             resolve(res.format)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setSendAlertWhenBookNoLongerAvailable(enabled) {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/setsendalertwhenbooknolongeravailable?enabled=${enabled}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getSendAlertWhenBookNoLongerAvailable() {
+    return new Promise((resolve, reject) => {
+        fetch(`http://localhost:2945/settings/getsendalertwhenbooknolongeravailable`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.enabled)
         }, (err) => {
             reject(err)
         });
