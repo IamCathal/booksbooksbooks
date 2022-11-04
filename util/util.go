@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/db"
@@ -46,7 +45,7 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	DeliverWebHook(message, getDefaultWebhookURL())
+	DeliverWebHook(message)
 }
 
 func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
@@ -74,10 +73,11 @@ func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	DeliverWebHook(message, getDefaultWebhookURL())
+	DeliverWebHook(message)
 }
 
-func DeliverWebHook(msg dtos.DiscordMsg, webhookURL string) {
+func DeliverWebHook(msg dtos.DiscordMsg) {
+	webhookURL := db.GetDiscordWebhookURL()
 	if webhookURL == "" {
 		return
 	}
@@ -91,10 +91,6 @@ func DeliverWebHook(msg dtos.DiscordMsg, webhookURL string) {
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
-}
-
-func getDefaultWebhookURL() string {
-	return os.Getenv("DISCORD_WEBHOOK_URL")
 }
 
 func FindBooksThatAreNowNotAvailable(yesterdaysBooks, todaysBooks []dtos.AvailableBook) []dtos.AvailableBook {
