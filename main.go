@@ -57,6 +57,8 @@ func main() {
 	router := endpoints.SetupRouter()
 	db.ConnectToRedis()
 
+	go engine.AutomatedCheckEngine()
+
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         ":" + fmt.Sprint(port),

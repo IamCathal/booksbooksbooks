@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
-	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
 func DisallowFileBrowsing(next http.Handler) http.Handler {
@@ -45,13 +44,4 @@ func SendBasicInvalidResponse(w http.ResponseWriter, req *http.Request, msg stri
 		msg,
 	}
 	json.NewEncoder(w).Encode(response)
-}
-
-func bookIsNew(newBook dtos.AvailableBook, oldList []dtos.AvailableBook) bool {
-	for _, book := range oldList {
-		if book.BookInfo.Title == newBook.BookInfo.Title {
-			return false
-		}
-	}
-	return true
 }

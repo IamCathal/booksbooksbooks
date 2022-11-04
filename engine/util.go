@@ -2,7 +2,9 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/iamcathal/booksbooksbooks/dtos"
@@ -80,7 +82,29 @@ func WriteMsg(msg []byte, ws *websocket.Conn) {
 	}
 }
 
-func bookIsNew(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
+func goodReadsBookIsNew(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
 	_, exists := availableBooksMap[book.Link]
 	return !exists
+}
+
+func getFormattedTime() string {
+	now := time.Now()
+
+	currHour := now.Hour()
+	currHourFormatted := ""
+	if currHour >= 0 && currHour <= 9 {
+		currHourFormatted = fmt.Sprintf("0%d", currHour)
+	} else {
+		currHourFormatted = fmt.Sprint(now.Hour())
+	}
+
+	currMinute := now.Minute()
+	currMinuteFormatted := ""
+	if currMinute >= 0 && currMinute <= 9 {
+		currMinuteFormatted += fmt.Sprintf("0%d", currMinute)
+	} else {
+		currMinuteFormatted = fmt.Sprint(now.Minute())
+	}
+
+	return fmt.Sprintf("%s:%s", currHourFormatted, currMinuteFormatted)
 }
