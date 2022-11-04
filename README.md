@@ -6,6 +6,7 @@ I use GoodReads for my book reccomendations and I buy my books mostly from TheBo
 | ----------- | ----------- |
 | ![](https://i.imgur.com/TEFxUnN.png)     | ![](https://i.imgur.com/vzhiiJ1.png)   |
 
+
 ### Usage
 
 * `docker-compose up`
@@ -15,6 +16,15 @@ I use GoodReads for my book reccomendations and I buy my books mostly from TheBo
 From the homepage new shelves can be manually crawled. From [http://localhost:2945/available](http://localhost:2945/available) all books which have been found so far on TheBookshop.ie will be aggregrated. A total cost will be displayed out of €20 because they offer free shipping on orders above that amount. 
 
 For automated checking you first need to set the (goodreahds) shelf to crawl which can be done onthe [http://localhost:2945/settingsf](http://localhost:2945/settings) page. This will then use your specified shelf and crawl it in the backgrund when the time comes
+
+### Setting Flags
+
+A good few things can be customised from the [http://localhost:2945/settings](http://localhost:2945/settings) page
+
+- [x] Set the time when the automated crawl should be executed. This crawl happens once per day at the specified time
+- [x] Send an alert when a book was marked as available from the last crawl but is now no longer available (it was bought)
+- [x] Send an alert only when the total cost of the available books has exceeded €20 which means the order is eligible for free shipping
+- [x] Whether to have a compact or spacious alert styled messaged
 
 ### Configuration
 
