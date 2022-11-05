@@ -23,12 +23,16 @@ document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener(
 
 document.getElementById("settingsTestShelfURLButton").addEventListener("click", (ev) => {
     document.getElementById("shelfPreviewRow").style.display = "none"
+    document.getElementById("shelfURLCheckStatsBox").innerHTML = ""
+    document.getElementById("shelfUrlCheckStatsTextBox").textContent = ""
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
+    
     setAutomatedShelfCheckURL(shelfUrl).then((res) => {
         getPreviewForBookShelf(shelfUrl).then(bookPreview => {
             document.getElementById("shelfPreviewRow").style.display = "flex"
-            console.log(bookPreview)
-            document.getElementById("shelfUrlCheckStatsTextBox").textContent = `Found ${bookPreview.totalBooks} books`
+    
+            document.getElementById("shelfUrlCheckStatsTextBox").textContent = 
+                `Found ${bookPreview.totalBooks} books. Should take roughly ${Math.floor(getSWAGEstimateForCrawlTime(bookPreview.totalBooks))}s to crawl`
             bookPreview.books.forEach(book => {
                 document.getElementById("shelfURLCheckStatsBox").innerHTML += `
                                 <div class="col-1 pr-1">
@@ -158,6 +162,10 @@ function highlightBigStyleMessagePreference() {
 function highlightSmallStyleMessagePreference() {
     document.getElementById("smallStyleBox").classList.add("selectedBackground")
     document.getElementById("bigStyleBox").classList.remove("selectedBackground")
+}
+
+function getSWAGEstimateForCrawlTime(bookCount) {
+    return bookCount * 1.3
 }
 
 function swayaaangBorders(borderRadius) {
