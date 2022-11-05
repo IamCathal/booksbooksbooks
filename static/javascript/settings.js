@@ -21,16 +21,18 @@ document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener(
     })
 })
 
-document.getElementById("shelfCheckURLInputBox").addEventListener("keyup", function(event) {
+document.getElementById("settingsTestShelfURLButton").addEventListener("click", (ev) => {
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
-    if (event.key === "Enter") {
-        setAutomatedShelfCheckURL(shelfUrl).then((res) => {
-            console.log(res)
+    setAutomatedShelfCheckURL(shelfUrl).then((res) => {
+        getBookCountForShelf(shelfUrl).then(bookCount => {
+            document.getElementById("shelfURLCheckStatsBox").textContent = `${bookCount} books found`
         }, (err) => {
             console.error(err)
         })
-    }
-});
+    }, (err) => {
+        console.error(err)
+    })
+})
 
 document.getElementById("settingsTestWebhookURLButton").addEventListener("click", (ev) => {
     const webhookURL = document.getElementById("discordWebhookURLInputBox").value
@@ -190,7 +192,9 @@ function getAutomatedShelfCheckURL(){
 
 function setAutomatedShelfCheckURL(shelfURL){
     return new Promise((resolve, reject) => {
-        fetch(`/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`)
+        fetch(`/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`, {
+            method: "POST"
+        })
         .then((res) => {
             resolve(res)
         }, (err) => {
@@ -373,6 +377,23 @@ function getSendAlertOnlyWhenFreeShippingKicksIn() {
         }).then((res) => res.json())
         .then((res) => {
             resolve(res.enabled)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getBookCountForShelf(shelfURL) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getbookcountforshelf?shelfurl=${encodeURIComponent(shelfURL)}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.bookCount)
         }, (err) => {
             reject(err)
         });

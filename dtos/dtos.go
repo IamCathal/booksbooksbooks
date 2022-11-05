@@ -70,6 +70,10 @@ type SendAlertOnlyWhenBookFreeShippingKicksInResponse struct {
 	Enabled string `json:"enabled"`
 }
 
+type GetBookCountForShelfResponse struct {
+	BookCount int `json:"bookCount"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {
