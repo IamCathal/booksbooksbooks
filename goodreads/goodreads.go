@@ -95,16 +95,22 @@ func sleepIfLongerThanAllotedTimeSinceLastRequest() {
 	lastRequestMade = time.Now()
 }
 
-func GetBookCountForShelf(shelfURL string) int {
+func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
 	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
 	checkErr(err)
 	totalBooks := 0
 
 	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {
 		_, totalBooks = extractLoadedCount(loadedCount.Text())
+		logger.Sugar().Infof("Shelf %s has %d total books to crawl", shelfURL, totalBooks)
 	})
 
-	return totalBooks
+	extractedBooks := extractBooksFromHTML(doc)
+
+	if len(extractedBooks) >= 12 {
+		return extractedBooks[:12], totalBooks
+	}
+	return extractedBooks, totalBooks
 }
 
 func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {

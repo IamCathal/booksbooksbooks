@@ -44,7 +44,7 @@ func SetupRouter() *mux.Router {
 	r.Use(logMiddleware)
 
 	settingsRouter := r.PathPrefix("/settings").Subrouter()
-	settingsRouter.HandleFunc("/getbookcountforshelf", getBookCountForShelf).Methods("GET")
+	settingsRouter.HandleFunc("/getpreviewforshelf", getPreviewForShelf).Methods("GET")
 	settingsRouter.HandleFunc("/setdiscordmessageformat", setDiscordMessageFormat).Methods("POST")
 	settingsRouter.HandleFunc("/getdiscordmessageformat", getDiscordMessageFormat).Methods("GET")
 	settingsRouter.HandleFunc("/setautomatedcrawltime", setAutomatedCrawlTime).Methods("POST")
@@ -133,7 +133,7 @@ func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func getBookCountForShelf(w http.ResponseWriter, r *http.Request) {
+func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 	shelfURL := r.URL.Query().Get("shelfurl")
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
 		errorMsg := fmt.Sprintf("Invalid shelfurl '%s' given", shelfURL)
@@ -141,13 +141,15 @@ func getBookCountForShelf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bookCountResponse := dtos.GetBookCountForShelfResponse{
-		BookCount: goodreads.GetBookCountForShelf(shelfURL),
+	books, totalBooks := goodreads.GetPreviewForShelf(shelfURL)
+	res := dtos.GetPreviewForShelfResponse{
+		Books:      books,
+		TotalBooks: totalBooks,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(bookCountResponse)
+	json.NewEncoder(w).Encode(res)
 }
 
 func getRecentCrawls(w http.ResponseWriter, r *http.Request) {

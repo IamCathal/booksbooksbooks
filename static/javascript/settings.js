@@ -22,10 +22,23 @@ document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener(
 })
 
 document.getElementById("settingsTestShelfURLButton").addEventListener("click", (ev) => {
+    document.getElementById("shelfPreviewRow").style.display = "none"
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
     setAutomatedShelfCheckURL(shelfUrl).then((res) => {
-        getBookCountForShelf(shelfUrl).then(bookCount => {
-            document.getElementById("shelfURLCheckStatsBox").textContent = `${bookCount} books found`
+        getPreviewForBookShelf(shelfUrl).then(bookPreview => {
+            document.getElementById("shelfPreviewRow").style.display = "flex"
+            console.log(bookPreview)
+            document.getElementById("shelfUrlCheckStatsTextBox").textContent = `Found ${bookPreview.totalBooks} books`
+            bookPreview.books.forEach(book => {
+                document.getElementById("shelfURLCheckStatsBox").innerHTML += `
+                                <div class="col-1 pr-1">
+                                    <img 
+                                        src="${book.cover}"
+                                        style="width: 2.5rem"
+                                    >
+                                </div>
+                `
+            })
         }, (err) => {
             console.error(err)
         })
@@ -383,9 +396,9 @@ function getSendAlertOnlyWhenFreeShippingKicksIn() {
     })
 }
 
-function getBookCountForShelf(shelfURL) {
+function getPreviewForBookShelf(shelfURL) {
     return new Promise((resolve, reject) => {
-        fetch(`/settings/getbookcountforshelf?shelfurl=${encodeURIComponent(shelfURL)}`, {
+        fetch(`/settings/getpreviewforshelf?shelfurl=${encodeURIComponent(shelfURL)}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -393,7 +406,7 @@ function getBookCountForShelf(shelfURL) {
             },
         }).then((res) => res.json())
         .then((res) => {
-            resolve(res.bookCount)
+            resolve(res)
         }, (err) => {
             reject(err)
         });
