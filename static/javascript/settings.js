@@ -26,6 +26,8 @@ document.getElementById("settingsTestShelfURLButton").addEventListener("click", 
     document.getElementById("shelfURLCheckStatsBox").innerHTML = ""
     document.getElementById("shelfUrlCheckStatsTextBox").textContent = ""
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
+
+    document.getElementById("settingsTestShelfURLButton").classList.add("skeleton")
     
     setAutomatedShelfCheckURL(shelfUrl).then((res) => {
         getPreviewForBookShelf(shelfUrl).then(bookPreview => {
@@ -43,10 +45,13 @@ document.getElementById("settingsTestShelfURLButton").addEventListener("click", 
                                 </div>
                 `
             })
+            document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
         }, (err) => {
             console.error(err)
+            document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
         })
     }, (err) => {
+        document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
         console.error(err)
     })
 })
@@ -141,6 +146,9 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("settingsLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("bigStyleBox").style = swayaaangBorders(1.6)
     document.getElementById("smallStyleBox").style = swayaaangBorders(1.6)
+    document.getElementById("settingsTestShelfURLButton").style = swayaaangBorders(0.4)
+    document.getElementById("settingsTestWebhookURLButton").style = swayaaangBorders(0.4)
+    document.getElementById("settingsSetAutomatedCheckTimeButton").style = swayaaangBorders(0.4)
 
 }
 
