@@ -118,6 +118,7 @@ type RecentCrawl struct {
 type AvailableBook struct {
 	BookInfo         BasicGoodReadsBook `json:"bookInfo"`
 	BookPurchaseInfo TheBookshopBook    `json:"bookPurchaseInfo"`
+	Ignore           bool               `json:"ignore"`
 }
 
 // Discord embed webhook datastructures

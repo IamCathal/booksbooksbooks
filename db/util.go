@@ -28,6 +28,28 @@ func getKeyForRecentCrawl(shelfURL string) string {
 	return fmt.Sprintf("%s-%s", name[len(name)-1], urlObj.Query().Get("shelf"))
 }
 
+func IgnoreBook(bookURL string) {
+	newAvailableBooks := []dtos.AvailableBook{}
+	for _, book := range GetAvailableBooks() {
+		if book.BookPurchaseInfo.Link == bookURL {
+			book.Ignore = true
+		}
+		newAvailableBooks = append(newAvailableBooks, book)
+	}
+	SetAvailableBooks(newAvailableBooks)
+}
+
+func UnignoreBook(bookURL string) {
+	newAvailableBooks := []dtos.AvailableBook{}
+	for _, book := range GetAvailableBooks() {
+		if book.BookPurchaseInfo.Link == bookURL {
+			book.Ignore = false
+		}
+		newAvailableBooks = append(newAvailableBooks, book)
+	}
+	SetAvailableBooks(newAvailableBooks)
+}
+
 func removeDuplicateAvailableBooks(books []dtos.AvailableBook) []dtos.AvailableBook {
 	seenBooks := make(map[string]bool)
 	noDuplicateAvailableBooks := []dtos.AvailableBook{}

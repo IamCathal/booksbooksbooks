@@ -55,6 +55,7 @@ func ResetAvailableBooks() {
 
 func AddAvailableBook(newBook dtos.AvailableBook) {
 	availableBooks := GetAvailableBooks()
+	newBook.Ignore = false
 	availableBooks = append(availableBooks, newBook)
 
 	availableBooksWithNoDuplicates := removeDuplicateAvailableBooks(availableBooks)
@@ -64,6 +65,17 @@ func AddAvailableBook(newBook dtos.AvailableBook) {
 	}
 
 	err = redisClient.Set(ctx, AVAILABLE_BOOKS, jsonAvailableBooks, 0).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func SetAvailableBooks(availableBooks []dtos.AvailableBook) {
+	availableBooksJson, err := json.Marshal(availableBooks)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	err = redisClient.Set(ctx, AVAILABLE_BOOKS, availableBooksJson, 0).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}

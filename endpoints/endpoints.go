@@ -40,6 +40,8 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/available", available).Methods("GET")
 	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
+	r.HandleFunc("/ignorebook", ignoreBook).Methods("POST")
+	r.HandleFunc("/unignorebook", unignoreBook).Methods("POST")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
 	r.Use(logMiddleware)
 
@@ -94,6 +96,18 @@ func getAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(availableBooks)
+}
+
+func ignoreBook(w http.ResponseWriter, r *http.Request) {
+	bookURL := r.URL.Query().Get("bookurl")
+	db.IgnoreBook(bookURL)
+	w.WriteHeader(http.StatusOK)
+}
+
+func unignoreBook(w http.ResponseWriter, r *http.Request) {
+	bookURL := r.URL.Query().Get("bookurl")
+	db.UnignoreBook(bookURL)
+	w.WriteHeader(http.StatusOK)
 }
 
 func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
