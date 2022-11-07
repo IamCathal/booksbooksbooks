@@ -148,22 +148,22 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 			currCrawlStats.BooksSearched++
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
 			if len(searchResultFromTheBookshop.TitleMatches) > 0 {
-				// TOOD handle multiple title searches
-				if bookIsNew := goodReadsBookIsNew(searchResultFromTheBookshop.TitleMatches[0], previouslyKnownAvailableBooks); bookIsNew {
-					newBooksFound++
-					logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
-						searchResultFromTheBookshop.SearchBook.Title,
-						searchResultFromTheBookshop.SearchBook.Author,
-						searchResultFromTheBookshop.TitleMatches[0].Price,
-						searchResultFromTheBookshop.TitleMatches[0].Link)
-					writeNewAvailableBookMsg(searchResultFromTheBookshop.TitleMatches[0], currCrawlStats, ws)
-					newBook := dtos.AvailableBook{
-						BookInfo:         searchResultFromTheBookshop.SearchBook,
-						BookPurchaseInfo: searchResultFromTheBookshop.TitleMatches[0],
-					}
-					db.AddAvailableBook(newBook)
-					for _, book := range searchResultFromTheBookshop.TitleMatches {
-						util.SendNewBookIsAvailableMessage(book)
+				for _, potentialNewBook := range searchResultFromTheBookshop.TitleMatches {
+					if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
+						newBooksFound++
+						logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+							searchResultFromTheBookshop.SearchBook.Title,
+							searchResultFromTheBookshop.SearchBook.Author,
+							potentialNewBook.Price,
+							potentialNewBook.Link)
+
+						writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
+						newBook := dtos.AvailableBook{
+							BookInfo:         searchResultFromTheBookshop.SearchBook,
+							BookPurchaseInfo: potentialNewBook,
+						}
+						db.AddAvailableBook(newBook)
+						util.SendNewBookIsAvailableMessage(potentialNewBook)
 					}
 				}
 			}

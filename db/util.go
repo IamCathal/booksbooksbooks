@@ -55,7 +55,7 @@ func removeDuplicateAvailableBooks(books []dtos.AvailableBook) []dtos.AvailableB
 	noDuplicateAvailableBooks := []dtos.AvailableBook{}
 
 	for _, book := range books {
-		_, exists := seenBooks[book.BookInfo.Title]
+		_, exists := seenBooks[book.BookPurchaseInfo.Link]
 		if !exists {
 			seenBooks[book.BookInfo.Title] = true
 			noDuplicateAvailableBooks = append(noDuplicateAvailableBooks, book)
