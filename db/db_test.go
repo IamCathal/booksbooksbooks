@@ -8,14 +8,18 @@ import (
 
 	redis "github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
+var (
+	sharonFantasyLink        = "https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy"
+	kingCurrentlyReadingLink = "https://www.goodreads.com/review/list/26367680?shelf=currently-reading"
+)
+
 func connectToDevRedisDatabase() {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDR"),
+		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
@@ -38,10 +42,6 @@ func nameTempRedisKeys() {
 }
 
 func TestMain(m *testing.M) {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
-
 	c := zap.NewProductionConfig()
 	c.OutputPaths = []string{"/dev/null"}
 	logger, err := c.Build()
@@ -125,4 +125,64 @@ func TestGetSendAlertWhenBookIsNoLongerAvailableReturnsFalseWhenNotSet(t *testin
 
 func TestGetSendAlertOnlyWhenFreeShippingKicksInReturnsFalseWhenNotSet(t *testing.T) {
 	assert.False(t, GetSendAlertOnlyWhenFreeShippingKicksIn())
+}
+
+func TestGetAvailableBooksMap(t *testing.T) {
+	duplicateLink := "duplicateLink"
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "https://cathaloc.dev",
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: duplicateLink,
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: duplicateLink,
+			},
+		},
+	}
+	SetAvailableBooks(availableBooks)
+
+	assert.Len(t, GetAvailableBooksMap(), 2)
+}
+
+func TestGetKeyForRecentCrawlBreadCrumb(t *testing.T) {
+	assert.Equal(t, "sharon-fantasy", getKeyForRecentCrawlBreadcrumb(sharonFantasyLink))
+}
+
+func TestGetKeyForRecentCrawlBreadCrumbsHandlesUrlsWithoutUsernames(t *testing.T) {
+	assert.Equal(t, "26367680-currently-reading", getKeyForRecentCrawlBreadcrumb(kingCurrentlyReadingLink))
+}
+
+func TestRemoveDuplicateAvailableBooks(t *testing.T) {
+	duplicateLink := "duplicate link"
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: duplicateLink,
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: duplicateLink,
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "a new link",
+			},
+		},
+	}
+
+	assert.Len(t, removeDuplicateAvailableBooks(availableBooks), 2)
+}
+
+func TestStrToBool(t *testing.T) {
+	assert.True(t, strToBool("true"))
+	assert.False(t, strToBool("false"))
 }

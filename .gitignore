@@ -130,5 +130,5 @@ dmypy.json
 
 
 example.html
-
+coverage.*
 *.json

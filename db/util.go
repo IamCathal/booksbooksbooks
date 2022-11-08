@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
@@ -25,8 +24,18 @@ func getKeyForRecentCrawlBreadcrumb(shelfURL string) string {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	name := strings.Split(urlObj.Path, "-")
-	return fmt.Sprintf("%s-%s", name[len(name)-1], urlObj.Query().Get("shelf"))
+
+	splitUrlbyDash := strings.Split(urlObj.Path, "-")
+	nameComponent := ""
+
+	if len(splitUrlbyDash) == 1 {
+		splitBySlash := strings.Split(urlObj.Path, "/")
+		nameComponent = splitBySlash[len(splitBySlash)-1]
+	} else {
+		nameComponent = splitUrlbyDash[len(splitUrlbyDash)-1]
+	}
+
+	return fmt.Sprintf("%s-%s", nameComponent, urlObj.Query().Get("shelf"))
 }
 
 func IgnoreBook(bookURL string) {
@@ -58,7 +67,7 @@ func removeDuplicateAvailableBooks(books []dtos.AvailableBook) []dtos.AvailableB
 	for _, book := range books {
 		_, exists := seenBooks[book.BookPurchaseInfo.Link]
 		if !exists {
-			seenBooks[book.BookInfo.Title] = true
+			seenBooks[book.BookPurchaseInfo.Link] = true
 			noDuplicateAvailableBooks = append(noDuplicateAvailableBooks, book)
 		}
 	}
@@ -79,32 +88,9 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawlBreadcrumb) []dt
 	return noDuplicateRecentCrawlBreadcrumbs
 }
 
-func getAppropriateID(book dtos.BasicGoodReadsBook) string {
-	if book.Isbn13 != "" {
-		return book.Isbn13
-	} else if book.Asin != "" {
-		return book.Asin
-	}
-	return fmt.Sprintf("%s/%s", book.Author, book.Title)
-}
-
-func getCurrentBookState(book dtos.BasicGoodReadsBook) string {
-	id := getAppropriateID(book)
-	canBuy, err := redisClient.Get(ctx, id).Result()
-	if err != nil && isRedisNil(err) {
-		logger.Sugar().Fatal(err)
-	}
-	return canBuy
-}
-
-func isRedisNil(err error) bool {
-	return err == redis.Nil
-}
-
 func strToBool(stringBool string) bool {
 	boolVal, err := strconv.ParseBool(stringBool)
 	if err != nil {
-		// logger.Sugar().Fatalf("failed to parse '%s' to bool", stringBool)
 		panic(err)
 	}
 	return boolVal

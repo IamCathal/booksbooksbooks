@@ -33,3 +33,7 @@ To run the application with logs being shipped to a [Zincsearch](https://github.
 ## Security
 
 Unsanitised user input is written straight to the redis instance and although its not entirely sensitive your supplied discord webhook is accessable through the settings page. Do not publically host this service. I'm currently running this on a cloud VPS (that has all ports blocked) and I can access it on my home network through a [tailscale](https://tailscale.com/) network.
+
+## Testing
+
+Have the local instance of redis running on port 6379 and away you go. Why hardcode in the redis to be local? Because its a test and it doesn't matter, its always going to be local. Use `go test -v ./...` in the base directory to run everything. I prefer using [gotestsum](https://github.com/gotestyourself/gotestsum) since its a bit nicer and I use this alias `alias gotall='gotestsum --format=testname -- -v ./...'` to run all tests and `alias gotestcov='go test -v -p 1 ./... -cover -coverprofile=coverage.out --tags=service && go tool cover -html=coverage.out -o coverage.html && firefox coverage.html'` to get coverage and open the output in firefox
