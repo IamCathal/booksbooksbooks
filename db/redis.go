@@ -16,8 +16,8 @@ var (
 	redisClient *redis.Client
 
 	AVAILABLE_BOOKS                             = "availableBooks"
-	RECENT_CRAWLS                               = "recentCrawls"
-	AUTOMATED_BOOK_SHELF_CHECK                  = "automatedBookShelfCheck"
+	RECENT_CRAWL_BREADCRUMBS                    = "recentCrawls"
+	AUTOMATED_BOOK_SHELF_CHECK_URL              = "automatedBookShelfCheck"
 	AUTOMATED_BOOK_SHELF_CRAWL_TIME             = "automatedBookShelfCrawlTime"
 	DISCORD_WEBHOOK_URL                         = "discordWebHookURL"
 	DISCORD_MESSAGE_FORMAT                      = "discordMessageFormat"
@@ -98,54 +98,57 @@ func GetAvailableBooks() []dtos.AvailableBook {
 	return availableBooks
 }
 
-func GetRecentCrawls() []dtos.RecentCrawl {
-	recentCrawls, err := redisClient.Get(ctx, RECENT_CRAWLS).Result()
+func GetRecentCrawlBreadcrumbs() []dtos.RecentCrawlBreadcrumb {
+	recentCrawlBreadcrumbs, err := redisClient.Get(ctx, RECENT_CRAWL_BREADCRUMBS).Result()
 	if err == redis.Nil {
-		return []dtos.RecentCrawl{}
+		return []dtos.RecentCrawlBreadcrumb{}
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	recentCrawlsArr := []dtos.RecentCrawl{}
-	if recentCrawls != "" {
-		err = json.Unmarshal([]byte(recentCrawls), &recentCrawlsArr)
+	recentCrawlBreadcrumbsArr := []dtos.RecentCrawlBreadcrumb{}
+	if recentCrawlBreadcrumbs != "" {
+		err = json.Unmarshal([]byte(recentCrawlBreadcrumbs), &recentCrawlBreadcrumbsArr)
 		if err != nil {
 			logger.Sugar().Fatal(err)
 		}
 	}
-	return removeDuplicateRecentCrawls(recentCrawlsArr)
+	return recentCrawlBreadcrumbsArr
 }
 
-func SaveRecentCrawlStats(shelfURL string) {
-	recentCrawls := GetRecentCrawls()
+func AddNewCrawlBreadcrumb(shelfURL string) {
+	recentCrawls := GetRecentCrawlBreadcrumbs()
 
-	newRecentCrawl := []dtos.RecentCrawl{
+	updatedCrawlBreadcrumbs := []dtos.RecentCrawlBreadcrumb{
 		{
-			CrawlKey: getKeyForRecentCrawl(shelfURL),
+			CrawlKey: getKeyForRecentCrawlBreadcrumb(shelfURL),
 			ShelfURL: shelfURL,
 		},
 	}
-	newRecentCrawl = append(newRecentCrawl, recentCrawls...)
-	newRecentCrawl = removeDuplicateRecentCrawls(newRecentCrawl)
+	logger.Sugar().Infof("Creating new crawl breadcrumb with key: %s for shelfURL: %s",
+		updatedCrawlBreadcrumbs[0].CrawlKey, updatedCrawlBreadcrumbs[0].ShelfURL)
 
-	jsonCrawls, err := json.Marshal(newRecentCrawl)
+	updatedCrawlBreadcrumbs = append(updatedCrawlBreadcrumbs, recentCrawls...)
+	updatedCrawlBreadcrumbs = removeDuplicateRecentCrawls(updatedCrawlBreadcrumbs)
+
+	jsonCrawlBreadcrumbs, err := json.Marshal(updatedCrawlBreadcrumbs)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = redisClient.Set(ctx, RECENT_CRAWLS, jsonCrawls, 0).Err()
+	err = redisClient.Set(ctx, RECENT_CRAWL_BREADCRUMBS, jsonCrawlBreadcrumbs, 0).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
 func SetAutomatedBookShelfCheck(shelfURL string) {
-	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK, shelfURL, 0).Err()
+	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL, shelfURL, 0).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
 func GetAutomatedBookShelfCheck() string {
-	shelfURL, err := redisClient.Get(ctx, AUTOMATED_BOOK_SHELF_CHECK).Result()
+	shelfURL, err := redisClient.Get(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL).Result()
 	if err == redis.Nil {
 		return ""
 	} else if err != nil {
@@ -220,7 +223,8 @@ func SetSendAlertWhenBookNoLongerAvailable(enabled bool) {
 func GetSendAlertWhenBookNoLongerAvailable() bool {
 	enabled, err := redisClient.Get(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE).Result()
 	if err == redis.Nil {
-		return false
+		SetSendAlertWhenBookNoLongerAvailable(false)
+		return GetSendAlertWhenBookNoLongerAvailable()
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -241,7 +245,8 @@ func SetSendAlertOnlyWhenFreeShippingKicksIn(enabled bool) {
 func GetSendAlertOnlyWhenFreeShippingKicksIn() bool {
 	enabled, err := redisClient.Get(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN).Result()
 	if err == redis.Nil {
-		return false
+		SetSendAlertOnlyWhenFreeShippingKicksIn(false)
+		return GetSendAlertOnlyWhenFreeShippingKicksIn()
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}

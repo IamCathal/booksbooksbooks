@@ -110,7 +110,7 @@ type WsNewBookAvailable struct {
 
 // Database related data structures
 
-type RecentCrawl struct {
+type RecentCrawlBreadcrumb struct {
 	CrawlKey string `json:"crawlKey"`
 	ShelfURL string `json:"shelfURL"`
 }

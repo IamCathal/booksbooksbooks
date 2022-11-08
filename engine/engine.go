@@ -92,6 +92,7 @@ func automatedCheck() {
 	if len(newBooksThatNeedNotification) > 0 {
 		for _, newBook := range newBooksThatNeedNotification {
 			db.AddAvailableBook(newBook)
+			util.SendNewBookIsAvailableMessage(newBook.BookPurchaseInfo)
 		}
 	}
 	logger.Sugar().Infof("%d cached books were available yesterday", len(cachedBooksThatWereAvailable))

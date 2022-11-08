@@ -20,7 +20,7 @@ func GetAvailableBooksMap() map[string]bool {
 	return availableBooksMap
 }
 
-func getKeyForRecentCrawl(shelfURL string) string {
+func getKeyForRecentCrawlBreadcrumb(shelfURL string) string {
 	urlObj, err := url.Parse(shelfURL)
 	if err != nil {
 		logger.Sugar().Fatal(err)
@@ -65,18 +65,18 @@ func removeDuplicateAvailableBooks(books []dtos.AvailableBook) []dtos.AvailableB
 	return noDuplicateAvailableBooks
 }
 
-func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawl) []dtos.RecentCrawl {
-	seenShelves := make(map[string]bool)
-	noDuplicateRecentCrawls := []dtos.RecentCrawl{}
+func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawlBreadcrumb) []dtos.RecentCrawlBreadcrumb {
+	seenBreadcrumbs := make(map[string]bool)
+	noDuplicateRecentCrawlBreadcrumbs := []dtos.RecentCrawlBreadcrumb{}
 
 	for _, crawl := range recentCrawls {
-		_, exists := seenShelves[crawl.ShelfURL]
+		_, exists := seenBreadcrumbs[crawl.ShelfURL]
 		if !exists {
-			seenShelves[crawl.ShelfURL] = true
-			noDuplicateRecentCrawls = append(noDuplicateRecentCrawls, crawl)
+			seenBreadcrumbs[crawl.ShelfURL] = true
+			noDuplicateRecentCrawlBreadcrumbs = append(noDuplicateRecentCrawlBreadcrumbs, crawl)
 		}
 	}
-	return noDuplicateRecentCrawls
+	return noDuplicateRecentCrawlBreadcrumbs
 }
 
 func getAppropriateID(book dtos.BasicGoodReadsBook) string {

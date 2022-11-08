@@ -13,7 +13,6 @@ checkToSeeIfShelfURLPreLoaded()
 
 function checkToSeeIfShelfURLPreLoaded() {
     const urlParams = new URLSearchParams(window.location.search)
-    console.log(urlParams.get("shelfurl"))
     if (urlParams.get("shelfurl") != null) {
         document.getElementById("mainInputBox").value = urlParams.get("shelfurl")
         initWebsocketConn(urlParams.get("shelfurl"))
