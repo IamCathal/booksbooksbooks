@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/go-redis/redis/v9"
@@ -98,4 +99,13 @@ func getCurrentBookState(book dtos.BasicGoodReadsBook) string {
 
 func isRedisNil(err error) bool {
 	return err == redis.Nil
+}
+
+func strToBool(stringBool string) bool {
+	boolVal, err := strconv.ParseBool(stringBool)
+	if err != nil {
+		// logger.Sugar().Fatalf("failed to parse '%s' to bool", stringBool)
+		panic(err)
+	}
+	return boolVal
 }

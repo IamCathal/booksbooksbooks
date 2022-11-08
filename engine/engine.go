@@ -27,7 +27,12 @@ func AutomatedCheckEngine() {
 		currTime := getFormattedTime()
 		if currTime == db.GetAutomatedBookShelfCrawlTime() {
 			logger.Info("Beginning automated crawl")
-			go automatedCheck()
+			shelfURL := db.GetAutomatedBookShelfCheck()
+			if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
+				logger.Sugar().Infof("Failed to start automated crawl because shelfURL '%s' isn't valid", shelfURL)
+			} else {
+				go automatedCheck()
+			}
 		}
 		time.Sleep(60 * time.Second)
 	}
@@ -55,7 +60,7 @@ func automatedCheck() {
 	logger.Sugar().Infof("%d Cached from from the last automated checkup that are still available now: %d\n",
 		len(cachedBooksThatAreStillAvailableToday), cachedBooksThatAreStillAvailableToday)
 
-	if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks == "true" {
+	if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
 		booksThatAreNowNotAvailable := util.FindBooksThatAreNowNotAvailable(cachedBooksThatWereAvailable, cachedBooksThatAreStillAvailableToday)
 		for _, book := range booksThatAreNowNotAvailable {
 			util.SendNewBookIsAvailableMessage(book.BookPurchaseInfo)

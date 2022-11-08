@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -44,4 +45,13 @@ func SendBasicInvalidResponse(w http.ResponseWriter, req *http.Request, msg stri
 		msg,
 	}
 	json.NewEncoder(w).Encode(response)
+}
+
+func strToBool(stringBool string) bool {
+	boolVal, err := strconv.ParseBool(stringBool)
+	if err != nil {
+		// logger.Sugar().Fatalf("failed to parse '%s' to bool", stringBool)
+		panic(err)
+	}
+	return boolVal
 }

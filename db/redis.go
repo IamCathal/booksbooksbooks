@@ -185,6 +185,10 @@ func GetDiscordMessageFormat() string {
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
+	if format == "" {
+		SetDiscordMessageFormat("small")
+		return GetDiscordMessageFormat()
+	}
 	return format
 }
 
@@ -205,36 +209,44 @@ func GetAutomatedBookShelfCrawlTime() string {
 	return time
 }
 
-func SetSendAlertWhenBookNoLongerAvailable(time string) {
-	err := redisClient.Set(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE, time, 0).Err()
+func SetSendAlertWhenBookNoLongerAvailable(enabled bool) {
+	err := redisClient.Set(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE, enabled, 0).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
-func GetSendAlertWhenBookNoLongerAvailable() string {
+func GetSendAlertWhenBookNoLongerAvailable() bool {
 	enabled, err := redisClient.Get(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE).Result()
 	if err == redis.Nil {
-		return ""
+		return false
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	return enabled
+	if enabled == "" {
+		SetSendAlertWhenBookNoLongerAvailable(false)
+		return GetSendAlertWhenBookNoLongerAvailable()
+	}
+	return strToBool(enabled)
 }
 
-func SetSendAlertOnlyWhenFreeShippingKicksIn(time string) {
-	err := redisClient.Set(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN, time, 0).Err()
+func SetSendAlertOnlyWhenFreeShippingKicksIn(enabled bool) {
+	err := redisClient.Set(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN, enabled, 0).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
-func GetSendAlertOnlyWhenFreeShippingKicksIn() string {
+func GetSendAlertOnlyWhenFreeShippingKicksIn() bool {
 	enabled, err := redisClient.Get(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN).Result()
 	if err == redis.Nil {
-		return ""
+		return false
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	return enabled
+	if enabled == "" {
+		SetSendAlertOnlyWhenFreeShippingKicksIn(false)
+		return GetSendAlertOnlyWhenFreeShippingKicksIn()
+	}
+	return strToBool(enabled)
 }

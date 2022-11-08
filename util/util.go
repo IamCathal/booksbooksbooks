@@ -45,7 +45,7 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == "false" {
+	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == false {
 		DeliverWebHook(message)
 	}
 }
@@ -75,7 +75,7 @@ func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == "false" {
+	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == false {
 		DeliverWebHook(message)
 	}
 }

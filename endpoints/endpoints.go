@@ -238,12 +238,14 @@ func getAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
 
 func setSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
-	if enabled != "true" && enabled != "false" {
+	enabledBool := strToBool(enabled)
+	if enabledBool != true && enabledBool != false {
 		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	db.SetSendAlertWhenBookNoLongerAvailable(enabled)
+
+	db.SetSendAlertWhenBookNoLongerAvailable(enabledBool)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -257,12 +259,13 @@ func getSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Reques
 
 func setSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
-	if enabled != "true" && enabled != "false" {
+	enabledBool := strToBool(enabled)
+	if enabledBool != true && enabledBool != false {
 		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	db.SetSendAlertOnlyWhenFreeShippingKicksIn(enabled)
+	db.SetSendAlertOnlyWhenFreeShippingKicksIn(enabledBool)
 	w.WriteHeader(http.StatusOK)
 }
 

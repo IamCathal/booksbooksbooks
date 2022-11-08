@@ -99,6 +99,7 @@ function getAndRenderAutomatedCrawlTime() {
 
 function getAndRenderSendAlertsWhenBookNoLongerAvailable() {
     getSendAlertWhenBookNoLongerAvailable().then(enabled => {
+        console.log(enabled)
         if (enabled == "true") {
             document.getElementById("sendWebhookWhenNoLongerAvailable").checked = true
         } else {

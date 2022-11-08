@@ -63,11 +63,11 @@ type GetAutomatedCrawlTimeResponse struct {
 }
 
 type SendAlertWhenBookIsNoLongerAvailableResponse struct {
-	Enabled string `json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 type SendAlertOnlyWhenBookFreeShippingKicksInResponse struct {
-	Enabled string `json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 type GetPreviewForShelfResponse struct {
