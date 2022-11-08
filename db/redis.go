@@ -181,7 +181,8 @@ func SetDiscordMessageFormat(format string) {
 func GetDiscordMessageFormat() string {
 	format, err := redisClient.Get(ctx, DISCORD_MESSAGE_FORMAT).Result()
 	if err == redis.Nil {
-		return ""
+		SetDiscordMessageFormat("small")
+		return GetDiscordMessageFormat()
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
