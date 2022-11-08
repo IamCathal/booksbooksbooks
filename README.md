@@ -26,10 +26,6 @@ A good few things can be customised from the [http://localhost:2945/settings](ht
 - [x] Send an alert only when the total cost of the available books has exceeded €20 which means the order is eligible for free shipping
 - [x] Whether to have a compact or spacious alert styled messaged
 
-### Configuration
-
-To run the application with logs being shipped to a [Zincsearch](https://github.com/zinclabs/zinc) (lightweight and simple alternative to elasticsearch/kibana for log aggregration and analysis) instance environment some environment variables are required to be set. I use zincsearch to analyse logs from many of my projects and some extra configuration is required to allow filebeat to authenticate itself. In the base directory create a `.env` file with the following environment variables: `ZINCSEARCH_PASS` and `ZINCSEARCH_INSTANCE_IP` (port included). The docker-compose file will inject these into the filebeat container automatically. Most likely you can ignore these
-
 ## Security
 
 Unsanitised user input is written straight to the redis instance and although its not entirely sensitive your supplied discord webhook is accessable through the settings page. Do not publically host this service. I'm currently running this on a cloud VPS (that has all ports blocked) and I can access it on my home network through a [tailscale](https://tailscale.com/) network.

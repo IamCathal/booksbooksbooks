@@ -27,20 +27,6 @@ services:
     networks:
       - elk
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:8.4.3
-    container_name: booksbooksbooks-filebeat
-    volumes:
-      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
-      - ./logs/:/logs/
-    environment:
-      ZINCSEARCH_PASS: $ZINCSEARCH_PASS
-      ZINCSEARCH_INSTANCE_IP: $ZINCSEARCH_INSTANCE_IP
-    networks:
-    - elk
-    depends_on:
-      - booksbooksbooks
-
 networks:
   elk:
     driver: bridge

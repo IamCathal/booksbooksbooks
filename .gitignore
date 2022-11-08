@@ -132,3 +132,5 @@ dmypy.json
 example.html
 coverage.*
 *.json
+
+docker-compose.override.yml
