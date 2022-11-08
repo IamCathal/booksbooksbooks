@@ -109,7 +109,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		return
 	}
 
-	db.SaveRecentCrawlStats(shelfURL)
+	db.AddNewCrawlBreadcrumb(shelfURL)
 	previouslyKnownAvailableBooks := db.GetAvailableBooksMap()
 
 	shelfStatsChan := make(chan int, 1)

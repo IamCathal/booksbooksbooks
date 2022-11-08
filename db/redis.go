@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"time"
 
 	redis "github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
@@ -23,6 +24,7 @@ var (
 	DISCORD_MESSAGE_FORMAT                      = "discordMessageFormat"
 	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE    = "sendAlertWhenBookNoLongerAvailable"
 	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "sendAlertWhenFreeShippingKicksIn"
+	DEFAULT_TTL                                 = time.Duration(0)
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -47,7 +49,7 @@ func ConnectToRedis() {
 }
 
 func ResetAvailableBooks() {
-	err := redisClient.Set(ctx, AVAILABLE_BOOKS, []byte(""), 0).Err()
+	err := redisClient.Set(ctx, AVAILABLE_BOOKS, []byte(""), DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -64,7 +66,7 @@ func AddAvailableBook(newBook dtos.AvailableBook) {
 		logger.Sugar().Fatal(err)
 	}
 
-	err = redisClient.Set(ctx, AVAILABLE_BOOKS, jsonAvailableBooks, 0).Err()
+	err = redisClient.Set(ctx, AVAILABLE_BOOKS, jsonAvailableBooks, time.Duration(DEFAULT_TTL)).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -75,7 +77,7 @@ func SetAvailableBooks(availableBooks []dtos.AvailableBook) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = redisClient.Set(ctx, AVAILABLE_BOOKS, availableBooksJson, 0).Err()
+	err = redisClient.Set(ctx, AVAILABLE_BOOKS, availableBooksJson, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -134,14 +136,14 @@ func AddNewCrawlBreadcrumb(shelfURL string) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = redisClient.Set(ctx, RECENT_CRAWL_BREADCRUMBS, jsonCrawlBreadcrumbs, 0).Err()
+	err = redisClient.Set(ctx, RECENT_CRAWL_BREADCRUMBS, jsonCrawlBreadcrumbs, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
 func SetAutomatedBookShelfCheck(shelfURL string) {
-	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL, shelfURL, 0).Err()
+	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL, shelfURL, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -158,7 +160,7 @@ func GetAutomatedBookShelfCheck() string {
 }
 
 func SetDiscordWebhookURL(webhookURL string) {
-	err := redisClient.Set(ctx, DISCORD_WEBHOOK_URL, webhookURL, 0).Err()
+	err := redisClient.Set(ctx, DISCORD_WEBHOOK_URL, webhookURL, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -175,7 +177,7 @@ func GetDiscordWebhookURL() string {
 }
 
 func SetDiscordMessageFormat(format string) {
-	err := redisClient.Set(ctx, DISCORD_MESSAGE_FORMAT, format, 0).Err()
+	err := redisClient.Set(ctx, DISCORD_MESSAGE_FORMAT, format, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -197,7 +199,7 @@ func GetDiscordMessageFormat() string {
 }
 
 func SetAutomatedBookShelfCrawlTime(time string) {
-	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CRAWL_TIME, time, 0).Err()
+	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CRAWL_TIME, time, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -214,7 +216,7 @@ func GetAutomatedBookShelfCrawlTime() string {
 }
 
 func SetSendAlertWhenBookNoLongerAvailable(enabled bool) {
-	err := redisClient.Set(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE, enabled, 0).Err()
+	err := redisClient.Set(ctx, SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE, enabled, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -236,7 +238,7 @@ func GetSendAlertWhenBookNoLongerAvailable() bool {
 }
 
 func SetSendAlertOnlyWhenFreeShippingKicksIn(enabled bool) {
-	err := redisClient.Set(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN, enabled, 0).Err()
+	err := redisClient.Set(ctx, SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN, enabled, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}

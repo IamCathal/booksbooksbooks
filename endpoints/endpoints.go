@@ -167,7 +167,7 @@ func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRecentCrawls(w http.ResponseWriter, r *http.Request) {
-	recentCrawls := db.GetRecentCrawls()
+	recentCrawls := db.GetRecentCrawlBreadcrumbs()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
