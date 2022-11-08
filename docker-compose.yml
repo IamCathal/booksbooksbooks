@@ -3,13 +3,12 @@ version: '3.2'
 services:
   redis:
     image: docker.io/bitnami/redis:7.0
+    container_name: booksbooksbooks-redis
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     ports:
       - '6379:6379'
-    volumes:
-      - 'redis_data:/bitnami/redis/data'
     networks:
       - elk
 
@@ -30,7 +29,7 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.4.3
-    container_name: filebeat-container
+    container_name: booksbooksbooks-filebeat
     volumes:
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./logs/:/logs/
@@ -41,11 +40,6 @@ services:
     - elk
     depends_on:
       - booksbooksbooks
-
-
-volumes:
-  redis_data:
-    driver: local
 
 networks:
   elk:
