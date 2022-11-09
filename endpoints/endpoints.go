@@ -43,6 +43,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/ignorebook", ignoreBook).Methods("POST")
 	r.HandleFunc("/unignorebook", unignoreBook).Methods("POST")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
+	r.HandleFunc("/getautomatedcrawlshelfstats", getAutomatedCrawlShelfStats).Methods("GET")
 	r.Use(logMiddleware)
 
 	settingsRouter := r.PathPrefix("/settings").Subrouter()
@@ -147,6 +148,22 @@ func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func getAutomatedCrawlShelfStats(w http.ResponseWriter, r *http.Request) {
+	shelfURL := db.GetAutomatedBookShelfCheck()
+	nonIgnoredBookCount, ignoredBookCount := db.GetIgnoredAndNonIgnoredCountOfAvailableBooks()
+
+	res := dtos.GetAutomatedCrawlShelfStats{
+		ShelfBreadcrumb:       db.GetKeyForRecentCrawlBreadcrumb(shelfURL),
+		ShelfURL:              shelfURL,
+		TotalBooks:            db.GetTotalBooksInAutomatedBookShelfCheck(),
+		AvailableBooks:        nonIgnoredBookCount,
+		IgnoredAvailableBooks: ignoredBookCount,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
 func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 	shelfURL := r.URL.Query().Get("shelfurl")
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
@@ -160,6 +177,7 @@ func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 		Books:      books,
 		TotalBooks: totalBooks,
 	}
+	db.SetTotalBooksInAutomatedBookShelfCheck(totalBooks)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

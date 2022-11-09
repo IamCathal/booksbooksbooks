@@ -75,6 +75,14 @@ type GetPreviewForShelfResponse struct {
 	TotalBooks int                  `json:"totalBooks"`
 }
 
+type GetAutomatedCrawlShelfStats struct {
+	ShelfBreadcrumb       string `json:"shelfBreadcrumb"`
+	ShelfURL              string `json:"shelfURL"`
+	TotalBooks            int    `json:"totalBooks"`
+	AvailableBooks        int    `json:"availableBooks"`
+	IgnoredAvailableBooks int    `json:"ignoredAvailableBooks"`
+}
+
 // Websocket DTOs
 
 type WsErrorMsg struct {

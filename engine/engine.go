@@ -70,6 +70,7 @@ func automatedCheck() {
 	shelfURL := db.GetAutomatedBookShelfCheck()
 
 	booksFromShelf := goodreads.GetBooksFromShelf(shelfURL, stubStatsChan, stubBooksFoundFromGoodReadsChan)
+	db.SetTotalBooksInAutomatedBookShelfCheck(len(booksFromShelf))
 	logger.Sugar().Infof("%d books were found from GoodReads shelf %s\n", len(booksFromShelf), shelfURL)
 	close(stubBooksFoundFromGoodReadsChan)
 
@@ -176,6 +177,8 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 		}
 	}
+
+	db.SetTotalBooksInAutomatedBookShelfCheck(currCrawlStats.TotalBooks)
 
 	logger.Sugar().Infof("Finished. Crawled %d books from GoodReads and made %d searches to TheBookshop.ie which had %d new books",
 		currCrawlStats.BooksCrawled, currCrawlStats.BooksSearched, newBooksFound)

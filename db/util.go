@@ -19,7 +19,7 @@ func GetAvailableBooksMap() map[string]bool {
 	return availableBooksMap
 }
 
-func getKeyForRecentCrawlBreadcrumb(shelfURL string) string {
+func GetKeyForRecentCrawlBreadcrumb(shelfURL string) string {
 	urlObj, err := url.Parse(shelfURL)
 	if err != nil {
 		logger.Sugar().Fatal(err)
@@ -88,10 +88,33 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawlBreadcrumb) []dt
 	return noDuplicateRecentCrawlBreadcrumbs
 }
 
+func GetIgnoredAndNonIgnoredCountOfAvailableBooks() (int, int) {
+	allAvailableBooks := GetAvailableBooks()
+	nonIgnoredCount := 0
+	ignoredCount := 0
+
+	for _, book := range allAvailableBooks {
+		if book.Ignore {
+			ignoredCount++
+		} else {
+			nonIgnoredCount++
+		}
+	}
+	return nonIgnoredCount, ignoredCount
+}
+
 func strToBool(stringBool string) bool {
 	boolVal, err := strconv.ParseBool(stringBool)
 	if err != nil {
 		panic(err)
 	}
 	return boolVal
+}
+
+func strToInt(stringInt string) int {
+	intVal, err := strconv.Atoi(stringInt)
+	if err != nil {
+		panic(err)
+	}
+	return intVal
 }

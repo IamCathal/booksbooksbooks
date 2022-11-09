@@ -9,6 +9,12 @@ getAvailableBooks().then((res) => {
     console.error(err)
 })
 
+loadStatsOnAutomatedShelf().then(stats => {
+    renderStatsOnAutomatedShelf(stats)
+}, err => {
+    console.error(err)
+})
+
 document.getElementById("clearList").addEventListener("click", () => {
     clearList()
     getAvailableBooks().then((res) => {
@@ -117,6 +123,12 @@ function renderAvailableBooks(availableBookList) {
     })
 }
 
+function renderStatsOnAutomatedShelf(stats) {
+    console.log(stats)
+    document.getElementById("automatedShelfStatsBox").innerHTML = 
+    ` Available books from <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a> which has ${stats.totalBooks} books, ${stats.availableBooks} available and ${stats.ignoredAvailableBooks} ignored`
+}
+
 function getBookCost(bookCostString) {
     return parseFloat(bookCostString.replace("€",""))
 }
@@ -191,6 +203,17 @@ function unignoreBook(bookURL) {
         })
         .then((res) => {
             resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+function loadStatsOnAutomatedShelf(bookURL) {
+    return new Promise((resolve, reject) => {
+        fetch(`/getautomatedcrawlshelfstats`)
+        .then((res) => res.json())
+        .then((res) => {
+            resolve(res)
         }, (err) => {
             reject(err)
         });

@@ -24,6 +24,7 @@ var (
 	DISCORD_MESSAGE_FORMAT                      = "discordMessageFormat"
 	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE    = "sendAlertWhenBookNoLongerAvailable"
 	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "sendAlertWhenFreeShippingKicksIn"
+	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF         = "totalBooksInAutomatedBookShelf"
 	DEFAULT_TTL                                 = time.Duration(0)
 )
 
@@ -122,7 +123,7 @@ func AddNewCrawlBreadcrumb(shelfURL string) {
 
 	updatedCrawlBreadcrumbs := []dtos.RecentCrawlBreadcrumb{
 		{
-			CrawlKey: getKeyForRecentCrawlBreadcrumb(shelfURL),
+			CrawlKey: GetKeyForRecentCrawlBreadcrumb(shelfURL),
 			ShelfURL: shelfURL,
 		},
 	}
@@ -257,4 +258,21 @@ func GetSendAlertOnlyWhenFreeShippingKicksIn() bool {
 		return GetSendAlertOnlyWhenFreeShippingKicksIn()
 	}
 	return strToBool(enabled)
+}
+
+func SetTotalBooksInAutomatedBookShelfCheck(totalBooks int) {
+	err := redisClient.Set(ctx, TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF, totalBooks, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetTotalBooksInAutomatedBookShelfCheck() int {
+	totalBooks, err := redisClient.Get(ctx, TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF).Result()
+	if err == redis.Nil {
+		return 0
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return strToInt(totalBooks)
 }
