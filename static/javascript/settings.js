@@ -52,7 +52,14 @@ document.getElementById("settingsTestShelfURLButton").addEventListener("click", 
         })
     }, (err) => {
         document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
-        console.error(err)
+        document.getElementById("shelfPreviewRow").style.display = "flex"
+        document.getElementById("shelfURLCheckStatsBox").innerHTML +=
+        `
+            <div class="col text-center">
+                <p class="pl-4 mb-0">That's not a valid Goodreads shelf URL. This is an example of a valid shelf URL:</p>
+                <p class=" pl-4 pb-0"> <a href="https://www.goodreads.com/review/list/26367680-stephen-king?shelf=read">https://www.goodreads.com/review/list/26367680-stephen-king?shelf=read </a> </p>
+            </div>
+        `
     })
 })
 
@@ -225,8 +232,13 @@ function setAutomatedShelfCheckURL(shelfURL){
         fetch(`/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`, {
             method: "POST"
         })
+        .then((res) => res.json())
         .then((res) => {
-            resolve(res)
+            if (res.hasOwnProperty("error")) {
+                reject()
+            } else {
+                resolve(res)
+            }
         }, (err) => {
             reject(err)
         });
