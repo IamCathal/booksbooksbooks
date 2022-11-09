@@ -9,6 +9,8 @@ services:
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     ports:
       - '6379:6379'
+    volumes:
+      - 'redis_data:/bitnami/redis/data'
     networks:
       - elk
 
@@ -30,3 +32,7 @@ services:
 networks:
   elk:
     driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
