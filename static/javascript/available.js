@@ -1,25 +1,34 @@
 let availableBooks = []
 
 giveSwayaaangBordersToItems()
+loadAndRenderAutomatedShelfStats()
+loadAndRenderAvailableBooks()
 
-getAvailableBooks().then((res) => {
-    availableBooks = res
-    renderAvailableBooks(res)
-}, err => {
-    console.error(err)
-})
+function loadAndRenderAvailableBooks() {
+    getAvailableBooks().then((res) => {
+        availableBooks = res
+        renderAvailableBooks(res)
+    }, err => {
+        console.error(err)
+    })
+    
+}
 
-loadStatsOnAutomatedShelf().then(stats => {
-    renderStatsOnAutomatedShelf(stats)
-}, err => {
-    console.error(err)
-})
+function loadAndRenderAutomatedShelfStats() {
+    loadStatsOnAutomatedShelf().then(stats => {
+        renderStatsOnAutomatedShelf(stats)
+    }, err => {
+        console.error(err)
+    })
+}
+
 
 document.getElementById("clearList").addEventListener("click", () => {
     clearList()
     getAvailableBooks().then((res) => {
         availableBooks = res
         renderAvailableBooks(res)
+        loadAndRenderAutomatedShelfStats()
     }, err => {
         console.error(err)
     })
@@ -90,7 +99,7 @@ function renderAvailableBooks(availableBookList) {
                             </div>
             `
             totalIgnoredBookCost += getBookCost(book.bookPurchaseInfo.price)
-            document.getElementById("ignoredPriceStatsDiv").textContent = `€${totalIgnoredBookCost.toFixed(2)} / €20`
+            document.getElementById("ignoredPriceStatsDiv").textContent = `€${totalIgnoredBookCost.toFixed(2)}`
         }
 
         document.querySelectorAll(".unignoreBook").forEach(element => {
@@ -98,6 +107,7 @@ function renderAvailableBooks(availableBookList) {
                 unignoreBook(ev.target.id).then((res) => {
                     getAvailableBooks().then(newAvailableBooks => {
                         renderAvailableBooks(newAvailableBooks)
+                        loadAndRenderAutomatedShelfStats()
                     }, err => {
                         console.error(err)
                     })
@@ -112,6 +122,7 @@ function renderAvailableBooks(availableBookList) {
                 ignoreBook(ev.target.id).then((res) => {
                     getAvailableBooks().then(newAvailableBooks => {
                         renderAvailableBooks(newAvailableBooks)
+                        loadAndRenderAutomatedShelfStats()
                     }, err => {
                         console.error(err)
                     })
