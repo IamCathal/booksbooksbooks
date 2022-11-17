@@ -137,7 +137,7 @@ function renderAvailableBooks(availableBookList) {
 function renderStatsOnAutomatedShelf(stats) {
     console.log(stats)
     document.getElementById("automatedShelfStatsBox").innerHTML = 
-    ` Available books from <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a> which has ${stats.totalBooks} books, ${stats.availableBooks} available and ${stats.ignoredAvailableBooks} ignored`
+    ` Available books from <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a> which has ${stats.totalBooks} books, ${stats.availableBooks} available and ${stats.ignoredAvailableBooks} ignored*`
 }
 
 function getBookCost(bookCostString) {

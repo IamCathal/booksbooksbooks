@@ -1,5 +1,6 @@
 * {
-  font-family: 'Grotesk Regular';
+  /* font-family: 'Grotesk Regular'; */
+  font-family: 'AllianceNo2 Regular';
   color: white;
 }
 
@@ -150,6 +151,13 @@ body {
 
 .searchResultBook {
   width: 2rem;
+}
+
+@font-face {
+  font-family: 'AllianceNo2 Regular';
+  src: url(../fonts/AllianceNo2-Medium.woff2) format('woff2');
+  font-weight: 400;
+  font-style: normal;
 }
 
 @font-face {

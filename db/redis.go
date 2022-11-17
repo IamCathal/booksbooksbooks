@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -16,16 +17,17 @@ var (
 	ctx         = context.Background()
 	redisClient *redis.Client
 
-	AVAILABLE_BOOKS                             = "availableBooks"
-	RECENT_CRAWL_BREADCRUMBS                    = "recentCrawls"
-	AUTOMATED_BOOK_SHELF_CHECK_URL              = "automatedBookShelfCheck"
-	AUTOMATED_BOOK_SHELF_CRAWL_TIME             = "automatedBookShelfCrawlTime"
-	DISCORD_WEBHOOK_URL                         = "discordWebHookURL"
-	DISCORD_MESSAGE_FORMAT                      = "discordMessageFormat"
-	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE    = "sendAlertWhenBookNoLongerAvailable"
-	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "sendAlertWhenFreeShippingKicksIn"
-	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF         = "totalBooksInAutomatedBookShelf"
-	DEFAULT_TTL                                 = time.Duration(0)
+	AVAILABLE_BOOKS                               = "availableBooks"
+	RECENT_CRAWL_BREADCRUMBS                      = "recentCrawls"
+	AUTOMATED_BOOK_SHELF_CHECK_URL                = "automatedBookShelfCheck"
+	AUTOMATED_BOOK_SHELF_CRAWL_TIME               = "automatedBookShelfCrawlTime"
+	DISCORD_WEBHOOK_URL                           = "discordWebHookURL"
+	DISCORD_MESSAGE_FORMAT                        = "discordMessageFormat"
+	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE      = "sendAlertWhenBookNoLongerAvailable"
+	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN   = "sendAlertWhenFreeShippingKicksIn"
+	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF           = "totalBooksInAutomatedBookShelf"
+	ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST = "addMoreAuthorBooksToAvailableBooksList"
+	DEFAULT_TTL                                   = time.Duration(0)
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -275,4 +277,28 @@ func GetTotalBooksInAutomatedBookShelfCheck() int {
 		logger.Sugar().Fatal(err)
 	}
 	return strToInt(totalBooks)
+}
+
+func SetAddMoreAuthorBooksToAvailableBooksList(enabled bool) {
+	fmt.Printf("Setting as: %v\n", enabled)
+	err := redisClient.Set(ctx, ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST, enabled, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetAddMoreAuthorBooksToAvailableBooksList() bool {
+	enabled, err := redisClient.Get(ctx, ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST).Result()
+	if err == redis.Nil {
+		SetAddMoreAuthorBooksToAvailableBooksList(false)
+		return GetAddMoreAuthorBooksToAvailableBooksList()
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	if enabled == "" {
+		SetAddMoreAuthorBooksToAvailableBooksList(false)
+		return GetAddMoreAuthorBooksToAvailableBooksList()
+	}
+	fmt.Printf("get add more returning: %v\n", strToBool(enabled))
+	return strToBool(enabled)
 }

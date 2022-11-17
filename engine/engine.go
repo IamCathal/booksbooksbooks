@@ -154,6 +154,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
+
 			if len(searchResultFromTheBookshop.TitleMatches) > 0 {
 				for _, potentialNewBook := range searchResultFromTheBookshop.TitleMatches {
 					if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
@@ -171,9 +172,35 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 						}
 						db.AddAvailableBook(newBook)
 						util.SendNewBookIsAvailableMessage(potentialNewBook)
+						previouslyKnownAvailableBooks[potentialNewBook.Link] = true
 					}
 				}
 			}
+			if addMoreAuthorBooksToAvailableBooksList := db.GetAddMoreAuthorBooksToAvailableBooksList(); addMoreAuthorBooksToAvailableBooksList {
+				if len(searchResultFromTheBookshop.AuthorMatches) > 0 {
+					fmt.Printf("%d author matches to add\n", len(searchResultFromTheBookshop.AuthorMatches))
+					for _, potentialNewBook := range searchResultFromTheBookshop.AuthorMatches {
+						if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
+							newBooksFound++
+							logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+								searchResultFromTheBookshop.SearchBook.Title,
+								searchResultFromTheBookshop.SearchBook.Author,
+								potentialNewBook.Price,
+								potentialNewBook.Link)
+
+							writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
+							newBook := dtos.AvailableBook{
+								BookInfo:         searchResultFromTheBookshop.SearchBook,
+								BookPurchaseInfo: potentialNewBook,
+							}
+							db.AddAvailableBook(newBook)
+							util.SendNewBookIsAvailableMessage(potentialNewBook)
+							previouslyKnownAvailableBooks[potentialNewBook.Link] = true
+						}
+					}
+				}
+			}
+
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
 		}
 	}

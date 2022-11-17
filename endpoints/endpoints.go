@@ -61,6 +61,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/getsendalertwhenbooknolongeravailable", getSendAlertWhenBookNoLongerAvailable).Methods("GET")
 	settingsRouter.HandleFunc("/setsendalertonlywhenfreeshippingkicksin", setSendAlertOnlyWhenFreeShippingKicksIn).Methods("POST")
 	settingsRouter.HandleFunc("/getsendalertonlywhenfreeshippingkicksin", getSendAlertOnlyWhenFreeShippingKicksIn).Methods("GET")
+	settingsRouter.HandleFunc("/setaddmoreauthorbookstoavailablelist", setAddMoreAuthorBooksToAvailableBooksList).Methods("POST")
+	settingsRouter.HandleFunc("/getaddmoreauthorbookstoavailablelist", getAddMoreAuthorBooksToAvailableBooksList).Methods("GET")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -290,6 +292,27 @@ func setSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Requ
 func getSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Request) {
 	res := dtos.SendAlertOnlyWhenBookFreeShippingKicksInResponse{
 		Enabled: db.GetSendAlertOnlyWhenFreeShippingKicksIn(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func setAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Request) {
+	enabled := r.URL.Query().Get("enabled")
+	enabledBool := strToBool(enabled)
+	if enabledBool != true && enabledBool != false {
+		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	fmt.Printf("Setting as: %v\n", enabledBool)
+	db.SetAddMoreAuthorBooksToAvailableBooksList(enabledBool)
+	w.WriteHeader(http.StatusOK)
+}
+
+func getAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Request) {
+	res := dtos.SendAlertOnlyWhenBookFreeShippingKicksInResponse{
+		Enabled: db.GetAddMoreAuthorBooksToAvailableBooksList(),
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)

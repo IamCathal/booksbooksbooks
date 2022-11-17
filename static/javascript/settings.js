@@ -10,6 +10,7 @@ function getAndRenderSettings() {
     getAndRenderAutomatedCrawlTime()
     getAndRenderSendAlertsWhenBookNoLongerAvailable()
     getAndRenderSendAlertOnlyWhenFreeShippingKicksIn()
+    getAndRenderAddMoreAuthorBooksToAvailableList()
 }
 
 document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener("click", (ev) => {
@@ -119,7 +120,7 @@ function getAndRenderSendAlertsWhenBookNoLongerAvailable() {
 
 function getAndRenderSendAlertOnlyWhenFreeShippingKicksIn() {
     getSendAlertOnlyWhenFreeShippingKicksIn().then(enabled => {
-        if (enabled == "true") {
+        if (enabled == true) {
             document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").checked = true
         } else {
             document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").checked = false
@@ -137,8 +138,25 @@ document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").addEventListen
     }
 })
 
+document.getElementById("addMoreAuthorBooksToAvailableList").addEventListener("change", (ev) => {
+    if (ev.currentTarget.checked) {
+        setAddMoreBooksFromAuthorToAvailableBooksList("true")
+    } else {
+        setAddMoreBooksFromAuthorToAvailableBooksList("false")
+    }
+})
 
-
+function getAndRenderAddMoreAuthorBooksToAvailableList() {
+    getAddMoreBooksFromAuthorToAvailableBooksList().then(enabled => {
+        if (enabled == true) {
+            document.getElementById("addMoreAuthorBooksToAvailableList").checked = true
+        } else {
+            document.getElementById("addMoreAuthorBooksToAvailableList").checked = false
+        }
+    }, (err) => {
+        console.error(err)
+    })
+}
 
 document.getElementById("sendWebhookWhenNoLongerAvailable").addEventListener("change", (ev) => {
     if (ev.currentTarget.checked) {
@@ -411,6 +429,40 @@ function setSendAlertOnlyWhenFreeShippingKicksIn(enabled) {
 function getSendAlertOnlyWhenFreeShippingKicksIn() {
     return new Promise((resolve, reject) => {
         fetch(`/settings/getsendalertonlywhenfreeshippingkicksin`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.enabled)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setAddMoreBooksFromAuthorToAvailableBooksList(enabled) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/setaddmoreauthorbookstoavailablelist?enabled=${enabled}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getAddMoreBooksFromAuthorToAvailableBooksList() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getaddmoreauthorbookstoavailablelist`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
