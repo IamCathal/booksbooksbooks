@@ -120,7 +120,7 @@ function disableBackgroundVisualToggle(buttonID) {
 
 function initWebsocketConn(shelfURL) {
     let booksFound = 0
-    const ws = new WebSocket(`ws://localhost:2945/ws?shelfurl=${encodeURIComponent(shelfURL)}`);
+    const ws = new WebSocket(`ws://${getCurrentHostname()}/ws?shelfurl=${encodeURIComponent(shelfURL)}`);
 
     ws.onopen = function(e) {
     };
@@ -531,4 +531,8 @@ function swayaaangBorders(borderRadius) {
         }
     } 
     return borderRadiuses
+}
+
+function getCurrentHostname() {
+    return new URL(window.location.href).host
 }
