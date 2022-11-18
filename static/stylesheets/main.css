@@ -21,7 +21,7 @@ body {
 }
 
 .bold {
-  font-family: 'Grotesk Bold';
+  font-family: 'AllianceNo2 Bold';
 }
 
 .linkBox {
@@ -159,6 +159,14 @@ body {
   font-weight: 400;
   font-style: normal;
 }
+
+@font-face {
+  font-family: 'AllianceNo2 Bold';
+  src: url(../fonts/AllianceNo2-Bold.woff2) format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
 
 @font-face {
   font-family: 'Grotesk Regular';
