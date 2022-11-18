@@ -152,11 +152,11 @@ func TestGetAvailableBooksMap(t *testing.T) {
 }
 
 func TestGetKeyForRecentCrawlBreadCrumb(t *testing.T) {
-	assert.Equal(t, "sharon-fantasy", getKeyForRecentCrawlBreadcrumb(sharonFantasyLink))
+	assert.Equal(t, "sharon-fantasy", GetKeyForRecentCrawlBreadcrumb(sharonFantasyLink))
 }
 
 func TestGetKeyForRecentCrawlBreadCrumbsHandlesUrlsWithoutUsernames(t *testing.T) {
-	assert.Equal(t, "26367680-currently-reading", getKeyForRecentCrawlBreadcrumb(kingCurrentlyReadingLink))
+	assert.Equal(t, "26367680-currently-reading", GetKeyForRecentCrawlBreadcrumb(kingCurrentlyReadingLink))
 }
 
 func TestRemoveDuplicateAvailableBooks(t *testing.T) {

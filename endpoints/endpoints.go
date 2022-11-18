@@ -258,8 +258,8 @@ func getAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
 
 func setSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
-	enabledBool := strToBool(enabled)
-	if enabledBool != true && enabledBool != false {
+	enabledBool, isValid := strToBool(enabled)
+	if !isValid {
 		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
@@ -270,7 +270,7 @@ func setSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Reques
 }
 
 func getSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Request) {
-	res := dtos.SendAlertWhenBookIsNoLongerAvailableResponse{
+	res := dtos.BooleanSettingStatusResponse{
 		Enabled: db.GetSendAlertWhenBookNoLongerAvailable(),
 	}
 	w.WriteHeader(http.StatusOK)
@@ -279,8 +279,8 @@ func getSendAlertWhenBookNoLongerAvailable(w http.ResponseWriter, r *http.Reques
 
 func setSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
-	enabledBool := strToBool(enabled)
-	if enabledBool != true && enabledBool != false {
+	enabledBool, isValid := strToBool(enabled)
+	if !isValid {
 		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
@@ -290,7 +290,7 @@ func setSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Requ
 }
 
 func getSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Request) {
-	res := dtos.SendAlertOnlyWhenBookFreeShippingKicksInResponse{
+	res := dtos.BooleanSettingStatusResponse{
 		Enabled: db.GetSendAlertOnlyWhenFreeShippingKicksIn(),
 	}
 	w.WriteHeader(http.StatusOK)
@@ -299,8 +299,8 @@ func getSendAlertOnlyWhenFreeShippingKicksIn(w http.ResponseWriter, r *http.Requ
 
 func setAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
-	enabledBool := strToBool(enabled)
-	if enabledBool != true && enabledBool != false {
+	enabledBool, isValid := strToBool(enabled)
+	if !isValid {
 		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
@@ -311,7 +311,7 @@ func setAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Re
 }
 
 func getAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Request) {
-	res := dtos.SendAlertOnlyWhenBookFreeShippingKicksInResponse{
+	res := dtos.BooleanSettingStatusResponse{
 		Enabled: db.GetAddMoreAuthorBooksToAvailableBooksList(),
 	}
 	w.WriteHeader(http.StatusOK)

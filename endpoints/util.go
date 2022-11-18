@@ -47,11 +47,10 @@ func SendBasicInvalidResponse(w http.ResponseWriter, req *http.Request, msg stri
 	json.NewEncoder(w).Encode(response)
 }
 
-func strToBool(stringBool string) bool {
+func strToBool(stringBool string) (bool, bool) {
 	boolVal, err := strconv.ParseBool(stringBool)
 	if err != nil {
-		// logger.Sugar().Fatalf("failed to parse '%s' to bool", stringBool)
-		panic(err)
+		return false, false
 	}
-	return boolVal
+	return boolVal, true
 }
