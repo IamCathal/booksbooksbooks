@@ -117,7 +117,9 @@ func sendFreeShippingWebhookIfFreeShippingEligible() {
 	allAvailableBooks := db.GetAvailableBooks()
 	var totalCost float64
 	for _, book := range allAvailableBooks {
-		totalCost += extractFloatPriceFromString(book.BookPurchaseInfo.Price)
+		if !book.Ignore {
+			totalCost += extractFloatPriceFromString(book.BookPurchaseInfo.Price)
+		}
 	}
 	if totalCost >= 20 {
 		util.SendFreeShippingTotalHasKickedInMessage(totalCost)
