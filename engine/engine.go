@@ -182,12 +182,12 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 					for _, potentialNewBook := range searchResultFromTheBookshop.AuthorMatches {
 						if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
 							newBooksFound++
+							currCrawlStats.BookMatchFound++
 							logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
-								searchResultFromTheBookshop.SearchBook.Title,
-								searchResultFromTheBookshop.SearchBook.Author,
+								potentialNewBook.Title,
+								potentialNewBook.Author,
 								potentialNewBook.Price,
 								potentialNewBook.Link)
-
 							writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
 							newBook := dtos.AvailableBook{
 								BookInfo:         searchResultFromTheBookshop.SearchBook,

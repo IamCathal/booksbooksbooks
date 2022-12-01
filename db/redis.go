@@ -299,6 +299,5 @@ func GetAddMoreAuthorBooksToAvailableBooksList() bool {
 		SetAddMoreAuthorBooksToAvailableBooksList(false)
 		return GetAddMoreAuthorBooksToAvailableBooksList()
 	}
-	fmt.Printf("get add more returning: %v\n", strToBool(enabled))
 	return strToBool(enabled)
 }
