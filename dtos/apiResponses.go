@@ -40,3 +40,7 @@ type GetAutomatedCrawlShelfStats struct {
 	AvailableBooks        int    `json:"availableBooks"`
 	IgnoredAvailableBooks int    `json:"ignoredAvailableBooks"`
 }
+
+type GetKnownAuthorsResponse struct {
+	Authors []string `json:"authors"`
+}

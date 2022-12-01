@@ -43,6 +43,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/ignorebook", ignoreBook).Methods("POST")
 	r.HandleFunc("/unignorebook", unignoreBook).Methods("POST")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
+	r.HandleFunc("/purgeauthorfromavailablebooks", purgeAuthorFromAvailableBooks).Methods("POST")
 	r.HandleFunc("/getautomatedcrawlshelfstats", getAutomatedCrawlShelfStats).Methods("GET")
 	r.Use(logMiddleware)
 
@@ -63,6 +64,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/getsendalertonlywhenfreeshippingkicksin", getSendAlertOnlyWhenFreeShippingKicksIn).Methods("GET")
 	settingsRouter.HandleFunc("/setaddmoreauthorbookstoavailablelist", setAddMoreAuthorBooksToAvailableBooksList).Methods("POST")
 	settingsRouter.HandleFunc("/getaddmoreauthorbookstoavailablelist", getAddMoreAuthorBooksToAvailableBooksList).Methods("GET")
+	settingsRouter.HandleFunc("/getknownauthors", getKnownAuthors).Methods("Get")
+	settingsRouter.HandleFunc("/toggleauthorignore", toggleAuthorIgnore).Methods("POST")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -147,6 +150,18 @@ func getDiscordWebook(w http.ResponseWriter, r *http.Request) {
 
 func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	db.ResetAvailableBooks()
+	w.WriteHeader(http.StatusOK)
+}
+
+func purgeAuthorFromAvailableBooks(w http.ResponseWriter, r *http.Request) {
+	author := r.URL.Query().Get("author")
+	if author == "" {
+		errorMsg := fmt.Sprintf("Invalid author '%s' given", author)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	fmt.Printf("Received author: '%s'\n", author)
+	db.PurgeAuthorFromAvailableBooks(author)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -316,6 +331,24 @@ func getAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Re
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
+}
+
+func getKnownAuthors(w http.ResponseWriter, r *http.Request) {
+	res := db.GetKnownAuthors()
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func toggleAuthorIgnore(w http.ResponseWriter, r *http.Request) {
+	author := r.URL.Query().Get("author")
+	if author == "" {
+		errorMsg := fmt.Sprintf("Invalid author '%s' given", author)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	fmt.Printf("Received author: '%s'\n", author)
+	db.ToggleAuthorIgnore(author)
+	w.WriteHeader(http.StatusOK)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {

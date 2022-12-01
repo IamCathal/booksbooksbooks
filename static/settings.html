@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <div class="container pt-3 mt-3 pb-3 swankyBorders" style="border: 2px solid #c0c0c0">
+        <div class="container pt-3 mt-3 pb-3 pl-3 pr-3 swankyBorders" style="border: 2px solid #c0c0c0">
             <div class="row">
                 <div class="col text-center bold" style="font-size: 1.8rem">
                     Settings 
@@ -152,30 +152,61 @@
             </div>
 
             <div class="row pt-2 pb-2">
-                <div class="col-3">
-                    Send an alert when a book is no longer available
+                <div class="col">
+                    <div class="row">
+                        <div class="col-9">
+                            Send an alert when a book is no longer available
+                        </div>
+                        <div class="col">
+                            <input id="sendWebhookWhenNoLongerAvailable" type="checkbox">
+                        </div>
+                    </div>
                 </div>
                 <div class="col">
-                    <input id="sendWebhookWhenNoLongerAvailable" type="checkbox">
+                    <div class="row">
+                        <div class="col-9">
+                            Send an alert <span style="font-weight: bolder; text-decoration: underline;">only</span> when the total cost of available books exceeds €20 (free shipping)
+                        </div>
+                        <div class="col">
+                            <input id="sendWebhookOnlyWhenFreeShippingKicksIn" type="checkbox">
+                        </div>
+                    </div>
                 </div>
-            
+                <div class="col">
+                    <div class="row">
+                        <div class="col-9">
+                            If more books from an author are found then add the books to the available list
+                        </div>
+                        <div class="col">
+                            <input id="addMoreAuthorBooksToAvailableList" type="checkbox">
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="row pt-2 pb-2">
-                <div class="col-3">
-                    Send an alert <span style="font-weight: bolder; text-decoration: underline;">only</span> when the total cost of available books exceeds €20 (free shipping)
-                </div>
-                <div class="col">
-                    <input id="sendWebhookOnlyWhenFreeShippingKicksIn" type="checkbox">
+            <div class="row pt-3">
+                <div class="col" style="font-size: 1.8rem; font-weight: bold">
+                    Automatic Filtering
                 </div>
             </div>
 
-            <div class="row pt-2 pb-2">
-                <div class="col-3">
-                    If more books from an author are found then add the books to the available list
-                </div>
+            <div class="row pl-3">
                 <div class="col">
-                    <input id="addMoreAuthorBooksToAvailableList" type="checkbox">
+                    <div class="row">
+                        Never mark a book as available if the author is in the filtered list. Click to toggle an author for future searches and purge to
+                        retroactively remove any of their books from your available book list
+                    </div>
+                </div>
+            </div>
+
+            <div class="row pl-3 pr-3" id="knownAuthors">
+
+            </div>
+
+            <div class="row pt-3">
+                <div class="col text-center">
+                    <button class="settingsTestButton pt-1 pb-1 pl-3 pr-3" id="purgeIgnoredAuthorsButton"> Retroactively purge ignored authors from available list </button>
                 </div>
             </div>
 

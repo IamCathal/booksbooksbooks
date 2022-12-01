@@ -92,8 +92,10 @@ func automatedCheck() {
 	logger.Sugar().Infof("%d new books were found in this search", len(newBooksThatNeedNotification))
 	if len(newBooksThatNeedNotification) > 0 {
 		for _, newBook := range newBooksThatNeedNotification {
-			db.AddAvailableBook(newBook)
-			util.SendNewBookIsAvailableMessage(newBook.BookPurchaseInfo)
+			if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
+				db.AddAvailableBook(newBook)
+				util.SendNewBookIsAvailableMessage(newBook.BookPurchaseInfo)
+			}
 		}
 	}
 	logger.Sugar().Infof("%d cached books were available yesterday", len(cachedBooksThatWereAvailable))
@@ -157,37 +159,16 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 			if len(searchResultFromTheBookshop.TitleMatches) > 0 {
 				for _, potentialNewBook := range searchResultFromTheBookshop.TitleMatches {
-					if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
-						newBooksFound++
-						logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
-							searchResultFromTheBookshop.SearchBook.Title,
-							searchResultFromTheBookshop.SearchBook.Author,
-							potentialNewBook.Price,
-							potentialNewBook.Link)
-
-						writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
-						newBook := dtos.AvailableBook{
-							BookInfo:         searchResultFromTheBookshop.SearchBook,
-							BookPurchaseInfo: potentialNewBook,
-						}
-						db.AddAvailableBook(newBook)
-						util.SendNewBookIsAvailableMessage(potentialNewBook)
-						previouslyKnownAvailableBooks[potentialNewBook.Link] = true
-					}
-				}
-			}
-			if addMoreAuthorBooksToAvailableBooksList := db.GetAddMoreAuthorBooksToAvailableBooksList(); addMoreAuthorBooksToAvailableBooksList {
-				if len(searchResultFromTheBookshop.AuthorMatches) > 0 {
-					fmt.Printf("%d author matches to add\n", len(searchResultFromTheBookshop.AuthorMatches))
-					for _, potentialNewBook := range searchResultFromTheBookshop.AuthorMatches {
+					if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {
+						db.AddAuthorToKnownAuthors(potentialNewBook.Author)
 						if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
 							newBooksFound++
-							currCrawlStats.BookMatchFound++
 							logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
-								potentialNewBook.Title,
-								potentialNewBook.Author,
+								searchResultFromTheBookshop.SearchBook.Title,
+								searchResultFromTheBookshop.SearchBook.Author,
 								potentialNewBook.Price,
 								potentialNewBook.Link)
+
 							writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
 							newBook := dtos.AvailableBook{
 								BookInfo:         searchResultFromTheBookshop.SearchBook,
@@ -196,6 +177,33 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 							db.AddAvailableBook(newBook)
 							util.SendNewBookIsAvailableMessage(potentialNewBook)
 							previouslyKnownAvailableBooks[potentialNewBook.Link] = true
+						}
+					}
+
+				}
+			}
+			if addMoreAuthorBooksToAvailableBooksList := db.GetAddMoreAuthorBooksToAvailableBooksList(); addMoreAuthorBooksToAvailableBooksList {
+				if len(searchResultFromTheBookshop.AuthorMatches) > 0 {
+					for _, potentialNewBook := range searchResultFromTheBookshop.AuthorMatches {
+						if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {
+							db.AddAuthorToKnownAuthors(potentialNewBook.Author)
+							if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
+								newBooksFound++
+								currCrawlStats.BookMatchFound++
+								logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+									potentialNewBook.Title,
+									potentialNewBook.Author,
+									potentialNewBook.Price,
+									potentialNewBook.Link)
+								writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
+								newBook := dtos.AvailableBook{
+									BookInfo:         searchResultFromTheBookshop.SearchBook,
+									BookPurchaseInfo: potentialNewBook,
+								}
+								db.AddAvailableBook(newBook)
+								util.SendNewBookIsAvailableMessage(potentialNewBook)
+								previouslyKnownAvailableBooks[potentialNewBook.Link] = true
+							}
 						}
 					}
 				}

@@ -27,6 +27,8 @@ var (
 	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN   = "sendAlertWhenFreeShippingKicksIn"
 	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF           = "totalBooksInAutomatedBookShelf"
 	ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST = "addMoreAuthorBooksToAvailableBooksList"
+	KNOWN_AUTHORS                                 = "knownAuthors"
+	IGNORE_AUTHORS                                = "ignoreAuthors"
 	DEFAULT_TTL                                   = time.Duration(0)
 )
 
@@ -300,4 +302,88 @@ func GetAddMoreAuthorBooksToAvailableBooksList() bool {
 		return GetAddMoreAuthorBooksToAvailableBooksList()
 	}
 	return strToBool(enabled)
+}
+
+func GetKnownAuthors() []dtos.KnownAuthor {
+	knownAuthors, err := redisClient.Get(ctx, KNOWN_AUTHORS).Result()
+	if err == redis.Nil {
+		return []dtos.KnownAuthor{}
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	knownAuthorsArr := []dtos.KnownAuthor{}
+	if knownAuthors != "" {
+		err = json.Unmarshal([]byte(knownAuthors), &knownAuthorsArr)
+		if err != nil {
+			logger.Sugar().Fatal(err)
+		}
+	}
+	return knownAuthorsArr
+}
+
+func getIgnoredAuthors() []string {
+	knownAuthors := GetKnownAuthors()
+	ignoredAuthors := []string{}
+	for _, author := range knownAuthors {
+		if author.Ignore {
+			ignoredAuthors = append(ignoredAuthors, author.Name)
+		}
+	}
+	return ignoredAuthors
+}
+
+func AddAuthorToKnownAuthors(author string) {
+	knownAuthors := GetKnownAuthors()
+
+	knownAuthors = append(knownAuthors, dtos.KnownAuthor{Name: author, Ignore: false})
+	knownAuthors = removeDuplicateAuthors(knownAuthors)
+	jsonKnownAuthors, err := json.Marshal(knownAuthors)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+
+	err = redisClient.Set(ctx, KNOWN_AUTHORS, jsonKnownAuthors, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func SetKnownAuthors(authors []dtos.KnownAuthor) {
+	jsonKnownAuthors, err := json.Marshal(authors)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	err = redisClient.Set(ctx, KNOWN_AUTHORS, jsonKnownAuthors, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func ToggleAuthorIgnore(authorToSearch string) {
+	knownAuthors := GetKnownAuthors()
+	newKnownAuthors := []dtos.KnownAuthor{}
+
+	for _, author := range knownAuthors {
+		if author.Name == authorToSearch {
+			if author.Ignore {
+				author.Ignore = false
+			} else {
+				author.Ignore = true
+			}
+		}
+		newKnownAuthors = append(newKnownAuthors, author)
+	}
+	SetKnownAuthors(newKnownAuthors)
+}
+
+func PurgeAuthorFromAvailableBooks(author string) {
+	availableBooks := GetAvailableBooks()
+	availableBooksWithoutPurgedAuthor := []dtos.AvailableBook{}
+
+	for _, book := range availableBooks {
+		if book.BookPurchaseInfo.Author != author {
+			availableBooksWithoutPurgedAuthor = append(availableBooksWithoutPurgedAuthor, book)
+		}
+	}
+	SetAvailableBooks(availableBooksWithoutPurgedAuthor)
 }

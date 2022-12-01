@@ -26,6 +26,9 @@ A good few levers can be pulled from the [http://localhost:2945/settings](http:/
 - [x] Send an alert only when the total cost of the available books has exceeded €20 which means the order is eligible for free shipping
 - [x] If more books are found from an author who's in your shelf then add those books to the available list
 - [x] Whether to have a compact or spacious alert styled messages in discord
+- [x] Authors can be filtered out of future search results so their books won't ever show up as available
+- [x] All available books (if there are any) from a filtered author can be retroactively purged from the available books list
+
 
 ## Security
 

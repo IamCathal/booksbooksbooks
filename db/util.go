@@ -88,6 +88,20 @@ func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawlBreadcrumb) []dt
 	return noDuplicateRecentCrawlBreadcrumbs
 }
 
+func removeDuplicateAuthors(authors []dtos.KnownAuthor) []dtos.KnownAuthor {
+	seenAuthors := make(map[string]bool)
+	noDuplicateRecentAuthors := []dtos.KnownAuthor{}
+
+	for _, author := range authors {
+		_, exists := seenAuthors[author.Name]
+		if !exists {
+			seenAuthors[author.Name] = true
+			noDuplicateRecentAuthors = append(noDuplicateRecentAuthors, author)
+		}
+	}
+	return noDuplicateRecentAuthors
+}
+
 func GetIgnoredAndNonIgnoredCountOfAvailableBooks() (int, int) {
 	allAvailableBooks := GetAvailableBooks()
 	nonIgnoredCount := 0
@@ -117,4 +131,14 @@ func strToInt(stringInt string) int {
 		panic(err)
 	}
 	return intVal
+}
+
+func IsIgnoredAuthor(author string) bool {
+	ignoredAuthors := getIgnoredAuthors()
+	for _, ignoredAuthor := range ignoredAuthors {
+		if ignoredAuthor == author {
+			return true
+		}
+	}
+	return false
 }

@@ -1,3 +1,4 @@
+let ignoredAuthorsList = []
 
 giveSwayaaangBordersToItems()
 
@@ -11,6 +12,7 @@ function getAndRenderSettings() {
     getAndRenderSendAlertsWhenBookNoLongerAvailable()
     getAndRenderSendAlertOnlyWhenFreeShippingKicksIn()
     getAndRenderAddMoreAuthorBooksToAvailableList()
+    getAndRenderKnownAuthorsList()
 }
 
 document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener("click", (ev) => {
@@ -130,6 +132,50 @@ function getAndRenderSendAlertOnlyWhenFreeShippingKicksIn() {
     })
 }
 
+function getAndRenderKnownAuthorsList() {
+    document.getElementById("knownAuthors").innerHTML = ""
+    getKnownAuthorList().then(authors => {
+        const ignoredAuthors = authors.filter(author => {
+            return author.ignore === true
+        })
+        ignoredAuthorsList = ignoredAuthors
+        const nonIgnoredAuthors = authors.filter(author => {
+            return author.ignore === false
+        })
+        ignoredAuthors.forEach(ignoredAuthor => {
+            document.getElementById("knownAuthors").innerHTML += 
+            `
+            
+            <div class="pl-2 pr-2 pt-1 pb-1 ml-1 mr-1 mt-2 text-center recentCrawlBox ignoreAuthor" style="${swayaaangBorders(0.5)} border: 2px solid #a33131; font-size: 0.8rem; background-color: #a33131" id="${ignoredAuthor.name}"> 
+                ${ignoredAuthor.name}
+            </div>
+            `
+        })
+
+        nonIgnoredAuthors.forEach(author => {
+            document.getElementById("knownAuthors").innerHTML += 
+            `
+            <div class="pl-2 pr-2 pt-1 pb-1 ml-1 mr-1 mt-2 text-center recentCrawlBox ignoreAuthor" style="${swayaaangBorders(0.5)} border: 2px solid #c0c0c0; font-size: 0.8rem;" id="${author.name}"> 
+                ${author.name}
+            </div>
+            `
+        })
+
+        document.querySelectorAll(".ignoreAuthor").forEach(element => {
+            element.addEventListener("click", (ev) => {
+                console.log("click")
+                toggleAuthorIgnore(ev.target.id).then(() => {
+                    getAndRenderKnownAuthorsList()
+                }, err => {
+                    console.error(err)
+                })
+            })
+        })
+    }, (err) => {
+        console.error(err)
+    })
+}
+
 document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").addEventListener("change", (ev) => {
     if (ev.currentTarget.checked) {
         setSendAlertOnlyWhenFreeShippingKicksIn("true")
@@ -166,6 +212,12 @@ document.getElementById("sendWebhookWhenNoLongerAvailable").addEventListener("ch
     }
 })
 
+document.getElementById("purgeIgnoredAuthorsButton").addEventListener("click", (ev) => {
+    ignoredAuthorsList.forEach(author => {
+        purgeAuthorFromAvailableBooks(author.name)
+    })
+})
+
 function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
@@ -175,6 +227,7 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("settingsTestShelfURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsTestWebhookURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsSetAutomatedCheckTimeButton").style = swayaaangBorders(0.4)
+    document.getElementById("purgeIgnoredAuthorsButton").style = swayaaangBorders(0.6)
 
 }
 
@@ -488,6 +541,55 @@ function getPreviewForBookShelf(shelfURL) {
         }).then((res) => res.json())
         .then((res) => {
             resolve(res)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getKnownAuthorList() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getknownauthors`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function toggleAuthorIgnore(author, enable) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/toggleauthorignore?author=${encodeURIComponent(author)}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function purgeAuthorFromAvailableBooks(author) {
+    return new Promise((resolve, reject) => {
+        fetch(`/purgeauthorfromavailablebooks?author=${encodeURIComponent(author)}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => {
+            resolve()
         }, (err) => {
             reject(err)
         });

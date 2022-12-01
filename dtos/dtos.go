@@ -84,6 +84,11 @@ type AvailableBook struct {
 	Ignore           bool               `json:"ignore"`
 }
 
+type KnownAuthor struct {
+	Name   string `json:"name"`
+	Ignore bool   `json:"ignore"`
+}
+
 // Discord embed webhook datastructures
 
 type DiscordMsg struct {

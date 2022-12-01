@@ -186,3 +186,47 @@ func TestStrToBool(t *testing.T) {
 	assert.True(t, strToBool("true"))
 	assert.False(t, strToBool("false"))
 }
+
+func TestIgnoreAuthorFlow(t *testing.T) {
+	initialKnownAuthors := []dtos.KnownAuthor{
+		{
+			Name:   "Patrick Rothfuss",
+			Ignore: false,
+		},
+		{
+			Name:   "Ken MacLeod",
+			Ignore: false,
+		},
+	}
+	SetKnownAuthors(initialKnownAuthors)
+	assert.ElementsMatch(t, initialKnownAuthors, GetKnownAuthors())
+
+	// Toggle ignore on an author
+	initialKnownAuthors[1].Ignore = true
+	ToggleAuthorIgnore(initialKnownAuthors[1].Name)
+	assert.ElementsMatch(t, initialKnownAuthors, GetKnownAuthors())
+
+	// try to add an already existing author, no change to the existing entry
+	// and ignore status does not change
+	AddAuthorToKnownAuthors("Ken MacLeod")
+	assert.ElementsMatch(t, initialKnownAuthors, GetKnownAuthors())
+}
+
+func TestPurgeAuthorFromAvailableBooks(t *testing.T) {
+	retroActivelyPurgeAuthor := "Ken Mc Leod"
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link:   "https://cathaloc.dev",
+				Author: retroActivelyPurgeAuthor,
+			},
+		},
+	}
+	SetAvailableBooks(availableBooks)
+	assert.Equal(t, GetAvailableBooks(), availableBooks)
+
+	PurgeAuthorFromAvailableBooks(retroActivelyPurgeAuthor)
+
+	// Expect available books left from the retroactively purged author
+	assert.Empty(t, GetAvailableBooks())
+}
