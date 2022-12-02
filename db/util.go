@@ -19,6 +19,15 @@ func GetAvailableBooksMap() map[string]bool {
 	return availableBooksMap
 }
 
+func GetMapForAvailableBooks(availableBooks []dtos.AvailableBook) map[string]bool {
+	availableBooksMap := make(map[string]bool)
+
+	for _, book := range availableBooks {
+		availableBooksMap[book.BookPurchaseInfo.Link] = true
+	}
+	return availableBooksMap
+}
+
 func GetKeyForRecentCrawlBreadcrumb(shelfURL string) string {
 	urlObj, err := url.Parse(shelfURL)
 	if err != nil {

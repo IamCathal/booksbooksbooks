@@ -113,7 +113,8 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	}
 
 	db.AddNewCrawlBreadcrumb(shelfURL)
-	previouslyKnownAvailableBooks := db.GetAvailableBooksMap()
+	previouslyKnownAvailableBooksMap := db.GetAvailableBooksMap()
+	previouslyKnownAvailableBooks := db.GetAvailableBooks()
 
 	shelfStatsChan := make(chan int, 1)
 	booksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
@@ -161,7 +162,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 				for _, potentialNewBook := range searchResultFromTheBookshop.TitleMatches {
 					if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {
 						db.AddAuthorToKnownAuthors(potentialNewBook.Author)
-						if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
+						if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooksMap); bookIsNew {
 							newBooksFound++
 							logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
 								searchResultFromTheBookshop.SearchBook.Title,
@@ -176,7 +177,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 							}
 							db.AddAvailableBook(newBook)
 							util.SendNewBookIsAvailableMessage(potentialNewBook)
-							previouslyKnownAvailableBooks[potentialNewBook.Link] = true
+							previouslyKnownAvailableBooksMap[potentialNewBook.Link] = true
 						}
 					}
 
@@ -187,7 +188,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 					for _, potentialNewBook := range searchResultFromTheBookshop.AuthorMatches {
 						if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {
 							db.AddAuthorToKnownAuthors(potentialNewBook.Author)
-							if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooks); bookIsNew {
+							if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooksMap); bookIsNew {
 								newBooksFound++
 								currCrawlStats.BookMatchFound++
 								logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
@@ -202,7 +203,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 								}
 								db.AddAvailableBook(newBook)
 								util.SendNewBookIsAvailableMessage(potentialNewBook)
-								previouslyKnownAvailableBooks[potentialNewBook.Link] = true
+								previouslyKnownAvailableBooksMap[potentialNewBook.Link] = true
 							}
 						}
 					}
@@ -210,6 +211,13 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 			}
 
 			writeSearchResultReturnedMsg(searchResultFromTheBookshop, currCrawlStats, ws)
+		}
+	}
+
+	if notifyOnNoLongerAvailable := db.GetSendAlertWhenBookNoLongerAvailable(); notifyOnNoLongerAvailable {
+		currAvailableBooks := db.GetAvailableBooks()
+		if len(previouslyKnownAvailableBooks) < len(currAvailableBooks) {
+			notifyAboutBooksThatAreNoLongerAvailable(previouslyKnownAvailableBooks)
 		}
 	}
 

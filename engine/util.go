@@ -134,3 +134,21 @@ func extractFloatPriceFromString(priceString string) float64 {
 	}
 	return floatPrice
 }
+
+func notifyAboutBooksThatAreNoLongerAvailable(previouslyAvailable []dtos.AvailableBook) {
+	currAvailableMap := db.GetAvailableBooksMap()
+	updatedCurrentlyAvailableBooks := []dtos.AvailableBook{}
+
+	for _, prevAvailableBook := range previouslyAvailable {
+		if _, isStillAvailable := currAvailableMap[prevAvailableBook.BookPurchaseInfo.Link]; !isStillAvailable {
+			logger.Sugar().Infof("Removing book %s - %s (%s) as its no longer available",
+				prevAvailableBook.BookInfo.Author,
+				prevAvailableBook.BookInfo.Title,
+				prevAvailableBook.BookPurchaseInfo.Link)
+			util.SendBookIsNoLongerAvailableMessage(prevAvailableBook.BookPurchaseInfo)
+		} else {
+			updatedCurrentlyAvailableBooks = append(updatedCurrentlyAvailableBooks, prevAvailableBook)
+		}
+	}
+	db.SetAvailableBooks(updatedCurrentlyAvailableBooks)
+}
