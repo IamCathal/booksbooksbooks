@@ -2,12 +2,11 @@ package thebookshop
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/search"
 	"go.uber.org/zap"
@@ -15,6 +14,7 @@ import (
 
 var (
 	logger                *zap.Logger
+	cntr                  controller.CntrInterface
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
 	lastRequestMade       time.Time
 	bookshopRequestLock   sync.Mutex
@@ -27,6 +27,10 @@ func init() {
 
 func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
+}
+
+func SetController(controller controller.CntrInterface) {
+	cntr = controller
 }
 
 func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
@@ -50,7 +54,7 @@ func FindAuthorAndOrTitleMatches(bookInfo dtos.BasicGoodReadsBook, searchResult 
 
 func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) []dtos.TheBookshopBook {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
-	doc, err := goquery.NewDocumentFromReader(getPage(searchURL))
+	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(searchURL))
 	checkErr(err)
 	allBooks := []dtos.TheBookshopBook{}
 
@@ -80,24 +84,4 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 	bookSearchResultsChan <- refinedSearchResults
 
 	return allBooks
-}
-
-func getPage(pageURL string) io.ReadCloser {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", pageURL, nil)
-	checkErr(err)
-
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Alt-Used", "cdn11.bigcommerce.com")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-	req.Header.Set("Host", "cdn11.bigcommerce.com")
-	req.Header.Set("TE", "trailers")
-	req.Header.Set("Referer", "https://thebookshop.ie/")
-
-	res, err := client.Do(req)
-	checkErr(err)
-	return res.Body
 }

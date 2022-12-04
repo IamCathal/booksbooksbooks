@@ -27,12 +27,12 @@ func extractAuthorFromTitle(fullBookTitle string) (string, string) {
 	fullBookTitle = strings.TrimSpace(fullBookTitle)
 	splitUpBySlash := strings.Split(fullBookTitle, "/")
 	if len(splitUpBySlash) == 2 {
-		return splitUpBySlash[0], splitUpBySlash[1]
+		return strings.TrimSpace(splitUpBySlash[0]), strings.TrimSpace(splitUpBySlash[1])
 	}
 
 	splitUpByDash := strings.Split(fullBookTitle, "-")
 	if len(splitUpByDash) >= 2 {
-		return splitUpByDash[0], splitUpByDash[1]
+		return strings.TrimSpace(splitUpByDash[0]), strings.TrimSpace(splitUpByDash[1])
 	}
 
 	return splitUpByDash[0], splitUpByDash[0]

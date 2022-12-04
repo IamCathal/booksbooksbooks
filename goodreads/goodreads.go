@@ -2,17 +2,17 @@ package goodreads
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"go.uber.org/zap"
 )
 
 var (
 	logger          *zap.Logger
+	cntr            controller.CntrInterface
 	lastRequestMade time.Time
 	SLEEP_DURATION  = time.Duration(1 * time.Second)
 )
@@ -25,6 +25,10 @@ func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
 }
 
+func SetController(controller controller.CntrInterface) {
+	cntr = controller
+}
+
 func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	if isShelfURL := CheckIsShelfURL(shelfURL); !isShelfURL {
 		return []dtos.BasicGoodReadsBook{}
@@ -33,7 +37,7 @@ func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoo
 }
 
 func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
-	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
+	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(shelfURL))
 	checkErr(err)
 
 	allBooks := []dtos.BasicGoodReadsBook{}
@@ -64,7 +68,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 			}
 			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
 
-			newPageDoc, err := goquery.NewDocumentFromReader(getPage(newUrl))
+			newPageDoc, err := goquery.NewDocumentFromReader(cntr.GetPage(newUrl))
 			checkErr(err)
 
 			extractedBooksFromNewPage := extractBooksFromHTML(newPageDoc)
@@ -91,12 +95,12 @@ func sleepIfLongerThanAllotedTimeSinceLastRequest() {
 	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
 	logger.Sugar().Debugw(fmt.Sprintf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference),
 		zap.String("dignostics", "goodReadsEngine"))
-	time.Sleep(timeDifference)
+	cntr.Sleep(timeDifference)
 	lastRequestMade = time.Now()
 }
 
 func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
-	doc, err := goquery.NewDocumentFromReader(getPage(shelfURL))
+	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(shelfURL))
 	checkErr(err)
 	totalBooks := 0
 
@@ -132,21 +136,21 @@ func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 	return allBooks
 }
 
-func getPage(pageURL string) io.ReadCloser {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", pageURL, nil)
-	checkErr(err)
+// func getPage(pageURL string) io.ReadCloser {
+// 	client := &http.Client{}
+// 	req, err := http.NewRequest("GET", pageURL, nil)
+// 	checkErr(err)
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Host", "www.goodreads.com")
-	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Referer", getFakeReferrerPage(pageURL))
+// 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+// 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+// 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+// 	req.Header.Set("Cache-Control", "no-cache")
+// 	req.Header.Set("Connection", "keep-alive")
+// 	req.Header.Set("Host", "www.goodreads.com")
+// 	req.Header.Set("Pragma", "no-cache")
+// 	req.Header.Set("Referer", getFakeReferrerPage(pageURL))
 
-	res, err := client.Do(req)
-	checkErr(err)
-	return res.Body
-}
+// 	res, err := client.Do(req)
+// 	checkErr(err)
+// 	return res.Body
+// }

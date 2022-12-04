@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/endpoints"
@@ -51,6 +52,11 @@ func main() {
 	goodreads.SetLogger(logger)
 	thebookshop.SetLogger(logger)
 	search.SetLogger(logger)
+	controller.SetLogger(logger)
+
+	controller := controller.Cntr{}
+	goodreads.SetController(controller)
+	thebookshop.SetController(controller)
 
 	port := 2945
 
