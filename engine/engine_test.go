@@ -37,6 +37,6 @@ func TestMain(m *testing.M) {
 // 	mockController.Ass
 // }
 
-func TestAutomatedCheck(t *testing.T) {
+func TestWorker(t *testing.T) {
 
 }

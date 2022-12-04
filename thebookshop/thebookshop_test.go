@@ -1,13 +1,18 @@
 package thebookshop
 
 import (
+	"bytes"
+	"io"
 	"log"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/search"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
 )
 
@@ -98,4 +103,28 @@ func TestExtractAuthorFromTitleReturnsEverythingWhenCantSplit(t *testing.T) {
 
 	assert.Equal(t, expectedAuthor, author)
 	assert.Equal(t, expectedTitle, title)
+}
+
+func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
+	mockController := &controller.MockCntrInterface{}
+	SetController(mockController)
+
+	bookSearchResultsChan := make(chan dtos.EnchancedSearchResult, 200)
+	mockController.On("GetPage", mock.AnythingOfType("string")).Return(io.NopCloser(bytes.NewReader([]byte(rothfussSearchResult))))
+
+	startTime := time.Now()
+	SLEEP_DURATION = time.Duration(12 * time.Millisecond)
+	timesCalled := 9
+
+	for i := 0; i < timesCalled; i++ {
+		SearchForBook(dtos.BasicGoodReadsBook{}, bookSearchResultsChan)
+	}
+
+	timeTaken := time.Since(startTime)
+
+	perfectWorldTimeTaken := time.Duration(timesCalled) * SLEEP_DURATION
+	expectedTimeTaken := perfectWorldTimeTaken.Abs().Milliseconds()
+
+	// Allow for 2ms expected difference since sleep is not constant
+	assert.Greater(t, timeTaken.Abs().Milliseconds(), expectedTimeTaken-2)
 }
