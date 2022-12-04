@@ -21,13 +21,14 @@ func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.Th
 	potentialTitleMatches := []dtos.TheBookshopBook{}
 
 	for _, searchResult := range searchResults {
+
 		titleAndAuthorTheBookshop := fmt.Sprintf("%s %s", searchResult.Author, searchResult.Title)
 		titleAndAuthorGoodReads := fmt.Sprintf("%s %s", bookInfo.Author, bookInfo.Title)
 
-		if fuzzy.MatchFold(titleAndAuthorGoodReads, titleAndAuthorTheBookshop) {
+		if fuzzy.MatchNormalizedFold(titleAndAuthorGoodReads, titleAndAuthorTheBookshop) {
 			potentialTitleMatches = append(potentialTitleMatches, searchResult)
 		}
-		if fuzzy.MatchFold(bookInfo.Author, searchResult.Author) {
+		if fuzzy.MatchNormalizedFold(bookInfo.Author, searchResult.Author) {
 			potentialAuthorMatches = append(potentialAuthorMatches, searchResult)
 		}
 	}

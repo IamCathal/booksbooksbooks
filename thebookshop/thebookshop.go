@@ -39,11 +39,12 @@ func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<
 	for {
 		if time.Since(lastRequestMade) > SLEEP_DURATION {
 			lastRequestMade = time.Now()
-			allBooks := searchTheBookshop(bookInfo, bookSearchResultsChan)
+			bookSearchResults := searchTheBookshop(bookInfo, bookSearchResultsChan)
 			bookshopRequestLock.Unlock()
 			logger.Sugar().Debugw(fmt.Sprintf("Waited %v before executing TheBookshop.ie search request", time.Since(startTime)),
 				zap.String("dignostics", "theBookshopEngine"))
-			return FindAuthorAndOrTitleMatches(bookInfo, allBooks)
+			return bookSearchResults
+			// return FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 		}
 	}
 }
@@ -52,8 +53,9 @@ func FindAuthorAndOrTitleMatches(bookInfo dtos.BasicGoodReadsBook, searchResult 
 	return search.SearchAllRankFind(bookInfo, searchResult)
 }
 
-func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) []dtos.TheBookshopBook {
+func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
+	fmt.Println(searchURL)
 	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(searchURL))
 	checkErr(err)
 	allBooks := []dtos.TheBookshopBook{}
@@ -82,6 +84,5 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 
 	refinedSearchResults := FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 	bookSearchResultsChan <- refinedSearchResults
-
-	return allBooks
+	return refinedSearchResults
 }
