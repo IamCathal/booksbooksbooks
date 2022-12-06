@@ -1,13 +1,10 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
 	"time"
 
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
@@ -46,7 +43,7 @@ func SendNewBookIsAvailableNotification(book dtos.TheBookshopBook) {
 		}
 	}
 	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); !onlyWhenFreeShippingKicksIn {
-		DeliverWebHook(message)
+		controller.Cnt.DeliverWebhook(message)
 	}
 }
 
@@ -76,7 +73,7 @@ func SendBookIsNoLongerAvailableNotification(book dtos.TheBookshopBook) {
 		}
 	}
 	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); !onlyWhenFreeShippingKicksIn {
-		DeliverWebHook(message)
+		controller.Cnt.DeliverWebhook(message)
 	}
 }
 
@@ -96,25 +93,25 @@ func SendFreeShippingTotalHasKickedInNotification(totalCostOfBooks float64) {
 			Timestamp:   time.Now().Format(time.RFC3339),
 		}},
 	}
-	DeliverWebHook(message)
+	controller.Cnt.DeliverWebhook(message)
 }
 
-func DeliverWebHook(msg dtos.DiscordMsg) {
-	webhookURL := db.GetDiscordWebhookURL()
-	if webhookURL == "" {
-		return
-	}
+// func DeliverWebHook(msg dtos.DiscordMsg) {
+// 	webhookURL := db.GetDiscordWebhookURL()
+// 	if webhookURL == "" {
+// 		return
+// 	}
 
-	msgEmbedByte, err := json.Marshal(msg)
-	if err != nil {
-		log.Fatal(err)
-	}
-	res, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(msgEmbedByte))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer res.Body.Close()
-}
+// 	msgEmbedByte, err := json.Marshal(msg)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	res, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(msgEmbedByte))
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer res.Body.Close()
+// }
 
 func FindBooksThatAreNowNotAvailable(yesterdaysBooks, todaysBooks []dtos.AvailableBook) []dtos.AvailableBook {
 	booksThatAreNowNotAvailable := []dtos.AvailableBook{}

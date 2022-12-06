@@ -12,7 +12,6 @@ import (
 
 var (
 	logger          *zap.Logger
-	cntr            controller.CntrInterface
 	lastRequestMade time.Time
 	SLEEP_DURATION  = time.Duration(1 * time.Second)
 )
@@ -25,10 +24,6 @@ func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
 }
 
-func SetController(controller controller.CntrInterface) {
-	cntr = controller
-}
-
 func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	if isShelfURL := CheckIsShelfURL(shelfURL); !isShelfURL {
 		return []dtos.BasicGoodReadsBook{}
@@ -37,7 +32,7 @@ func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoo
 }
 
 func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
-	doc := goquery.NewDocumentFromNode(cntr.GetPage(shelfURL))
+	doc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(shelfURL))
 
 	allBooks := []dtos.BasicGoodReadsBook{}
 	totalBooks := 0
@@ -66,7 +61,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 				break
 			}
 			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
-			newPageDoc := goquery.NewDocumentFromNode(cntr.GetPage(newUrl))
+			newPageDoc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(newUrl))
 
 			extractedBooksFromNewPage := extractBooksFromHTML(newPageDoc)
 			for _, book := range extractedBooksFromNewPage {
@@ -92,12 +87,12 @@ func sleepIfLongerThanAllotedTimeSinceLastRequest() {
 	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
 	logger.Sugar().Debugw(fmt.Sprintf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference),
 		zap.String("dignostics", "goodReadsEngine"))
-	cntr.Sleep(timeDifference)
+	controller.Cnt.Sleep(timeDifference)
 	lastRequestMade = time.Now()
 }
 
 func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
-	doc := goquery.NewDocumentFromNode(cntr.GetPage(shelfURL))
+	doc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(shelfURL))
 	totalBooks := 0
 
 	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {

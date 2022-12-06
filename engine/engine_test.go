@@ -57,9 +57,7 @@ func loadMockSearchResults() {
 
 func TestWorker(t *testing.T) {
 	mockController := controller.MockCntrInterface{}
-	goodreads.SetController(&mockController)
-	thebookshop.SetController(&mockController)
-	SetController(&mockController)
+	controller.SetController(&mockController)
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 
 	mockController.On("Sleep", mock.Anything).After(1 * time.Millisecond).Return()

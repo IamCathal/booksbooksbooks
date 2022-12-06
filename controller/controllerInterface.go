@@ -1,13 +1,18 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/iamcathal/booksbooksbooks/db"
+	"github.com/iamcathal/booksbooksbooks/dtos"
 	"go.uber.org/zap"
 	"golang.org/x/net/html"
 )
@@ -15,19 +20,28 @@ import (
 var (
 	logger             *zap.Logger
 	websocketWriteLock sync.Mutex
+	Cnt                CntrInterface
 )
 
 func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
 }
 
+func SetController(controller CntrInterface) {
+	Cnt = controller
+}
+
 type Cntr struct{}
 
 type CntrInterface interface {
+	// Goodreads and TheBookshop
 	GetPage(url string) *html.Node
 
+	// Websocket and notifications
 	WriteWsMessage(msg []byte, ws *websocket.Conn) error
+	DeliverWebhook(msg dtos.DiscordMsg) error
 
+	// Utils
 	GetFormattedTime() string
 	Sleep(duration time.Duration)
 }
@@ -56,9 +70,24 @@ func (control Cntr) WriteWsMessage(msg []byte, ws *websocket.Conn) error {
 	websocketWriteLock.Lock()
 	defer websocketWriteLock.Unlock()
 	return ws.WriteMessage(1, msg)
-	// if err != nil {
-	// logger.Sugar().Fatal(err)
-	// }
+}
+
+func (control Cntr) DeliverWebhook(msg dtos.DiscordMsg) error {
+	webhookURL := db.GetDiscordWebhookURL()
+	if webhookURL == "" {
+		return nil
+	}
+
+	msgEmbedByte, err := json.Marshal(msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	res, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(msgEmbedByte))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	return err
 }
 
 func (control Cntr) GetFormattedTime() string {

@@ -16,7 +16,6 @@ import (
 
 var (
 	logger                   *zap.Logger
-	cntr                     controller.CntrInterface
 	BOOKS_DISPLAYED_PER_PAGE = 30
 )
 
@@ -24,13 +23,9 @@ func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
 }
 
-func SetController(controller controller.CntrInterface) {
-	cntr = controller
-}
-
 func AutomatedCheckEngine() {
 	for {
-		currTime := cntr.GetFormattedTime()
+		currTime := controller.Cnt.GetFormattedTime()
 		if currTime == db.GetAutomatedBookShelfCrawlTime() {
 			logger.Info("Beginning automated crawl")
 			shelfURL := db.GetAutomatedBookShelfCheck()
@@ -40,7 +35,7 @@ func AutomatedCheckEngine() {
 				go automatedCheck()
 			}
 		}
-		cntr.Sleep(60 * time.Second)
+		controller.Cnt.Sleep(60 * time.Second)
 	}
 }
 

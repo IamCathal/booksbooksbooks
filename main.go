@@ -54,9 +54,8 @@ func main() {
 	search.SetLogger(logger)
 	controller.SetLogger(logger)
 
-	controller := controller.Cntr{}
-	goodreads.SetController(controller)
-	thebookshop.SetController(controller)
+	cnt := controller.Cntr{}
+	controller.SetController(cnt)
 
 	port := 2945
 

@@ -89,7 +89,7 @@ func TestExtractAuthorFromTitleReturnsEverythingWhenCantSplit(t *testing.T) {
 
 func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
 	mockController := &controller.MockCntrInterface{}
-	SetController(mockController)
+	controller.SetController(mockController)
 
 	bookSearchResultsChan := make(chan dtos.EnchancedSearchResult, 200)
 	mockController.On("GetPage", mock.AnythingOfType("string")).Return(getHtmlNode(rothfussSearchResult))

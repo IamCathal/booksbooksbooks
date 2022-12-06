@@ -14,7 +14,6 @@ import (
 
 var (
 	logger                *zap.Logger
-	cntr                  controller.CntrInterface
 	THE_BOOKSHOP_BASE_URL = "https://thebookshop.ie"
 	lastRequestMade       time.Time
 	bookshopRequestLock   sync.Mutex
@@ -27,10 +26,6 @@ func init() {
 
 func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
-}
-
-func SetController(controller controller.CntrInterface) {
-	cntr = controller
 }
 
 func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
@@ -55,7 +50,7 @@ func FindAuthorAndOrTitleMatches(bookInfo dtos.BasicGoodReadsBook, searchResult 
 
 func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
-	doc := goquery.NewDocumentFromNode(cntr.GetPage(searchURL))
+	doc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(searchURL))
 	allBooks := []dtos.TheBookshopBook{}
 
 	doc.Find("ul[class='productGrid']").Each(func(i int, bookReviews *goquery.Selection) {

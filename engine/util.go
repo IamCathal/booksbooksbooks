@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/util"
@@ -19,7 +20,7 @@ func writeErrorMsg(msg string, ws *websocket.Conn) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = cntr.WriteWsMessage(jsonStr, ws)
+	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -34,7 +35,7 @@ func writeTotalBooksInShelfWsMessage(stats dtos.CrawlStats, ws *websocket.Conn) 
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = cntr.WriteWsMessage(jsonStr, ws)
+	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -49,7 +50,7 @@ func writeBookFromShelfWsMessage(bookInfo dtos.BasicGoodReadsBook, stats dtos.Cr
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = cntr.WriteWsMessage(jsonStr, ws)
+	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -64,7 +65,7 @@ func writeNewAvailableBookWsMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlS
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = cntr.WriteWsMessage(jsonStr, ws)
+	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
@@ -79,7 +80,7 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	err = cntr.WriteWsMessage(jsonStr, ws)
+	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}

@@ -9,11 +9,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/engine"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
-	"github.com/iamcathal/booksbooksbooks/util"
 	"go.uber.org/zap"
 )
 
@@ -119,7 +119,7 @@ func unignoreBook(w http.ResponseWriter, r *http.Request) {
 func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
 	discordWebhook := r.URL.Query().Get("webhookurl")
 	db.SetDiscordWebhookURL(discordWebhook)
-	util.DeliverWebHook(dtos.DiscordMsg{
+	err := controller.Cnt.DeliverWebhook(dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
 		Embed: []dtos.DiscordEmbed{
@@ -128,6 +128,11 @@ func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	})
+	if err != nil {
+		errorMsg := fmt.Sprintf("Invalid webhookurl '%s' given", discordWebhook)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
 	db.SetDiscordWebhookURL(discordWebhook)
 	w.WriteHeader(http.StatusOK)
 }
