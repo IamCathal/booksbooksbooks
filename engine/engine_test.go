@@ -60,6 +60,7 @@ func TestWorker(t *testing.T) {
 	goodreads.SetController(&mockController)
 	thebookshop.SetController(&mockController)
 	SetController(&mockController)
+	db.SetKnownAuthors([]dtos.KnownAuthor{})
 
 	mockController.On("Sleep", mock.Anything).After(1 * time.Millisecond).Return()
 
@@ -82,6 +83,62 @@ func TestWorker(t *testing.T) {
 	assert.Equal(t, len(db.GetAvailableBooks()), 2)
 	assert.Equal(t, db.GetTotalBooksInAutomatedBookShelfCheck(), 1)
 	assert.Equal(t, 1, len(db.GetKnownAuthors()))
+}
+
+func TestFilterIgnoredAuthorsFiltersNothingWhenNoAuthorIsIgnored(t *testing.T) {
+	db.SetKnownAuthors([]dtos.KnownAuthor{})
+
+	searchResult := dtos.EnchancedSearchResult{
+		SearchBook: dtos.BasicGoodReadsBook{
+			Title:  "Fallen Dragon",
+			Author: "Patrick F. Hamilton",
+		},
+		TitleMatches: []dtos.TheBookshopBook{
+			{
+				Title: "Fallen Dragon",
+			},
+		},
+		AuthorMatches: []dtos.TheBookshopBook{
+			{
+				Author: "Patrick F. Hamilton",
+			},
+		},
+	}
+
+	filteredSearchResults := filterIgnoredAuthors(searchResult)
+
+	assert.Equal(t, len(searchResult.TitleMatches), len(filteredSearchResults.TitleMatches))
+	assert.Equal(t, len(searchResult.AuthorMatches), len(filteredSearchResults.AuthorMatches))
+}
+
+func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
+	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	ignoredAuthor := "Patrick F. Hamilton"
+
+	searchResult := dtos.EnchancedSearchResult{
+		SearchBook: dtos.BasicGoodReadsBook{
+			Title:  "Fallen Dragon",
+			Author: ignoredAuthor,
+		},
+		TitleMatches: []dtos.TheBookshopBook{
+			{
+				Title:  "The Knife of Never Letting Go",
+				Author: "Patrick Ness",
+			},
+		},
+		AuthorMatches: []dtos.TheBookshopBook{
+			{
+				Author: ignoredAuthor,
+			},
+		},
+	}
+
+	db.AddAuthorToKnownAuthors(ignoredAuthor)
+	db.ToggleAuthorIgnore(ignoredAuthor)
+	filteredSearchResults := filterIgnoredAuthors(searchResult)
+
+	assert.Equal(t, len(filteredSearchResults.TitleMatches), 1)
+	assert.Equal(t, len(filteredSearchResults.AuthorMatches), 0)
 }
 
 func getHtmlNode(webpageStr string) *html.Node {

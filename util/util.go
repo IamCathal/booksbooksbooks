@@ -12,7 +12,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
-func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
+func SendNewBookIsAvailableNotification(book dtos.TheBookshopBook) {
 	message := dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
@@ -45,12 +45,12 @@ func SendNewBookIsAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == false {
+	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); !onlyWhenFreeShippingKicksIn {
 		DeliverWebHook(message)
 	}
 }
 
-func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
+func SendBookIsNoLongerAvailableNotification(book dtos.TheBookshopBook) {
 	message := dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
@@ -75,12 +75,12 @@ func SendBookIsNoLongerAvailableMessage(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); onlyWhenFreeShippingKicksIn == false {
+	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); !onlyWhenFreeShippingKicksIn {
 		DeliverWebHook(message)
 	}
 }
 
-func SendFreeShippingTotalHasKickedInMessage(totalCostOfBooks float64) {
+func SendFreeShippingTotalHasKickedInNotification(totalCostOfBooks float64) {
 	message := dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",

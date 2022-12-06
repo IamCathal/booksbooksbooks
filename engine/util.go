@@ -19,10 +19,13 @@ func writeErrorMsg(msg string, ws *websocket.Conn) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	cntr.WriteWsMessage(jsonStr, ws)
+	err = cntr.WriteWsMessage(jsonStr, ws)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 }
 
-func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
+func writeTotalBooksInShelfWsMessage(stats dtos.CrawlStats, ws *websocket.Conn) {
 	totalBooksMsg := dtos.WsTotalBooks{
 		TotalBooks: stats.TotalBooks,
 		CrawlStats: stats,
@@ -31,10 +34,13 @@ func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	cntr.WriteWsMessage(jsonStr, ws)
+	err = cntr.WriteWsMessage(jsonStr, ws)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 }
 
-func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlStats, ws *websocket.Conn) {
+func writeBookFromShelfWsMessage(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlStats, ws *websocket.Conn) {
 	goodReadsBookMsg := dtos.WsGoodreadsBook{
 		BookInfo:   bookInfo,
 		CrawlStats: stats,
@@ -43,10 +49,13 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	cntr.WriteWsMessage(jsonStr, ws)
+	err = cntr.WriteWsMessage(jsonStr, ws)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 }
 
-func writeNewAvailableBookMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlStats, ws *websocket.Conn) {
+func writeNewAvailableBookWsMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlStats, ws *websocket.Conn) {
 	newAvaialbleBookMsg := dtos.WsNewBookAvailable{
 		Book:       bookInfo,
 		CrawlStats: stats,
@@ -55,7 +64,10 @@ func writeNewAvailableBookMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlSta
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	cntr.WriteWsMessage(jsonStr, ws)
+	err = cntr.WriteWsMessage(jsonStr, ws)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 }
 
 func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats dtos.CrawlStats, ws *websocket.Conn) {
@@ -67,7 +79,10 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	cntr.WriteWsMessage(jsonStr, ws)
+	err = cntr.WriteWsMessage(jsonStr, ws)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 }
 
 // func WriteMsg(msg []byte, ws *websocket.Conn) {
@@ -79,7 +94,7 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 // 	}
 // }
 
-func goodReadsBookIsNew(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
+func wasNotPreviouslyAvailable(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
 	_, exists := availableBooksMap[book.Link]
 	return !exists
 }
@@ -93,7 +108,7 @@ func sendFreeShippingWebhookIfFreeShippingEligible() {
 		}
 	}
 	if totalCost >= 20 {
-		util.SendFreeShippingTotalHasKickedInMessage(totalCost)
+		util.SendFreeShippingTotalHasKickedInNotification(totalCost)
 	}
 }
 
@@ -116,10 +131,30 @@ func notifyAboutBooksThatAreNoLongerAvailable(previouslyAvailable []dtos.Availab
 				prevAvailableBook.BookInfo.Author,
 				prevAvailableBook.BookInfo.Title,
 				prevAvailableBook.BookPurchaseInfo.Link)
-			util.SendBookIsNoLongerAvailableMessage(prevAvailableBook.BookPurchaseInfo)
+			util.SendBookIsNoLongerAvailableNotification(prevAvailableBook.BookPurchaseInfo)
 		} else {
 			updatedCurrentlyAvailableBooks = append(updatedCurrentlyAvailableBooks, prevAvailableBook)
 		}
 	}
 	db.SetAvailableBooks(updatedCurrentlyAvailableBooks)
+}
+
+func filterIgnoredAuthors(searchResult dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
+	filteredSearchResult := dtos.EnchancedSearchResult{
+		SearchBook: searchResult.SearchBook,
+	}
+
+	for _, titleMatch := range searchResult.TitleMatches {
+		if authorIsIgnored := db.IsIgnoredAuthor(titleMatch.Author); !authorIsIgnored {
+			filteredSearchResult.TitleMatches = append(filteredSearchResult.TitleMatches, titleMatch)
+		}
+	}
+
+	for _, authorMatches := range searchResult.AuthorMatches {
+		if authorIsIgnored := db.IsIgnoredAuthor(authorMatches.Author); !authorIsIgnored {
+			filteredSearchResult.AuthorMatches = append(filteredSearchResult.AuthorMatches, authorMatches)
+		}
+	}
+
+	return filteredSearchResult
 }

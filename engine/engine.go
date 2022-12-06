@@ -69,7 +69,7 @@ func automatedCheck() {
 	if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
 		booksThatAreNowNotAvailable := util.FindBooksThatAreNowNotAvailable(cachedBooksThatWereAvailable, cachedBooksThatAreStillAvailableToday)
 		for _, book := range booksThatAreNowNotAvailable {
-			util.SendNewBookIsAvailableMessage(book.BookPurchaseInfo)
+			util.SendNewBookIsAvailableNotification(book.BookPurchaseInfo)
 		}
 	}
 
@@ -100,7 +100,7 @@ func automatedCheck() {
 		for _, newBook := range newBooksThatNeedNotification {
 			if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
 				db.AddAvailableBook(newBook)
-				util.SendNewBookIsAvailableMessage(newBook.BookPurchaseInfo)
+				util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo)
 			}
 		}
 	}
@@ -123,21 +123,23 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	previouslyKnownAvailableBooks := db.GetAvailableBooks()
 
 	shelfStatsChan := make(chan int, 1)
-	booksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
-	searchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
+	booksFromShelfChan := make(chan dtos.BasicGoodReadsBook, 200)
+	searchResultBooksChan := make(chan dtos.EnchancedSearchResult, 200)
 
-	logger.Sugar().Infof("Retrieving books from shelf: %s\n", shelfURL)
-	goodreads.GetBooksFromShelf(shelfURL, shelfStatsChan, booksFoundFromGoodReadsChan)
+	logger.Sugar().Infof("Retrieving books from shelf: %s", shelfURL)
+	goodreads.GetBooksFromShelf(shelfURL, shelfStatsChan, booksFromShelfChan)
 
 	booksFound := 0
 	searchResultsReturned := 0
+	newBooksFound := 0
 	totalBooksFromGoodReads := -1
+
 	currCrawlStats := dtos.CrawlStats{
 		TotalBooks:    totalBooksFromGoodReads,
 		BooksCrawled:  booksFound,
 		BooksSearched: searchResultsReturned,
 	}
-	newBooksFound := 0
+
 	for {
 		if allBooksFound(currCrawlStats) {
 			break
@@ -149,68 +151,52 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 				shelfStatsChan = nil
 			} else {
 				currCrawlStats.TotalBooks = totalBooks
-				writeTotalBooksMsg(currCrawlStats, ws)
+				writeTotalBooksInShelfWsMessage(currCrawlStats, ws)
 			}
 
-		case bookFromGoodReads := <-booksFoundFromGoodReadsChan:
+		case bookFromGoodReads := <-booksFromShelfChan:
 			currCrawlStats.BooksCrawled++
 			logger.Sugar().Infof("[booksFound: %d][booksCrawled: %d] Found a GoodReads book: %+v by %v",
-				len(booksFoundFromGoodReadsChan), currCrawlStats.BooksCrawled,
+				len(booksFromShelfChan), currCrawlStats.BooksCrawled,
 				bookFromGoodReads.Title, bookFromGoodReads.Author)
-			writeGoodReadsBookMsg(bookFromGoodReads, currCrawlStats, ws)
-			go thebookshop.SearchForBook(bookFromGoodReads, searchResultsFromTheBookshopChan)
+			writeBookFromShelfWsMessage(bookFromGoodReads, currCrawlStats, ws)
+			go thebookshop.SearchForBook(bookFromGoodReads, searchResultBooksChan)
 
-		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
+		case searchResultFromTheBookshop := <-searchResultBooksChan:
 			currCrawlStats.BooksSearched++
-			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
-			if len(searchResultFromTheBookshop.TitleMatches) > 0 {
-				for _, potentialNewBook := range searchResultFromTheBookshop.TitleMatches {
-					if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {
-						db.AddAuthorToKnownAuthors(potentialNewBook.Author)
-						if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooksMap); bookIsNew {
-							newBooksFound++
-							logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
-								searchResultFromTheBookshop.SearchBook.Title,
-								searchResultFromTheBookshop.SearchBook.Author,
-								potentialNewBook.Price,
-								potentialNewBook.Link)
+			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches) + len(searchResultFromTheBookshop.AuthorMatches)
 
-							writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
-							newBook := dtos.AvailableBook{
-								BookInfo:         searchResultFromTheBookshop.SearchBook,
-								BookPurchaseInfo: potentialNewBook,
-							}
-							db.AddAvailableBook(newBook)
-							util.SendNewBookIsAvailableMessage(potentialNewBook)
-							previouslyKnownAvailableBooksMap[potentialNewBook.Link] = true
-						}
-					}
+			searchResultsFiltered := filterIgnoredAuthors(searchResultFromTheBookshop)
 
+			for _, titleMatch := range searchResultsFiltered.TitleMatches {
+				db.AddAuthorToKnownAuthors(titleMatch.Author)
+				if bookIsNew := wasNotPreviouslyAvailable(titleMatch, previouslyKnownAvailableBooksMap); bookIsNew {
+					newBooksFound++
+					logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+						searchResultsFiltered.SearchBook.Title, searchResultsFiltered.SearchBook.Author,
+						titleMatch.Price, titleMatch.Link)
+
+					writeNewAvailableBookWsMsg(titleMatch, currCrawlStats, ws)
+					db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: titleMatch})
+					util.SendNewBookIsAvailableNotification(titleMatch)
+					previouslyKnownAvailableBooksMap[titleMatch.Link] = true
 				}
 			}
+
 			if addMoreAuthorBooksToAvailableBooksList := db.GetAddMoreAuthorBooksToAvailableBooksList(); addMoreAuthorBooksToAvailableBooksList {
-				if len(searchResultFromTheBookshop.AuthorMatches) > 0 {
-					for _, potentialNewBook := range searchResultFromTheBookshop.AuthorMatches {
-						if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {
-							db.AddAuthorToKnownAuthors(potentialNewBook.Author)
-							if bookIsNew := goodReadsBookIsNew(potentialNewBook, previouslyKnownAvailableBooksMap); bookIsNew {
-								newBooksFound++
-								currCrawlStats.BookMatchFound++
-								logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
-									potentialNewBook.Title,
-									potentialNewBook.Author,
-									potentialNewBook.Price,
-									potentialNewBook.Link)
-								writeNewAvailableBookMsg(potentialNewBook, currCrawlStats, ws)
-								newBook := dtos.AvailableBook{
-									BookInfo:         searchResultFromTheBookshop.SearchBook,
-									BookPurchaseInfo: potentialNewBook,
-								}
-								db.AddAvailableBook(newBook)
-								util.SendNewBookIsAvailableMessage(potentialNewBook)
-								previouslyKnownAvailableBooksMap[potentialNewBook.Link] = true
-							}
-						}
+				for _, authorMatch := range searchResultFromTheBookshop.AuthorMatches {
+					db.AddAuthorToKnownAuthors(authorMatch.Author)
+					if bookIsNew := wasNotPreviouslyAvailable(authorMatch, previouslyKnownAvailableBooksMap); bookIsNew {
+						newBooksFound++
+						currCrawlStats.BookMatchFound++
+
+						logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+							authorMatch.Title, authorMatch.Author, authorMatch.Price, authorMatch.Link)
+
+						writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
+						db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: authorMatch})
+						util.SendNewBookIsAvailableNotification(authorMatch)
+						previouslyKnownAvailableBooksMap[authorMatch.Link] = true
 					}
 				}
 			}
@@ -230,8 +216,8 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 	logger.Sugar().Infof("Finished. Crawled %d books from GoodReads and made %d searches to TheBookshop.ie which had %d new books",
 		currCrawlStats.BooksCrawled, currCrawlStats.BooksSearched, newBooksFound)
-	close(booksFoundFromGoodReadsChan)
-	close(searchResultsFromTheBookshopChan)
+	close(booksFromShelfChan)
+	close(searchResultBooksChan)
 }
 
 func allBooksFound(crawlStats dtos.CrawlStats) bool {
