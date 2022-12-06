@@ -1,10 +1,9 @@
 package thebookshop
 
 import (
-	"bytes"
-	"io"
 	"log"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
+	"golang.org/x/net/html"
 )
 
 var (
@@ -38,30 +38,12 @@ func TestMain(m *testing.M) {
 }
 
 func loadMockSearchResults() {
-	data, err := os.ReadFile("testData/rothfussSearch.html")
+	data, err := os.ReadFile("testData/rothfussTheBookshopSearch.html")
 	if err != nil {
 		panic(err)
 	}
 	rothfussSearchResult = string(data)
 }
-
-// func TestSearchTheBookshopExtractsAllRelevantBooks(t *testing.T) {
-// 	mockController := &controller.MockCntrInterface{}
-// 	SetController(mockController)
-
-// 	bookSearchResultsChan := make(chan dtos.EnchancedSearchResult, 200)
-// 	mockController.On("GetPage", mock.AnythingOfType("string")).Return(io.NopCloser(bytes.NewReader([]byte(rothfussSearchResult))))
-
-// 	bookSearchResults := searchTheBookshop(dtos.BasicGoodReadsBook{}, bookSearchResultsChan)
-
-// 	jsonObj, err := json.Marshal(&bookSearchResults)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	fmt.Printf("\n\n%s\n\n", jsonObj)
-// 	assert.Len(t, bookSearchResults, 1)
-
-// }
 
 func TestURLEncodeBookSearch(t *testing.T) {
 	actualEncodedURIParams := "search_query=TOLKIEN%20%2F%20THE%20LORD%20OF%20THE%20RINGS&section=product"
@@ -110,7 +92,7 @@ func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
 	SetController(mockController)
 
 	bookSearchResultsChan := make(chan dtos.EnchancedSearchResult, 200)
-	mockController.On("GetPage", mock.AnythingOfType("string")).Return(io.NopCloser(bytes.NewReader([]byte(rothfussSearchResult))))
+	mockController.On("GetPage", mock.AnythingOfType("string")).Return(getHtmlNode(rothfussSearchResult))
 
 	startTime := time.Now()
 	SLEEP_DURATION = time.Duration(12 * time.Millisecond)
@@ -125,6 +107,14 @@ func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
 	perfectWorldTimeTaken := time.Duration(timesCalled) * SLEEP_DURATION
 	expectedTimeTaken := perfectWorldTimeTaken.Abs().Milliseconds()
 
-	// Allow for 2ms expected difference since sleep is not constant
-	assert.Greater(t, timeTaken.Abs().Milliseconds(), expectedTimeTaken-2)
+	// Allow for 5ms expected difference since sleep is not constant
+	assert.Greater(t, timeTaken.Abs().Milliseconds(), expectedTimeTaken-5)
+}
+
+func getHtmlNode(webpageStr string) *html.Node {
+	htmlNodeResponse, err := html.Parse(strings.NewReader(webpageStr))
+	if err != nil {
+		panic(err)
+	}
+	return htmlNodeResponse
 }

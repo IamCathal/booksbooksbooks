@@ -37,8 +37,7 @@ func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoo
 }
 
 func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
-	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(shelfURL))
-	checkErr(err)
+	doc := goquery.NewDocumentFromNode(cntr.GetPage(shelfURL))
 
 	allBooks := []dtos.BasicGoodReadsBook{}
 	totalBooks := 0
@@ -67,9 +66,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 				break
 			}
 			newUrl := fmt.Sprintf("%s&page=%d", shelfURL, currPageToView)
-
-			newPageDoc, err := goquery.NewDocumentFromReader(cntr.GetPage(newUrl))
-			checkErr(err)
+			newPageDoc := goquery.NewDocumentFromNode(cntr.GetPage(newUrl))
 
 			extractedBooksFromNewPage := extractBooksFromHTML(newPageDoc)
 			for _, book := range extractedBooksFromNewPage {
@@ -100,8 +97,7 @@ func sleepIfLongerThanAllotedTimeSinceLastRequest() {
 }
 
 func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
-	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(shelfURL))
-	checkErr(err)
+	doc := goquery.NewDocumentFromNode(cntr.GetPage(shelfURL))
 	totalBooks := 0
 
 	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {

@@ -55,9 +55,7 @@ func FindAuthorAndOrTitleMatches(bookInfo dtos.BasicGoodReadsBook, searchResult 
 
 func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<- dtos.EnchancedSearchResult) dtos.EnchancedSearchResult {
 	searchURL := fmt.Sprintf("%s/search.php?%s", THE_BOOKSHOP_BASE_URL, urlEncodeBookSearch(bookInfo))
-	fmt.Println(searchURL)
-	doc, err := goquery.NewDocumentFromReader(cntr.GetPage(searchURL))
-	checkErr(err)
+	doc := goquery.NewDocumentFromNode(cntr.GetPage(searchURL))
 	allBooks := []dtos.TheBookshopBook{}
 
 	doc.Find("ul[class='productGrid']").Each(func(i int, bookReviews *goquery.Selection) {

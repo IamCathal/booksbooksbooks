@@ -51,7 +51,7 @@ func TestMain(m *testing.M) {
 	SetLogger(logger)
 
 	connectToDevRedisDatabase()
-	nameTempRedisKeys()
+	SetTestDataIdentifiers()
 	DEFAULT_TTL = time.Duration(5 * time.Second)
 
 	code := m.Run()
@@ -113,6 +113,16 @@ func TestNoDuplicateBreadcrumbsAreSaved(t *testing.T) {
 
 	AddNewCrawlBreadcrumb(breadCrumbs[2].ShelfURL)
 	assert.Len(t, GetRecentCrawlBreadcrumbs(), 2)
+}
+
+func TestBreadCrumbMakesCorrectCrawlKey(t *testing.T) {
+	AddNewCrawlBreadcrumb(sharonFantasyLink)
+	assert.Equal(t, "sharon-fantasy", GetRecentCrawlBreadcrumbs()[0].CrawlKey)
+}
+
+func TestBreadCrumbMakesCorrectCrawlKeyWhenNoUsernameGiven(t *testing.T) {
+	AddNewCrawlBreadcrumb("https://www.goodreads.com/review/list/26367680?shelf=read")
+	assert.Equal(t, "26367680-read", GetRecentCrawlBreadcrumbs()[0].CrawlKey)
 }
 
 func TestGetDiscordMessageFormatReturnsSmallWhenNotSet(t *testing.T) {

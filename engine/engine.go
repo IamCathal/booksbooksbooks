@@ -163,7 +163,6 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		case searchResultFromTheBookshop := <-searchResultsFromTheBookshopChan:
 			currCrawlStats.BooksSearched++
 			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches)
-
 			if len(searchResultFromTheBookshop.TitleMatches) > 0 {
 				for _, potentialNewBook := range searchResultFromTheBookshop.TitleMatches {
 					if authorIsIgnored := db.IsIgnoredAuthor(potentialNewBook.Author); !authorIsIgnored {

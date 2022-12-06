@@ -151,3 +151,14 @@ func IsIgnoredAuthor(author string) bool {
 	}
 	return false
 }
+
+func SetTestDataIdentifiers() {
+	AVAILABLE_BOOKS = "test-availableBooks"
+	RECENT_CRAWL_BREADCRUMBS = "test-recentCrawls"
+	AUTOMATED_BOOK_SHELF_CHECK_URL = "test-automatedBookShelfCheck"
+	AUTOMATED_BOOK_SHELF_CRAWL_TIME = "test-automatedBookShelfCrawlTime"
+	DISCORD_WEBHOOK_URL = "test-discordWebHookURL"
+	DISCORD_MESSAGE_FORMAT = "test-discordMessageFormat"
+	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE = "test-sendAlertWhenBookNoLongerAvailable"
+	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "test-sendAlertWhenFreeShippingKicksIn"
+}

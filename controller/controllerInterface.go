@@ -2,16 +2,19 @@ package controller
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
+	"golang.org/x/net/html"
 )
 
 var (
-	logger *zap.Logger
+	logger             *zap.Logger
+	websocketWriteLock sync.Mutex
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -21,13 +24,15 @@ func SetLogger(newLogger *zap.Logger) {
 type Cntr struct{}
 
 type CntrInterface interface {
-	GetPage(url string) io.ReadCloser
+	GetPage(url string) *html.Node
+
+	WriteWsMessage(msg []byte, ws *websocket.Conn) error
 
 	GetFormattedTime() string
 	Sleep(duration time.Duration)
 }
 
-func (control Cntr) GetPage(url string) io.ReadCloser {
+func (control Cntr) GetPage(url string) *html.Node {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	checkErr(err)
@@ -41,7 +46,19 @@ func (control Cntr) GetPage(url string) io.ReadCloser {
 
 	res, err := client.Do(req)
 	checkErr(err)
-	return res.Body
+	doc, err := html.Parse(res.Body)
+	checkErr(err)
+	return doc
+}
+
+func (control Cntr) WriteWsMessage(msg []byte, ws *websocket.Conn) error {
+	fmt.Printf("=========================================================\n\n\n#][][][][][][][[\n\n")
+	websocketWriteLock.Lock()
+	defer websocketWriteLock.Unlock()
+	return ws.WriteMessage(1, msg)
+	// if err != nil {
+	// logger.Sugar().Fatal(err)
+	// }
 }
 
 func (control Cntr) GetFormattedTime() string {

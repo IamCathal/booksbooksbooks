@@ -4,16 +4,11 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/util"
-)
-
-var (
-	websocketWriteLock sync.Mutex
 )
 
 func writeErrorMsg(msg string, ws *websocket.Conn) {
@@ -24,7 +19,7 @@ func writeErrorMsg(msg string, ws *websocket.Conn) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	WriteMsg(jsonStr, ws)
+	cntr.WriteWsMessage(jsonStr, ws)
 }
 
 func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
@@ -36,7 +31,7 @@ func writeTotalBooksMsg(stats dtos.CrawlStats, ws *websocket.Conn) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	WriteMsg(jsonStr, ws)
+	cntr.WriteWsMessage(jsonStr, ws)
 }
 
 func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlStats, ws *websocket.Conn) {
@@ -48,7 +43,7 @@ func writeGoodReadsBookMsg(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlSta
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	WriteMsg(jsonStr, ws)
+	cntr.WriteWsMessage(jsonStr, ws)
 }
 
 func writeNewAvailableBookMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlStats, ws *websocket.Conn) {
@@ -60,7 +55,7 @@ func writeNewAvailableBookMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlSta
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	WriteMsg(jsonStr, ws)
+	cntr.WriteWsMessage(jsonStr, ws)
 }
 
 func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats dtos.CrawlStats, ws *websocket.Conn) {
@@ -72,17 +67,17 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
-	WriteMsg(jsonStr, ws)
+	cntr.WriteWsMessage(jsonStr, ws)
 }
 
-func WriteMsg(msg []byte, ws *websocket.Conn) {
-	websocketWriteLock.Lock()
-	defer websocketWriteLock.Unlock()
-	err := ws.WriteMessage(1, msg)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
+// func WriteMsg(msg []byte, ws *websocket.Conn) {
+// 	websocketWriteLock.Lock()
+// 	defer websocketWriteLock.Unlock()
+// 	err := ws.WriteMessage(1, msg)
+// 	if err != nil {
+// 		logger.Sugar().Fatal(err)
+// 	}
+// }
 
 func goodReadsBookIsNew(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
 	_, exists := availableBooksMap[book.Link]
