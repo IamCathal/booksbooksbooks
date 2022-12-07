@@ -9,7 +9,14 @@ import (
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
 
-func SendNewBookIsAvailableNotification(book dtos.TheBookshopBook) {
+func SendNewBookIsAvailableNotification(book dtos.TheBookshopBook, available bool) {
+	availableText := ""
+	if available {
+		availableText = fmt.Sprintf("%s - %s is now available", book.Author, book.Title)
+	} else {
+		availableText = fmt.Sprintf("%s - %s is no longer available", book.Author, book.Title)
+	}
+
 	message := dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
@@ -19,7 +26,7 @@ func SendNewBookIsAvailableNotification(book dtos.TheBookshopBook) {
 				IconURL: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
 				URL:     "https://github.com/IamCathal/BooksBooksBooks",
 			},
-			Title:       fmt.Sprintf("%s - %s is now available", book.Author, book.Title),
+			Title:       availableText,
 			Description: book.Link,
 			Fields: []dtos.EmbedField{
 				{
@@ -112,20 +119,3 @@ func SendFreeShippingTotalHasKickedInNotification(totalCostOfBooks float64) {
 // 	}
 // 	defer res.Body.Close()
 // }
-
-func FindBooksThatAreNowNotAvailable(yesterdaysBooks, todaysBooks []dtos.AvailableBook) []dtos.AvailableBook {
-	booksThatAreNowNotAvailable := []dtos.AvailableBook{}
-	yesterdaysBooksMap := make(map[string]bool)
-
-	for _, book := range yesterdaysBooks {
-		yesterdaysBooksMap[book.BookInfo.ID] = true
-	}
-
-	for _, book := range todaysBooks {
-		if _, exists := yesterdaysBooksMap[book.BookInfo.ID]; !exists {
-			booksThatAreNowNotAvailable = append(booksThatAreNowNotAvailable, book)
-		}
-	}
-
-	return booksThatAreNowNotAvailable
-}

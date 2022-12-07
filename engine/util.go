@@ -159,3 +159,20 @@ func filterIgnoredAuthors(searchResult dtos.EnchancedSearchResult) dtos.Enchance
 
 	return filteredSearchResult
 }
+
+func findBooksThatAreNowNotAvailable(availableThen, availableNow []dtos.AvailableBook) []dtos.AvailableBook {
+	booksThatAreNoLongerAvailable := []dtos.AvailableBook{}
+	availableNowMap := make(map[string]bool)
+
+	for _, book := range availableNow {
+		availableNowMap[book.BookInfo.ID] = true
+	}
+
+	for _, book := range availableThen {
+		if _, exists := availableNowMap[book.BookInfo.ID]; !exists {
+			booksThatAreNoLongerAvailable = append(booksThatAreNoLongerAvailable, book)
+		}
+	}
+
+	return booksThatAreNoLongerAvailable
+}

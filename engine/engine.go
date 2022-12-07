@@ -44,27 +44,42 @@ func automatedCheck() {
 	stubBooksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
 	stubSearchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
-	cachedBooksThatWereAvailable := db.GetAvailableBooks()
-	cachedBooksThatAreStillAvailableToday := []dtos.AvailableBook{}
+	booksThatWereAvailableLastTime := db.GetAvailableBooks()
+	booksThatAreAvailableToday := []dtos.AvailableBook{}
 	booksFromShelfThatAreAvailableNow := []dtos.AvailableBook{}
 
-	for _, book := range cachedBooksThatWereAvailable {
+	for _, book := range booksThatWereAvailableLastTime {
 		searchResult := thebookshop.SearchForBook(book.BookInfo, stubSearchResultsFromTheBookshopChan)
 
-		if len(searchResult.TitleMatches) >= 1 {
-			cachedBooksThatAreStillAvailableToday = append(cachedBooksThatAreStillAvailableToday, book)
+		for _, titleMatch := range searchResult.TitleMatches {
+			currAvailableBook := dtos.AvailableBook{
+				BookInfo:         book.BookInfo,
+				BookPurchaseInfo: titleMatch,
+				Ignore:           book.Ignore,
+			}
+			booksThatAreAvailableToday = append(booksThatAreAvailableToday, currAvailableBook)
 		}
+
+		for _, authorMatch := range searchResult.AuthorMatches {
+			currAvailableBook := dtos.AvailableBook{
+				BookInfo:         book.BookInfo,
+				BookPurchaseInfo: authorMatch,
+				Ignore:           book.Ignore,
+			}
+			booksThatAreAvailableToday = append(booksThatAreAvailableToday, currAvailableBook)
+		}
+
 	}
 
-	logger.Sugar().Infof("%d cached books that were available from the last automated checkup: %d\n",
-		len(cachedBooksThatWereAvailable), cachedBooksThatWereAvailable)
-	logger.Sugar().Infof("%d Cached from from the last automated checkup that are still available now: %d\n",
-		len(cachedBooksThatAreStillAvailableToday), cachedBooksThatAreStillAvailableToday)
+	logger.Sugar().Infof("%d books were available from the last automated check: %d\n",
+		len(booksThatWereAvailableLastTime), booksThatWereAvailableLastTime)
+	logger.Sugar().Infof("%d books from the previous available list are still available now: %d\n",
+		len(booksThatAreAvailableToday), booksThatAreAvailableToday)
 
 	if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
-		booksThatAreNowNotAvailable := util.FindBooksThatAreNowNotAvailable(cachedBooksThatWereAvailable, cachedBooksThatAreStillAvailableToday)
+		booksThatAreNowNotAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailableLastTime, booksThatAreAvailableToday)
 		for _, book := range booksThatAreNowNotAvailable {
-			util.SendNewBookIsAvailableNotification(book.BookPurchaseInfo)
+			util.SendNewBookIsAvailableNotification(book.BookPurchaseInfo, false)
 		}
 	}
 
@@ -85,7 +100,7 @@ func automatedCheck() {
 
 	newBooksThatNeedNotification := []dtos.AvailableBook{}
 	for _, availableBook := range booksFromShelfThatAreAvailableNow {
-		if bookIsNew := availableBookIsNew(availableBook, cachedBooksThatAreStillAvailableToday); bookIsNew {
+		if bookIsNew := availableBookIsNew(availableBook, booksThatAreAvailableToday); bookIsNew {
 			newBooksThatNeedNotification = append(newBooksThatNeedNotification, availableBook)
 		}
 	}
@@ -95,12 +110,12 @@ func automatedCheck() {
 		for _, newBook := range newBooksThatNeedNotification {
 			if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
 				db.AddAvailableBook(newBook)
-				util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo)
+				util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo, true)
 			}
 		}
 	}
-	logger.Sugar().Infof("%d cached books were available yesterday", len(cachedBooksThatWereAvailable))
-	logger.Sugar().Infof("%d books are available today from cache", len(cachedBooksThatAreStillAvailableToday))
+	logger.Sugar().Infof("%d cached books were available yesterday", len(booksThatWereAvailableLastTime))
+	logger.Sugar().Infof("%d books are available today from cache", len(booksThatAreAvailableToday))
 	logger.Sugar().Infof("These books are brand new from this current crawl: %+v\n", newBooksThatNeedNotification)
 
 	sendFreeShippingWebhookIfFreeShippingEligible()
@@ -173,7 +188,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 					writeNewAvailableBookWsMsg(titleMatch, currCrawlStats, ws)
 					db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: titleMatch})
-					util.SendNewBookIsAvailableNotification(titleMatch)
+					util.SendNewBookIsAvailableNotification(titleMatch, true)
 					previouslyKnownAvailableBooksMap[titleMatch.Link] = true
 				}
 			}
@@ -190,7 +205,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 						writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
 						db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: authorMatch})
-						util.SendNewBookIsAvailableNotification(authorMatch)
+						util.SendNewBookIsAvailableNotification(authorMatch, true)
 						previouslyKnownAvailableBooksMap[authorMatch.Link] = true
 					}
 				}

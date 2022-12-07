@@ -139,6 +139,55 @@ func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
 	assert.Equal(t, len(filteredSearchResults.AuthorMatches), 0)
 }
 
+func TestFindBooksThatAreNowNotAvailableReturnsBooksThatAreNoLongerAvailable(t *testing.T) {
+	wiseMansFear := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			ID: "wiseMansFear",
+		},
+	}
+	nameOfTheWind := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			ID: "nameOfTheWind",
+		},
+	}
+	booksThatWereAvailable := []dtos.AvailableBook{
+		wiseMansFear,
+		nameOfTheWind,
+	}
+	bookThatAreNowAvailable := []dtos.AvailableBook{
+		nameOfTheWind,
+	}
+
+	booksThatAreNoLongerAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailable, bookThatAreNowAvailable)
+
+	assert.Equal(t, len(booksThatAreNoLongerAvailable), 1)
+	assert.Equal(t, wiseMansFear, booksThatAreNoLongerAvailable[0])
+}
+
+func TestFindBooksThatAreNowNotAvailableReturnsNothingWhenNewBooksAreAvailableNow(t *testing.T) {
+	wiseMansFear := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			ID: "wiseMansFear",
+		},
+	}
+	nameOfTheWind := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			ID: "nameOfTheWind",
+		},
+	}
+	booksThatWereAvailable := []dtos.AvailableBook{
+		wiseMansFear,
+	}
+	bookThatAreNowAvailable := []dtos.AvailableBook{
+		nameOfTheWind,
+		wiseMansFear,
+	}
+
+	booksThatAreNoLongerAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailable, bookThatAreNowAvailable)
+
+	assert.Equal(t, len(booksThatAreNoLongerAvailable), 0)
+}
+
 func getHtmlNode(webpageStr string) *html.Node {
 	htmlNodeResponse, err := html.Parse(strings.NewReader(webpageStr))
 	if err != nil {
