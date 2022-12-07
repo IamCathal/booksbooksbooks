@@ -66,7 +66,6 @@ func (control Cntr) GetPage(url string) *html.Node {
 }
 
 func (control Cntr) WriteWsMessage(msg []byte, ws *websocket.Conn) error {
-	fmt.Printf("=========================================================\n\n\n#][][][][][][][[\n\n")
 	websocketWriteLock.Lock()
 	defer websocketWriteLock.Unlock()
 	return ws.WriteMessage(1, msg)

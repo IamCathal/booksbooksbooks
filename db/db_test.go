@@ -60,10 +60,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetAvailableBooksReturnsAnEmptyArrayWhenNothingIsSet(t *testing.T) {
+	resetDBFields()
 	assert.Empty(t, GetAvailableBooks())
 }
 
 func TestGetAvailableBooksReturnsSomething(t *testing.T) {
+	resetDBFields()
 	availableBooks := []dtos.AvailableBook{
 		{
 			BookInfo: dtos.BasicGoodReadsBook{
@@ -77,6 +79,7 @@ func TestGetAvailableBooksReturnsSomething(t *testing.T) {
 }
 
 func TestResetAvailableBooksClearsAllAvailableBooks(t *testing.T) {
+	resetDBFields()
 	availableBooks := []dtos.AvailableBook{
 		{
 			BookInfo: dtos.BasicGoodReadsBook{
@@ -92,6 +95,7 @@ func TestResetAvailableBooksClearsAllAvailableBooks(t *testing.T) {
 }
 
 func TestNoDuplicateBreadcrumbsAreSaved(t *testing.T) {
+	resetDBFields()
 	breadCrumbs := []dtos.RecentCrawlBreadcrumb{
 		{
 			ShelfURL: "https://www.goodreads.com/review/list/26367680?shelf=read",
@@ -126,18 +130,22 @@ func TestBreadCrumbMakesCorrectCrawlKeyWhenNoUsernameGiven(t *testing.T) {
 }
 
 func TestGetDiscordMessageFormatReturnsSmallWhenNotSet(t *testing.T) {
+	resetDBFields()
 	assert.Equal(t, GetDiscordMessageFormat(), "small")
 }
 
 func TestGetSendAlertWhenBookIsNoLongerAvailableReturnsFalseWhenNotSet(t *testing.T) {
+	resetDBFields()
 	assert.False(t, GetSendAlertWhenBookNoLongerAvailable())
 }
 
 func TestGetSendAlertOnlyWhenFreeShippingKicksInReturnsFalseWhenNotSet(t *testing.T) {
+	resetDBFields()
 	assert.False(t, GetSendAlertOnlyWhenFreeShippingKicksIn())
 }
 
 func TestGetAvailableBooksMap(t *testing.T) {
+	resetDBFields()
 	duplicateLink := "duplicateLink"
 	availableBooks := []dtos.AvailableBook{
 		{
@@ -170,6 +178,7 @@ func TestGetKeyForRecentCrawlBreadCrumbsHandlesUrlsWithoutUsernames(t *testing.T
 }
 
 func TestRemoveDuplicateAvailableBooks(t *testing.T) {
+	resetDBFields()
 	duplicateLink := "duplicate link"
 	availableBooks := []dtos.AvailableBook{
 		{
@@ -198,6 +207,7 @@ func TestStrToBool(t *testing.T) {
 }
 
 func TestIgnoreAuthorFlow(t *testing.T) {
+	resetDBFields()
 	initialKnownAuthors := []dtos.KnownAuthor{
 		{
 			Name:   "Patrick Rothfuss",
@@ -223,6 +233,7 @@ func TestIgnoreAuthorFlow(t *testing.T) {
 }
 
 func TestPurgeAuthorFromAvailableBooks(t *testing.T) {
+	resetDBFields()
 	retroActivelyPurgeAuthor := "Ken Mc Leod"
 	availableBooks := []dtos.AvailableBook{
 		{
@@ -239,4 +250,14 @@ func TestPurgeAuthorFromAvailableBooks(t *testing.T) {
 
 	// Expect available books left from the retroactively purged author
 	assert.Empty(t, GetAvailableBooks())
+}
+
+func resetDBFields() {
+	SetKnownAuthors([]dtos.KnownAuthor{})
+	SetAddMoreAuthorBooksToAvailableBooksList(false)
+	SetAvailableBooks([]dtos.AvailableBook{})
+	SetSendAlertOnlyWhenFreeShippingKicksIn(false)
+	SetSendAlertWhenBookNoLongerAvailable(false)
+	SetDiscordMessageFormat("small")
+	SetRecentCrawlBreadcrumbs([]dtos.RecentCrawlBreadcrumb{})
 }

@@ -165,7 +165,6 @@ func purgeAuthorFromAvailableBooks(w http.ResponseWriter, r *http.Request) {
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Received author: '%s'\n", author)
 	db.PurgeAuthorFromAvailableBooks(author)
 	w.WriteHeader(http.StatusOK)
 }
@@ -325,7 +324,6 @@ func setAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Re
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Setting as: %v\n", enabledBool)
 	db.SetAddMoreAuthorBooksToAvailableBooksList(enabledBool)
 	w.WriteHeader(http.StatusOK)
 }
@@ -351,7 +349,6 @@ func toggleAuthorIgnore(w http.ResponseWriter, r *http.Request) {
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Received author: '%s'\n", author)
 	db.ToggleAuthorIgnore(author)
 	w.WriteHeader(http.StatusOK)
 }

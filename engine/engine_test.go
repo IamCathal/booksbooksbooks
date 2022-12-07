@@ -58,7 +58,7 @@ func loadMockSearchResults() {
 func TestWorker(t *testing.T) {
 	mockController := controller.MockCntrInterface{}
 	controller.SetController(&mockController)
-	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	resetDBFields()
 
 	mockController.On("Sleep", mock.Anything).After(1 * time.Millisecond).Return()
 
@@ -79,13 +79,70 @@ func TestWorker(t *testing.T) {
 	}
 	assert.Equal(t, expectedCrawlBreadCrumb, db.GetRecentCrawlBreadcrumbs()[0])
 
-	assert.Equal(t, len(db.GetAvailableBooks()), 2)
+	assert.Equal(t, len(db.GetAvailableBooks()), 1)
 	assert.Equal(t, db.GetTotalBooksInAutomatedBookShelfCheck(), 1)
 	assert.Equal(t, 1, len(db.GetKnownAuthors()))
 }
 
+func TestWorkerAddsOtherAuthorBooksWhenFlagIsEnabled(t *testing.T) {
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+	resetDBFields()
+	db.SetAddMoreAuthorBooksToAvailableBooksList(true)
+
+	mockController.On("Sleep", mock.Anything).After(1 * time.Millisecond).Return()
+
+	// Get the goodreads page
+	mockController.On("GetPage", validShelfURL).Once().Return(getHtmlNode(stephenKingGoodreadsShelfOneBook))
+	// Don't bother with validating websocket messages just yet
+	mockController.On("WriteWsMessage", mock.Anything, mock.AnythingOfType(("*websocket.Conn")), mock.Anything).Return(nil)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	mockController.On("GetPage", "https://thebookshop.ie/search.php?search_query=Parsons%2C%20Kelly%20%2F%20Doing%20Harm&section=product").
+		Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
+
+	Worker(validShelfURL, &websocket.Conn{})
+
+	assert.Equal(t, len(db.GetAvailableBooks()), 2)
+}
+
+func TestCheckAvailabilityOfExistingAvailableBooksListNoticesBooksThatAreNoLongerAvailable(t *testing.T) {
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+	resetDBFields()
+
+	previouslyAvailableBooks := []dtos.AvailableBook{
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				Title:  "More Than This",
+				Author: "Patrick Ness",
+			},
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Title:  "More Than This",
+				Author: "Patrick Ness",
+			},
+		},
+	}
+	db.SetAvailableBooks(previouslyAvailableBooks)
+	db.SetSendAlertWhenBookNoLongerAvailable(true)
+
+	// Return a search result where the previously available book can't be found
+	// in as if its not available anymore since the last search
+	mockController.On("GetPage", mock.AnythingOfType("string")).Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	assert.Equal(t, len(db.GetAvailableBooks()), 1)
+
+	checkAvailabilityOfExistingAvailableBooksList()
+
+	// Assert that the previously available book is removed
+	// when it is found to not be available anymore
+	assert.Equal(t, len(db.GetAvailableBooks()), 0)
+	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 1)
+}
+
 func TestFilterIgnoredAuthorsFiltersNothingWhenNoAuthorIsIgnored(t *testing.T) {
-	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	resetDBFields()
 
 	searchResult := dtos.EnchancedSearchResult{
 		SearchBook: dtos.BasicGoodReadsBook{
@@ -111,7 +168,7 @@ func TestFilterIgnoredAuthorsFiltersNothingWhenNoAuthorIsIgnored(t *testing.T) {
 }
 
 func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
-	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	resetDBFields()
 	ignoredAuthor := "Patrick F. Hamilton"
 
 	searchResult := dtos.EnchancedSearchResult{
@@ -141,7 +198,7 @@ func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
 }
 
 func TestFindBooksThatAreNowNotAvailableReturnsBooksThatAreNoLongerAvailable(t *testing.T) {
-	db.SetAvailableBooks([]dtos.AvailableBook{})
+	resetDBFields()
 	wiseMansFear := dtos.AvailableBook{
 		BookInfo: dtos.BasicGoodReadsBook{
 			ID: "wiseMansFear",
@@ -167,7 +224,7 @@ func TestFindBooksThatAreNowNotAvailableReturnsBooksThatAreNoLongerAvailable(t *
 }
 
 func TestFindBooksThatAreNowNotAvailableReturnsNothingWhenNewBooksAreAvailableNow(t *testing.T) {
-	db.SetAvailableBooks([]dtos.AvailableBook{})
+	resetDBFields()
 	wiseMansFear := dtos.AvailableBook{
 		BookInfo: dtos.BasicGoodReadsBook{
 			ID: "wiseMansFear",
@@ -189,6 +246,51 @@ func TestFindBooksThatAreNowNotAvailableReturnsNothingWhenNewBooksAreAvailableNo
 	booksThatAreNoLongerAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailable, bookThatAreNowAvailable)
 
 	assert.Equal(t, len(booksThatAreNoLongerAvailable), 0)
+}
+
+func TestFreeShippingNotificationNotTriggeredWhenTotalIsUnderThreshold(t *testing.T) {
+	resetDBFields()
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Price: "€18.50",
+			},
+		},
+	}
+	db.SetAvailableBooks(availableBooks)
+
+	sendFreeShippingWebhookIfFreeShippingEligible()
+
+	mockController.AssertNotCalled(t, "DeliverWebhook")
+}
+
+func TestFreeShippingNotificationIsTriggeredWhenTotalIsOverThreshold(t *testing.T) {
+	resetDBFields()
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Price: "€20.50",
+			},
+		},
+	}
+	db.SetAvailableBooks(availableBooks)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	sendFreeShippingWebhookIfFreeShippingEligible()
+
+	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 1)
+}
+
+func resetDBFields() {
+	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	db.SetAddMoreAuthorBooksToAvailableBooksList(false)
+	db.SetAvailableBooks([]dtos.AvailableBook{})
 }
 
 func getHtmlNode(webpageStr string) *html.Node {

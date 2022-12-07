@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"time"
 
@@ -159,6 +158,17 @@ func AddNewCrawlBreadcrumb(shelfURL string) {
 	}
 }
 
+func SetRecentCrawlBreadcrumbs(breadCrumbs []dtos.RecentCrawlBreadcrumb) {
+	jsonCrawlBreadcrumbs, err := json.Marshal(breadCrumbs)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	err = redisClient.Set(ctx, RECENT_CRAWL_BREADCRUMBS, jsonCrawlBreadcrumbs, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
 func SetAutomatedBookShelfCheck(shelfURL string) {
 	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL, shelfURL, DEFAULT_TTL).Err()
 	if err != nil {
@@ -294,7 +304,6 @@ func GetTotalBooksInAutomatedBookShelfCheck() int {
 }
 
 func SetAddMoreAuthorBooksToAvailableBooksList(enabled bool) {
-	fmt.Printf("Setting as: %v\n", enabled)
 	err := redisClient.Set(ctx, ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST, enabled, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/segmentio/ksuid"
 )
@@ -71,13 +72,23 @@ func processBook(fullTitle, author, cover, isbn13, asin, rating, link string) dt
 func GetAvailableBooksFromSearchResult(searchResults []dtos.EnchancedSearchResult) []dtos.AvailableBook {
 	availableBooks := []dtos.AvailableBook{}
 	for _, searchResult := range searchResults {
-		if len(searchResult.TitleMatches) >= 1 {
+		for _, titleMatch := range searchResult.TitleMatches {
 			availableBook := dtos.AvailableBook{
 				BookInfo:         searchResult.SearchBook,
-				BookPurchaseInfo: searchResult.TitleMatches[0],
+				BookPurchaseInfo: titleMatch,
 			}
 			availableBooks = append(availableBooks, availableBook)
 		}
+		if addMoreAuthorBooks := db.GetAddMoreAuthorBooksToAvailableBooksList(); addMoreAuthorBooks {
+			for _, authorMatch := range searchResult.TitleMatches {
+				availableBook := dtos.AvailableBook{
+					BookInfo:         searchResult.SearchBook,
+					BookPurchaseInfo: authorMatch,
+				}
+				availableBooks = append(availableBooks, availableBook)
+			}
+		}
+
 	}
 	return availableBooks
 }

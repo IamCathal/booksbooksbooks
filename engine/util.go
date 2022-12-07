@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/iamcathal/booksbooksbooks/thebookshop"
 	"github.com/iamcathal/booksbooksbooks/util"
 )
 
@@ -95,6 +97,49 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 // 	}
 // }
 
+func checkAvailabilityOfExistingAvailableBooksList() {
+	booksThatWereAvailableLastTime := db.GetAvailableBooks()
+	booksFromLastTimeThatAreStillAvailable := lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(booksThatWereAvailableLastTime)
+
+	logger.Sugar().Infof("%d books were available from the last automated check: %v\n",
+		len(booksThatWereAvailableLastTime), getConciseBookInfoFromAvailableBooks(booksThatWereAvailableLastTime))
+	logger.Sugar().Infof("%d books from the previous available list that are still available now: %v\n",
+		len(booksFromLastTimeThatAreStillAvailable), getConciseBookInfoFromAvailableBooks(booksFromLastTimeThatAreStillAvailable))
+
+	booksThatAreNowNotAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailableLastTime, booksFromLastTimeThatAreStillAvailable)
+	for _, book := range booksThatAreNowNotAvailable {
+		db.RemoveAvailableBook(book)
+		if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
+			util.SendNewBookIsAvailableNotification(book.BookPurchaseInfo, false)
+		}
+	}
+}
+
+func lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(previouslyAvailableBooks []dtos.AvailableBook) []dtos.AvailableBook {
+	stubSearchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
+	booksThatAreStillAvailable := []dtos.AvailableBook{}
+
+	for _, book := range previouslyAvailableBooks {
+		searchBook := dtos.BasicGoodReadsBook{
+			Title:  book.BookPurchaseInfo.Title,
+			Author: book.BookPurchaseInfo.Author,
+		}
+		searchResult := thebookshop.SearchForBook(searchBook, stubSearchResultsFromTheBookshopChan)
+
+		if len(searchResult.TitleMatches) > 0 {
+			currAvailableBook := dtos.AvailableBook{
+				BookInfo:         book.BookInfo,
+				BookPurchaseInfo: searchResult.TitleMatches[0],
+				Ignore:           book.Ignore,
+			}
+			booksThatAreStillAvailable = append(booksThatAreStillAvailable, currAvailableBook)
+		}
+
+	}
+
+	return booksThatAreStillAvailable
+}
+
 func wasNotPreviouslyAvailable(book dtos.TheBookshopBook, availableBooksMap map[string]bool) bool {
 	_, exists := availableBooksMap[book.Link]
 	return !exists
@@ -103,12 +148,13 @@ func wasNotPreviouslyAvailable(book dtos.TheBookshopBook, availableBooksMap map[
 func sendFreeShippingWebhookIfFreeShippingEligible() {
 	allAvailableBooks := db.GetAvailableBooks()
 	var totalCost float64
+
 	for _, book := range allAvailableBooks {
 		if !book.Ignore {
 			totalCost += extractFloatPriceFromString(book.BookPurchaseInfo.Price)
 		}
 	}
-	if totalCost >= 20 {
+	if totalCost >= FREE_SHIPPING_THRESHOLD {
 		util.SendFreeShippingTotalHasKickedInNotification(totalCost)
 	}
 }
@@ -177,11 +223,11 @@ func findBooksThatAreNowNotAvailable(availableThen, availableNow []dtos.Availabl
 	return booksThatAreNoLongerAvailable
 }
 
-func getBookNamesFromAvailableBooks(bookList []dtos.AvailableBook) []string {
-	titles := []string{}
+func getConciseBookInfoFromAvailableBooks(bookList []dtos.AvailableBook) []string {
+	info := []string{}
 
 	for _, book := range bookList {
-		titles = append(titles, book.BookInfo.Title)
+		info = append(info, fmt.Sprintf("%s: %s", book.BookInfo.Author, book.BookInfo.Title))
 	}
-	return titles
+	return info
 }

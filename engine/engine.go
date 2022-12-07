@@ -16,7 +16,8 @@ import (
 
 var (
 	logger                   *zap.Logger
-	BOOKS_DISPLAYED_PER_PAGE = 30
+	BOOKS_DISPLAYED_PER_PAGE         = 30
+	FREE_SHIPPING_THRESHOLD  float64 = 20.00
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -45,78 +46,37 @@ func automatedCheck() {
 	stubSearchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
-	booksThatAreAvailableToday := []dtos.AvailableBook{}
-	booksFromShelfThatAreAvailableNow := []dtos.AvailableBook{}
+	checkAvailabilityOfExistingAvailableBooksList()
 
-	for _, book := range booksThatWereAvailableLastTime {
-		searchResult := thebookshop.SearchForBook(book.BookInfo, stubSearchResultsFromTheBookshopChan)
-
-		for _, titleMatch := range searchResult.TitleMatches {
-			currAvailableBook := dtos.AvailableBook{
-				BookInfo:         book.BookInfo,
-				BookPurchaseInfo: titleMatch,
-				Ignore:           book.Ignore,
-			}
-			booksThatAreAvailableToday = append(booksThatAreAvailableToday, currAvailableBook)
-		}
-
-		for _, authorMatch := range searchResult.AuthorMatches {
-			currAvailableBook := dtos.AvailableBook{
-				BookInfo:         book.BookInfo,
-				BookPurchaseInfo: authorMatch,
-				Ignore:           book.Ignore,
-			}
-			booksThatAreAvailableToday = append(booksThatAreAvailableToday, currAvailableBook)
-		}
-	}
-
-	logger.Sugar().Infof("%d books were available from the last automated check: %d\n",
-		len(booksThatWereAvailableLastTime), getBookNamesFromAvailableBooks(booksThatWereAvailableLastTime))
-	logger.Sugar().Infof("%d books from the previous available list are still available now: %d\n",
-		len(booksThatAreAvailableToday), getBookNamesFromAvailableBooks(booksThatAreAvailableToday))
-
-	booksThatAreNowNotAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailableLastTime, booksThatAreAvailableToday)
-	for _, book := range booksThatAreNowNotAvailable {
-		db.RemoveAvailableBook(book)
-		if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
-			util.SendNewBookIsAvailableNotification(book.BookPurchaseInfo, false)
-		}
-	}
-
-	shelfURL := db.GetAutomatedBookShelfCheck()
-
-	booksFromShelf := goodreads.GetBooksFromShelf(shelfURL, stubStatsChan, stubBooksFoundFromGoodReadsChan)
+	booksFromShelf := goodreads.GetBooksFromShelf(db.GetAutomatedBookShelfCheck(), stubStatsChan, stubBooksFoundFromGoodReadsChan)
 	db.SetTotalBooksInAutomatedBookShelfCheck(len(booksFromShelf))
-	logger.Sugar().Infof("%d books were found from GoodReads shelf %s\n", len(booksFromShelf), shelfURL)
+
+	logger.Sugar().Infof("%d books were found from GoodReads shelf: %s\n", len(booksFromShelf), db.GetAutomatedBookShelfCheck())
 	close(stubBooksFoundFromGoodReadsChan)
 
 	searchResults := []dtos.EnchancedSearchResult{}
 	for _, book := range booksFromShelf {
 		searchResults = append(searchResults, thebookshop.SearchForBook(book, stubSearchResultsFromTheBookshopChan))
 	}
-	booksFromShelfThatAreAvailableNow = goodreads.GetAvailableBooksFromSearchResult(searchResults)
-	logger.Sugar().Infof("%d search queries were made with %d matches found",
-		len(searchResults), len(booksFromShelfThatAreAvailableNow))
+	currentlyAvailableBooksFromShelf := goodreads.GetAvailableBooksFromSearchResult(searchResults)
+	logger.Sugar().Infof("%d search queries were made with %d title/author matches found",
+		len(searchResults), len(currentlyAvailableBooksFromShelf))
 
 	newBooksThatNeedNotification := []dtos.AvailableBook{}
-	for _, availableBook := range booksFromShelfThatAreAvailableNow {
-		if bookIsNew := availableBookIsNew(availableBook, booksThatAreAvailableToday); bookIsNew {
+	for _, availableBook := range currentlyAvailableBooksFromShelf {
+		if bookIsNew := availableBookIsNew(availableBook, booksThatWereAvailableLastTime); bookIsNew {
 			newBooksThatNeedNotification = append(newBooksThatNeedNotification, availableBook)
 		}
 	}
 
-	logger.Sugar().Infof("%d new books were found in this search", len(newBooksThatNeedNotification))
-	if len(newBooksThatNeedNotification) > 0 {
-		for _, newBook := range newBooksThatNeedNotification {
-			if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
-				db.AddAvailableBook(newBook)
-				util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo, true)
-			}
+	logger.Sugar().Infof("%d new books were found in this search: %v", len(newBooksThatNeedNotification),
+		getConciseBookInfoFromAvailableBooks(newBooksThatNeedNotification))
+	for _, newBook := range newBooksThatNeedNotification {
+		if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
+			db.AddAvailableBook(newBook)
+			util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo, true)
 		}
 	}
-	logger.Sugar().Infof("%d cached books were available yesterday", len(booksThatWereAvailableLastTime))
-	logger.Sugar().Infof("%d books are available today from cache", len(booksThatAreAvailableToday))
-	logger.Sugar().Infof("These books are brand new from this current crawl: %+v\n", newBooksThatNeedNotification)
 
 	sendFreeShippingWebhookIfFreeShippingEligible()
 }
@@ -182,7 +142,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 				db.AddAuthorToKnownAuthors(titleMatch.Author)
 				if bookIsNew := wasNotPreviouslyAvailable(titleMatch, previouslyKnownAvailableBooksMap); bookIsNew {
 					newBooksFound++
-					logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+					logger.Sugar().Infof("Found a title match book that's for sale: %s by %s for %s at %s",
 						searchResultsFiltered.SearchBook.Title, searchResultsFiltered.SearchBook.Author,
 						titleMatch.Price, titleMatch.Link)
 
@@ -200,7 +160,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 						newBooksFound++
 						currCrawlStats.BookMatchFound++
 
-						logger.Sugar().Infof("Found a book that's for sale: %s by %s for %s at %s",
+						logger.Sugar().Infof("Found an author match book that's for sale: %s by %s for %s at %s",
 							authorMatch.Title, authorMatch.Author, authorMatch.Price, authorMatch.Link)
 
 						writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
@@ -217,7 +177,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 	if notifyOnNoLongerAvailable := db.GetSendAlertWhenBookNoLongerAvailable(); notifyOnNoLongerAvailable {
 		currAvailableBooks := db.GetAvailableBooks()
-		if len(previouslyKnownAvailableBooks) < len(currAvailableBooks) {
+		if len(previouslyKnownAvailableBooks) > len(currAvailableBooks) {
 			notifyAboutBooksThatAreNoLongerAvailable(previouslyKnownAvailableBooks)
 		}
 	}
