@@ -13,7 +13,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
-	mock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
 	"golang.org/x/net/html"
 	"gotest.tools/assert"
@@ -65,7 +65,8 @@ func TestWorker(t *testing.T) {
 	// Get the goodreads page
 	mockController.On("GetPage", validShelfURL).Once().Return(getHtmlNode(stephenKingGoodreadsShelfOneBook))
 	// Don't bother with validating websocket messages just yet
-	mockController.On("WriteWsMessage", mock.Anything, mock.Anything).Return(nil)
+	mockController.On("WriteWsMessage", mock.Anything, mock.AnythingOfType(("*websocket.Conn")), mock.Anything).Return(nil)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
 
 	mockController.On("GetPage", "https://thebookshop.ie/search.php?search_query=Parsons%2C%20Kelly%20%2F%20Doing%20Harm&section=product").
 		Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
@@ -140,6 +141,7 @@ func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
 }
 
 func TestFindBooksThatAreNowNotAvailableReturnsBooksThatAreNoLongerAvailable(t *testing.T) {
+	db.SetAvailableBooks([]dtos.AvailableBook{})
 	wiseMansFear := dtos.AvailableBook{
 		BookInfo: dtos.BasicGoodReadsBook{
 			ID: "wiseMansFear",
@@ -165,6 +167,7 @@ func TestFindBooksThatAreNowNotAvailableReturnsBooksThatAreNoLongerAvailable(t *
 }
 
 func TestFindBooksThatAreNowNotAvailableReturnsNothingWhenNewBooksAreAvailableNow(t *testing.T) {
+	db.SetAvailableBooks([]dtos.AvailableBook{})
 	wiseMansFear := dtos.AvailableBook{
 		BookInfo: dtos.BasicGoodReadsBook{
 			ID: "wiseMansFear",

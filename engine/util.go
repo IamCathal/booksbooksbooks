@@ -176,3 +176,12 @@ func findBooksThatAreNowNotAvailable(availableThen, availableNow []dtos.Availabl
 
 	return booksThatAreNoLongerAvailable
 }
+
+func getBookNamesFromAvailableBooks(bookList []dtos.AvailableBook) []string {
+	titles := []string{}
+
+	for _, book := range bookList {
+		titles = append(titles, book.BookInfo.Title)
+	}
+	return titles
+}

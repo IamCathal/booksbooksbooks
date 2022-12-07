@@ -105,6 +105,18 @@ func GetAvailableBooks() []dtos.AvailableBook {
 	return availableBooks
 }
 
+func RemoveAvailableBook(bookToRemove dtos.AvailableBook) {
+	updatedAvailableBooks := []dtos.AvailableBook{}
+
+	for _, currBook := range GetAvailableBooks() {
+		if bookToRemove.BookInfo.ID != currBook.BookInfo.ID {
+			updatedAvailableBooks = append(updatedAvailableBooks, currBook)
+		}
+	}
+
+	SetAvailableBooks(updatedAvailableBooks)
+}
+
 func GetRecentCrawlBreadcrumbs() []dtos.RecentCrawlBreadcrumb {
 	recentCrawlBreadcrumbs, err := redisClient.Get(ctx, RECENT_CRAWL_BREADCRUMBS).Result()
 	if err == redis.Nil {

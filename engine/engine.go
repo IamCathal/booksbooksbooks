@@ -68,17 +68,17 @@ func automatedCheck() {
 			}
 			booksThatAreAvailableToday = append(booksThatAreAvailableToday, currAvailableBook)
 		}
-
 	}
 
 	logger.Sugar().Infof("%d books were available from the last automated check: %d\n",
-		len(booksThatWereAvailableLastTime), booksThatWereAvailableLastTime)
+		len(booksThatWereAvailableLastTime), getBookNamesFromAvailableBooks(booksThatWereAvailableLastTime))
 	logger.Sugar().Infof("%d books from the previous available list are still available now: %d\n",
-		len(booksThatAreAvailableToday), booksThatAreAvailableToday)
+		len(booksThatAreAvailableToday), getBookNamesFromAvailableBooks(booksThatAreAvailableToday))
 
-	if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
-		booksThatAreNowNotAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailableLastTime, booksThatAreAvailableToday)
-		for _, book := range booksThatAreNowNotAvailable {
+	booksThatAreNowNotAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailableLastTime, booksThatAreAvailableToday)
+	for _, book := range booksThatAreNowNotAvailable {
+		db.RemoveAvailableBook(book)
+		if alertOnNoLongerAvailableBooks := db.GetSendAlertWhenBookNoLongerAvailable(); alertOnNoLongerAvailableBooks {
 			util.SendNewBookIsAvailableNotification(book.BookPurchaseInfo, false)
 		}
 	}
@@ -95,7 +95,7 @@ func automatedCheck() {
 		searchResults = append(searchResults, thebookshop.SearchForBook(book, stubSearchResultsFromTheBookshopChan))
 	}
 	booksFromShelfThatAreAvailableNow = goodreads.GetAvailableBooksFromSearchResult(searchResults)
-	logger.Sugar().Infof("%s search queries were made with %d matches found",
+	logger.Sugar().Infof("%d search queries were made with %d matches found",
 		len(searchResults), len(booksFromShelfThatAreAvailableNow))
 
 	newBooksThatNeedNotification := []dtos.AvailableBook{}
