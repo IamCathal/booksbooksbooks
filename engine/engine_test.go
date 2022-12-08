@@ -39,6 +39,8 @@ func TestMain(m *testing.M) {
 	db.SetLogger(logger)
 	goodreads.SetLogger(logger)
 	thebookshop.SetLogger(logger)
+	thebookshop.SLEEP_DURATION = time.Duration(100 * time.Nanosecond)
+	goodreads.SLEEP_DURATION = time.Duration(100 * time.Nanosecond)
 
 	db.ConnectToRedis()
 	db.SetTestDataIdentifiers()
@@ -60,7 +62,52 @@ func TestWorker(t *testing.T) {
 	controller.SetController(&mockController)
 	resetDBFields()
 
-	mockController.On("Sleep", mock.Anything).After(1 * time.Millisecond).Return()
+	mockController.On("Sleep", mock.Anything).After(100 * time.Nanosecond).Return()
+
+	// Get the goodreads page
+	mockController.On("GetPage", validShelfURL).Once().Return(getHtmlNode(stephenKingGoodreadsShelfOneBook))
+	// Don't bother with validating websocket messages just yet
+	mockController.On("WriteWsMessage", mock.Anything, mock.AnythingOfType(("*websocket.Conn")), mock.Anything).Return(nil)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	mockController.On("GetPage", "https://thebookshop.ie/search.php?search_query=Parsons%2C%20Kelly%20%2F%20Doing%20Harm&section=product").
+		Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
+
+	Worker(validShelfURL, &websocket.Conn{})
+
+	assert.Equal(t, len(db.GetAvailableBooks()), 1)
+	assert.Equal(t, db.GetTotalBooksInAutomatedBookShelfCheck(), 1)
+	assert.Equal(t, 1, len(db.GetKnownAuthors()))
+}
+
+func TestWorkerAddsOtherAuthorBooksWhenFlagIsEnabled(t *testing.T) {
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+	resetDBFields()
+	db.SetAddMoreAuthorBooksToAvailableBooksList(true)
+
+	mockController.On("Sleep", mock.Anything).After(100 * time.Nanosecond).Return()
+
+	// Get the goodreads page
+	mockController.On("GetPage", validShelfURL).Once().Return(getHtmlNode(stephenKingGoodreadsShelfOneBook))
+	// Don't bother with validating websocket messages just yet
+	mockController.On("WriteWsMessage", mock.Anything, mock.AnythingOfType(("*websocket.Conn")), mock.Anything).Return(nil)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	mockController.On("GetPage", "https://thebookshop.ie/search.php?search_query=Parsons%2C%20Kelly%20%2F%20Doing%20Harm&section=product").
+		Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
+
+	Worker(validShelfURL, &websocket.Conn{})
+
+	assert.Equal(t, len(db.GetAvailableBooks()), 2)
+}
+
+func TestWorkerCreatesBreadcrumbForCurrentCrawl(t *testing.T) {
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+	resetDBFields()
+
+	mockController.On("Sleep", mock.Anything).After(100 * time.Nanosecond).Return()
 
 	// Get the goodreads page
 	mockController.On("GetPage", validShelfURL).Once().Return(getHtmlNode(stephenKingGoodreadsShelfOneBook))
@@ -78,32 +125,6 @@ func TestWorker(t *testing.T) {
 		ShelfURL: validShelfURL,
 	}
 	assert.Equal(t, expectedCrawlBreadCrumb, db.GetRecentCrawlBreadcrumbs()[0])
-
-	assert.Equal(t, len(db.GetAvailableBooks()), 1)
-	assert.Equal(t, db.GetTotalBooksInAutomatedBookShelfCheck(), 1)
-	assert.Equal(t, 1, len(db.GetKnownAuthors()))
-}
-
-func TestWorkerAddsOtherAuthorBooksWhenFlagIsEnabled(t *testing.T) {
-	mockController := controller.MockCntrInterface{}
-	controller.SetController(&mockController)
-	resetDBFields()
-	db.SetAddMoreAuthorBooksToAvailableBooksList(true)
-
-	mockController.On("Sleep", mock.Anything).After(1 * time.Millisecond).Return()
-
-	// Get the goodreads page
-	mockController.On("GetPage", validShelfURL).Once().Return(getHtmlNode(stephenKingGoodreadsShelfOneBook))
-	// Don't bother with validating websocket messages just yet
-	mockController.On("WriteWsMessage", mock.Anything, mock.AnythingOfType(("*websocket.Conn")), mock.Anything).Return(nil)
-	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
-
-	mockController.On("GetPage", "https://thebookshop.ie/search.php?search_query=Parsons%2C%20Kelly%20%2F%20Doing%20Harm&section=product").
-		Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
-
-	Worker(validShelfURL, &websocket.Conn{})
-
-	assert.Equal(t, len(db.GetAvailableBooks()), 2)
 }
 
 func TestCheckAvailabilityOfExistingAvailableBooksListNoticesBooksThatAreNoLongerAvailable(t *testing.T) {

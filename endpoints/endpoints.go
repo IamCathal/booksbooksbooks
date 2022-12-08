@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -53,11 +54,13 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/getdiscordmessageformat", getDiscordMessageFormat).Methods("GET")
 	settingsRouter.HandleFunc("/setautomatedcrawltime", setAutomatedCrawlTime).Methods("POST")
 	settingsRouter.HandleFunc("/getautomatedcrawltime", getAutomatedCrawlTime).Methods("GET")
+	settingsRouter.HandleFunc("/disableautomatedcrawltime", disableAutomatedCrawlTime).Methods("POST")
 	settingsRouter.HandleFunc("/getautomatedbookshelfcheckurl", getautomatedbookshelfcheckurl).Methods("GET")
 	settingsRouter.HandleFunc("/setautomatedbookshelfcheckurl", setautomatedbookshelfcheckurl).Methods("POST")
 	settingsRouter.HandleFunc("/testdiscordwebhook", testDiscordWebook).Methods("GET")
 	settingsRouter.HandleFunc("/setdiscordwebhook", setDiscordWebook).Methods("POST")
 	settingsRouter.HandleFunc("/getdiscordwebhook", getDiscordWebook).Methods("GET")
+	settingsRouter.HandleFunc("/cleardiscordwebhook", clearDiscordWebhook).Methods("POST")
 	settingsRouter.HandleFunc("/setsendalertwhenbooknolongeravailable", setSendAlertWhenBookNoLongerAvailable).Methods("POST")
 	settingsRouter.HandleFunc("/getsendalertwhenbooknolongeravailable", getSendAlertWhenBookNoLongerAvailable).Methods("GET")
 	settingsRouter.HandleFunc("/setsendalertonlywhenfreeshippingkicksin", setSendAlertOnlyWhenFreeShippingKicksIn).Methods("POST")
@@ -65,6 +68,7 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/setaddmoreauthorbookstoavailablelist", setAddMoreAuthorBooksToAvailableBooksList).Methods("POST")
 	settingsRouter.HandleFunc("/getaddmoreauthorbookstoavailablelist", getAddMoreAuthorBooksToAvailableBooksList).Methods("GET")
 	settingsRouter.HandleFunc("/getknownauthors", getKnownAuthors).Methods("Get")
+	settingsRouter.HandleFunc("/clearknownauthors", clearKnownAuthors).Methods("POST")
 	settingsRouter.HandleFunc("/toggleauthorignore", toggleAuthorIgnore).Methods("POST")
 	settingsRouter.Use(logMiddleware)
 
@@ -118,8 +122,14 @@ func unignoreBook(w http.ResponseWriter, r *http.Request) {
 
 func testDiscordWebook(w http.ResponseWriter, r *http.Request) {
 	discordWebhook := r.URL.Query().Get("webhookurl")
+	_, err := url.Parse(discordWebhook)
+	if err != nil {
+		errorMsg := fmt.Sprintf("Invalid webhookurl '%s' is not a valid URL", discordWebhook)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
 	db.SetDiscordWebhookURL(discordWebhook)
-	err := controller.Cnt.DeliverWebhook(dtos.DiscordMsg{
+	err = controller.Cnt.DeliverWebhook(dtos.DiscordMsg{
 		Username:   "BooksBooksBooks",
 		Avatar_url: "https://cathaloc.dev/static/favicons/ms-icon-150x150.png",
 		Embed: []dtos.DiscordEmbed{
@@ -151,6 +161,11 @@ func getDiscordWebook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
+}
+
+func clearDiscordWebhook(w http.ResponseWriter, r *http.Request) {
+	db.SetDiscordWebhookURL("")
+	w.WriteHeader(http.StatusOK)
 }
 
 func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {
@@ -267,6 +282,11 @@ func setAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func disableAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
+	db.SetAutomatedBookShelfCrawlTime("")
+	w.WriteHeader(http.StatusOK)
+}
+
 func getAutomatedCrawlTime(w http.ResponseWriter, r *http.Request) {
 	res := dtos.GetAutomatedCrawlTimeResponse{
 		Time: db.GetAutomatedBookShelfCrawlTime(),
@@ -340,6 +360,11 @@ func getKnownAuthors(w http.ResponseWriter, r *http.Request) {
 	res := db.GetKnownAuthors()
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
+}
+
+func clearKnownAuthors(w http.ResponseWriter, r *http.Request) {
+	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	w.WriteHeader(http.StatusOK)
 }
 
 func toggleAuthorIgnore(w http.ResponseWriter, r *http.Request) {

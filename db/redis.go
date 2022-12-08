@@ -408,3 +408,7 @@ func PurgeAuthorFromAvailableBooks(author string) {
 	}
 	SetAvailableBooks(availableBooksWithoutPurgedAuthor)
 }
+
+func PurgeAllContent() {
+
+}

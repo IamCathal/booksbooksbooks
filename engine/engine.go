@@ -134,7 +134,6 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 
 		case searchResultFromTheBookshop := <-searchResultBooksChan:
 			currCrawlStats.BooksSearched++
-			currCrawlStats.BookMatchFound += len(searchResultFromTheBookshop.TitleMatches) + len(searchResultFromTheBookshop.AuthorMatches)
 
 			searchResultsFiltered := filterIgnoredAuthors(searchResultFromTheBookshop)
 
@@ -146,6 +145,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 						searchResultsFiltered.SearchBook.Title, searchResultsFiltered.SearchBook.Author,
 						titleMatch.Price, titleMatch.Link)
 
+					currCrawlStats.BookMatchFound++
 					writeNewAvailableBookWsMsg(titleMatch, currCrawlStats, ws)
 					db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: titleMatch})
 					util.SendNewBookIsAvailableNotification(titleMatch, true)

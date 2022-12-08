@@ -218,6 +218,31 @@ document.getElementById("purgeIgnoredAuthorsButton").addEventListener("click", (
     })
 })
 
+document.getElementById("clearKnownAuthors").addEventListener("click", (ev) => {
+    clearKnownAuthors().then(() => {
+        getAndRenderKnownAuthorsList()
+    }, (err) => {
+        console.error(err)
+    })
+
+})
+
+document.getElementById("disableAutomatedChecks").addEventListener("click", (ev) => {
+    disableAutomatedChecks().then(() => {
+        getAndRenderAutomatedCrawlTime()
+    }, (err) => {
+        console.error(err)
+    })
+})
+
+document.getElementById("disableDiscordNotifications").addEventListener("click", (ev) => {
+    clearDiscordWebhook("").then(() => {
+        getAndRenderDiscordWebhookURL()
+    }, (err) => {
+        console.error(err)
+    })
+})
+
 function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
@@ -228,7 +253,9 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("settingsTestWebhookURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsSetAutomatedCheckTimeButton").style = swayaaangBorders(0.4)
     document.getElementById("purgeIgnoredAuthorsButton").style = swayaaangBorders(0.6)
-
+    document.getElementById("clearKnownAuthors").style = swayaaangBorders(0.6)
+    document.getElementById("disableAutomatedChecks").style = swayaaangBorders(0.6)
+    document.getElementById("disableDiscordNotifications").style = swayaaangBorders(0.6)
 }
 
 document.getElementById("bigStyleBox").addEventListener("click", () => {
@@ -360,6 +387,23 @@ function setAutomatedCrawlTime(time) {
     })
 }
 
+function disableAutomatedChecks(time) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/disableautomatedcrawltime`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
 function setDiscordWebhookURL(webhookURL) {
     return new Promise((resolve, reject) => {
         fetch(`/settings/setdiscordwebhook?webhookurl=${webhookURL}`, {
@@ -386,6 +430,23 @@ function getDiscordWebhookURL(webhookURL) {
                 "Accept": "application/json"
             },
         }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.webhook)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function clearDiscordWebhook(webhookURL) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/cleardiscordwebhook`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
         .then((res) => {
             resolve(res.webhook)
         }, (err) => {
@@ -558,6 +619,23 @@ function getKnownAuthorList() {
         }).then((res) => res.json())
         .then((res) => {
             resolve(res)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function clearKnownAuthors() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/clearknownauthors`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
         }, (err) => {
             reject(err)
         });

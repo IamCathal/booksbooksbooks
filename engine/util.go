@@ -88,15 +88,6 @@ func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats
 	}
 }
 
-// func WriteMsg(msg []byte, ws *websocket.Conn) {
-// 	websocketWriteLock.Lock()
-// 	defer websocketWriteLock.Unlock()
-// 	err := ws.WriteMessage(1, msg)
-// 	if err != nil {
-// 		logger.Sugar().Fatal(err)
-// 	}
-// }
-
 func checkAvailabilityOfExistingAvailableBooksList() {
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
 	booksFromLastTimeThatAreStillAvailable := lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(booksThatWereAvailableLastTime)

@@ -102,20 +102,3 @@ func SendFreeShippingTotalHasKickedInNotification(totalCostOfBooks float64) {
 	}
 	controller.Cnt.DeliverWebhook(message)
 }
-
-// func DeliverWebHook(msg dtos.DiscordMsg) {
-// 	webhookURL := db.GetDiscordWebhookURL()
-// 	if webhookURL == "" {
-// 		return
-// 	}
-
-// 	msgEmbedByte, err := json.Marshal(msg)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	res, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(msgEmbedByte))
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer res.Body.Close()
-// }
