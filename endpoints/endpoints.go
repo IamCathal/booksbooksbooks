@@ -44,7 +44,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/ignorebook", ignoreBook).Methods("POST")
 	r.HandleFunc("/unignorebook", unignoreBook).Methods("POST")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
-	r.HandleFunc("/purgeauthorfromavailablebooks", purgeAuthorFromAvailableBooks).Methods("POST")
+	r.HandleFunc("/purgeignoredauthorsfromavailablebooks", purgeIgnoredAuthorsFromAvailableBooks).Methods("POST")
 	r.HandleFunc("/getautomatedcrawlshelfstats", getAutomatedCrawlShelfStats).Methods("GET")
 	r.Use(logMiddleware)
 
@@ -173,14 +173,8 @@ func resetAvailableBooks(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func purgeAuthorFromAvailableBooks(w http.ResponseWriter, r *http.Request) {
-	author := r.URL.Query().Get("author")
-	if author == "" {
-		errorMsg := fmt.Sprintf("Invalid author '%s' given", author)
-		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
-		return
-	}
-	db.PurgeAuthorFromAvailableBooks(author)
+func purgeIgnoredAuthorsFromAvailableBooks(w http.ResponseWriter, r *http.Request) {
+	db.PurgeIgnoredAuthorsFromAvailableBooks()
 	w.WriteHeader(http.StatusOK)
 }
 

@@ -397,18 +397,22 @@ func ToggleAuthorIgnore(authorToSearch string) {
 	SetKnownAuthors(newKnownAuthors)
 }
 
-func PurgeAuthorFromAvailableBooks(author string) {
-	availableBooks := GetAvailableBooks()
+func PurgeIgnoredAuthorsFromAvailableBooks() {
 	availableBooksWithoutPurgedAuthor := []dtos.AvailableBook{}
+	availableBooks := GetAvailableBooks()
+	knownAuthors := GetKnownAuthors()
+
+	ignoredAuthorsMap := make(map[string]bool)
+	for _, author := range knownAuthors {
+		if author.Ignore {
+			ignoredAuthorsMap[author.Name] = true
+		}
+	}
 
 	for _, book := range availableBooks {
-		if book.BookPurchaseInfo.Author != author {
+		if _, isIgnoredAuthor := ignoredAuthorsMap[book.BookPurchaseInfo.Author]; !isIgnoredAuthor {
 			availableBooksWithoutPurgedAuthor = append(availableBooksWithoutPurgedAuthor, book)
 		}
 	}
 	SetAvailableBooks(availableBooksWithoutPurgedAuthor)
-}
-
-func PurgeAllContent() {
-
 }

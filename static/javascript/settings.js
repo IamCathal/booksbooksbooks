@@ -1,5 +1,3 @@
-let ignoredAuthorsList = []
-
 giveSwayaaangBordersToItems()
 
 getAndRenderSettings()
@@ -138,7 +136,6 @@ function getAndRenderKnownAuthorsList() {
         const ignoredAuthors = authors.filter(author => {
             return author.ignore === true
         })
-        ignoredAuthorsList = ignoredAuthors
         const nonIgnoredAuthors = authors.filter(author => {
             return author.ignore === false
         })
@@ -213,9 +210,7 @@ document.getElementById("sendWebhookWhenNoLongerAvailable").addEventListener("ch
 })
 
 document.getElementById("purgeIgnoredAuthorsButton").addEventListener("click", (ev) => {
-    ignoredAuthorsList.forEach(author => {
-        purgeAuthorFromAvailableBooks(author.name)
-    })
+    purgeIgnoredAuthorsFromAvailableBooks()
 })
 
 document.getElementById("clearKnownAuthors").addEventListener("click", (ev) => {
@@ -658,15 +653,15 @@ function toggleAuthorIgnore(author, enable) {
     })
 }
 
-function purgeAuthorFromAvailableBooks(author) {
+function purgeIgnoredAuthorsFromAvailableBooks(author) {
     return new Promise((resolve, reject) => {
-        fetch(`/purgeauthorfromavailablebooks?author=${encodeURIComponent(author)}`, {
+        fetch(`/purgeignoredauthorsfromavailablebooks`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-        }).then((res) => {
+        }).then(() => {
             resolve()
         }, (err) => {
             reject(err)

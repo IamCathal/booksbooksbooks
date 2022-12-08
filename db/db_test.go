@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -232,7 +233,7 @@ func TestIgnoreAuthorFlow(t *testing.T) {
 	assert.ElementsMatch(t, initialKnownAuthors, GetKnownAuthors())
 }
 
-func TestPurgeAuthorFromAvailableBooks(t *testing.T) {
+func TestPurgeAuthorFromAvailableBooksPurgesSingleIgnoredAuthor(t *testing.T) {
 	resetDBFields()
 	retroActivelyPurgeAuthor := "Ken Mc Leod"
 	availableBooks := []dtos.AvailableBook{
@@ -246,10 +247,53 @@ func TestPurgeAuthorFromAvailableBooks(t *testing.T) {
 	SetAvailableBooks(availableBooks)
 	assert.Equal(t, GetAvailableBooks(), availableBooks)
 
-	PurgeAuthorFromAvailableBooks(retroActivelyPurgeAuthor)
+	AddAuthorToKnownAuthors(retroActivelyPurgeAuthor)
+	ToggleAuthorIgnore(retroActivelyPurgeAuthor)
+
+	PurgeIgnoredAuthorsFromAvailableBooks()
 
 	// Expect available books left from the retroactively purged author
 	assert.Empty(t, GetAvailableBooks())
+}
+
+func TestPurgeAuthorFromAvailableBooksPurgesIgnoredAuthorsAndLeavesTheRest(t *testing.T) {
+	resetDBFields()
+	retroActivelyPurgeAuthor := "Ken Mc Leod"
+	normalAuthor := "Stephen Lawhead"
+	normalAuthor2 := fmt.Sprintf("%s 2", retroActivelyPurgeAuthor)
+
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link:   "https://cathaloc.dev",
+				Author: retroActivelyPurgeAuthor,
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link:   "https://cathaloc.dev/fyp",
+				Author: normalAuthor,
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link:   "https://cathaloc.dev/fyp",
+				Author: normalAuthor2,
+			},
+		},
+	}
+	SetAvailableBooks(availableBooks)
+	assert.Equal(t, GetAvailableBooks(), availableBooks)
+
+	AddAuthorToKnownAuthors(retroActivelyPurgeAuthor)
+	ToggleAuthorIgnore(retroActivelyPurgeAuthor)
+	AddAuthorToKnownAuthors(normalAuthor)
+	AddAuthorToKnownAuthors(normalAuthor2)
+
+	PurgeIgnoredAuthorsFromAvailableBooks()
+
+	// Expect available books left from the retroactively purged author
+	assert.Equal(t, len(GetAvailableBooks()), 2)
 }
 
 func resetDBFields() {
