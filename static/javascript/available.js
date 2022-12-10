@@ -43,18 +43,27 @@ function renderAvailableBooks(availableBookList) {
     let totalIgnoredBookCost = 0
     availableBookList.forEach(book => {
         if (book.ignore == false) {
+
+            let pureTitle = book.bookPurchaseInfo.title;
+            if (pureTitle.includes("(") && pureTitle.includes(")")) {
+                pureTitle = pureTitle.substring(0, pureTitle.indexOf("("))
+            }
+
             document.getElementById("availableBooks").innerHTML +=
             `
-                        <div class="col-3 pt-3 searchResultBook">
+                        <div class="col-3 pt-3 searchResultBook" style="line-height: 75%">
                             <div class="row">
                                 <div class="col-3 pl-1">
                                     <a href="${book.bookPurchaseInfo.link}">
-                                        <img src="${book.bookPurchaseInfo.cover}" style="width: 3.5rem;" title="">
+                                        <img src="${book.bookPurchaseInfo.cover}" style="width: 3.75rem;" title="">
                                     </a>
                                 </div>
-                                <div class="col">
-                                    <div class="row" style="font-weight: bold; font-size: 0.8rem">
-                                        ${book.bookPurchaseInfo.title}
+                                <div class="col pt-1 pl-4">
+                                    <div class="row" style="font-weight: bold; font-size: 0.8rem; text-overflow: ellipsis;">
+                                        ${pureTitle}
+                                    </div>
+                                    <div class="row" style="font-size: 0.6rem">
+                                        ${book.bookInfo.seriesText == "" ? "Standalone book" : book.bookInfo.seriesText}
                                     </div>
                                     <div class="row" style="font-size: 0.6rem">
                                         ${book.bookPurchaseInfo.author}
@@ -62,7 +71,13 @@ function renderAvailableBooks(availableBookList) {
                                     <div class="row" style="font-weight: bold; font-size: 0.7rem">
                                         ${book.bookPurchaseInfo.price}
                                     </div>
-                                    <div class="row ignoreBook" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
+                                    <div class="row" style="font-size: 0.6rem;">
+                                        <a href="${book.bookPurchaseInfo.link}"> Buy now </a> <a class="ml-2" href="${book.bookInfo.link}" >More info </a>
+                                    </div>
+                                    <div class="row" style="font-size: 0.6rem;">
+                                        ${getFoundFromBadge(book.bookFoundFrom)}
+                                    </div>
+                                    <div class="row mt-1 ignoreBook" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
                                         Ignore this book
                                     </div>
                                 </div>
@@ -132,6 +147,19 @@ function renderAvailableBooks(availableBookList) {
             })
         })
     })
+}
+
+function getFoundFromBadge(enumVal) {
+    switch (enumVal) {
+        case 0:
+            return `Found as a title match`
+        case 1:
+            return `Found as an author match`
+        case 2:
+            return `Found as a series match`  
+        default:
+            console.error(`invalid enumVal ${enumVal} given`)  
+    }
 }
 
 function renderStatsOnAutomatedShelf(stats) {

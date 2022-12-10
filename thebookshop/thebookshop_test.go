@@ -76,6 +76,17 @@ func TestExtractAuthorFromTitleSplitByHyphen(t *testing.T) {
 	assert.Equal(t, expectedTitle, title)
 }
 
+func TestExtractAuthorFromTitleSplitByTwoHypens(t *testing.T) {
+	rawTitleText := "Herbert, Frank - Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"
+	expectedAuthor := "Herbert, Frank"
+	expectedTitle := "Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"
+
+	author, title := extractAuthorFromTitle(rawTitleText)
+
+	assert.Equal(t, expectedAuthor, author)
+	assert.Equal(t, expectedTitle, title)
+}
+
 func TestExtractAuthorFromTitleReturnsEverythingWhenCantSplit(t *testing.T) {
 	rawTitleText := "Tolkien, J. R. R. [] The Lord of the Rings"
 	expectedAuthor := rawTitleText
@@ -107,8 +118,8 @@ func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
 	perfectWorldTimeTaken := time.Duration(timesCalled) * SLEEP_DURATION
 	expectedTimeTaken := perfectWorldTimeTaken.Abs().Milliseconds()
 
-	// Allow for 5ms expected difference since sleep is not constant
-	assert.Greater(t, timeTaken.Abs().Milliseconds(), expectedTimeTaken-5)
+	// Allow for 10ms expected difference since sleep is not constant
+	assert.Greater(t, timeTaken.Abs().Milliseconds(), expectedTimeTaken-10)
 }
 
 func getHtmlNode(webpageStr string) *html.Node {

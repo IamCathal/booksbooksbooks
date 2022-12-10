@@ -141,15 +141,18 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 				db.AddAuthorToKnownAuthors(titleMatch.Author)
 				if bookIsNew := wasNotPreviouslyAvailable(titleMatch, previouslyKnownAvailableBooksMap); bookIsNew {
 					newBooksFound++
+					currCrawlStats.BookMatchFound++
+					previouslyKnownAvailableBooksMap[titleMatch.Link] = true
+
 					logger.Sugar().Infof("Found a title match book that's for sale: %s by %s for %s at %s",
 						searchResultsFiltered.SearchBook.Title, searchResultsFiltered.SearchBook.Author,
 						titleMatch.Price, titleMatch.Link)
 
-					currCrawlStats.BookMatchFound++
-					writeNewAvailableBookWsMsg(titleMatch, currCrawlStats, ws)
-					db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: titleMatch})
 					util.SendNewBookIsAvailableNotification(titleMatch, true)
-					previouslyKnownAvailableBooksMap[titleMatch.Link] = true
+
+					writeNewAvailableBookWsMsg(titleMatch, currCrawlStats, ws)
+					db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: titleMatch, BookFoundFrom: dtos.TITLE_MATCH})
+
 				}
 			}
 
@@ -159,14 +162,29 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 					if bookIsNew := wasNotPreviouslyAvailable(authorMatch, previouslyKnownAvailableBooksMap); bookIsNew {
 						newBooksFound++
 						currCrawlStats.BookMatchFound++
+						previouslyKnownAvailableBooksMap[authorMatch.Link] = true
 
 						logger.Sugar().Infof("Found an author match book that's for sale: %s by %s for %s at %s",
 							authorMatch.Title, authorMatch.Author, authorMatch.Price, authorMatch.Link)
 
-						writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
-						db.AddAvailableBook(dtos.AvailableBook{BookInfo: searchResultsFiltered.SearchBook, BookPurchaseInfo: authorMatch})
 						util.SendNewBookIsAvailableNotification(authorMatch, true)
-						previouslyKnownAvailableBooksMap[authorMatch.Link] = true
+
+						found, goodReadsListingForAuthorMatch := goodreads.SearchGoodreads(authorMatch)
+						if !found {
+							logger.Sugar().Warnf("Couldn't find a goodreads listing for thebookshop author match book: %+v", authorMatch)
+						} else {
+							logger.Sugar().Infof("Found author match book on goodreads: %+v", goodReadsListingForAuthorMatch)
+
+							updatedAvailableBook := dtos.AvailableBook{
+								BookInfo:         goodReadsListingForAuthorMatch,
+								BookPurchaseInfo: authorMatch,
+								BookFoundFrom:    dtos.AUTHOR_MATCH,
+								Ignore:           false,
+							}
+							writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
+							db.AddAvailableBook(updatedAvailableBook)
+						}
+
 					}
 				}
 			}

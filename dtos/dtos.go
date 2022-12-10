@@ -2,6 +2,12 @@ package dtos
 
 import "time"
 
+const (
+	TITLE_MATCH = iota
+	AUTHOR_MATCH
+	SERIES_MATCH
+)
+
 type AppConfig struct {
 	ApplicationStartUpTime time.Time
 }
@@ -81,6 +87,7 @@ type RecentCrawlBreadcrumb struct {
 type AvailableBook struct {
 	BookInfo         BasicGoodReadsBook `json:"bookInfo"`
 	BookPurchaseInfo TheBookshopBook    `json:"bookPurchaseInfo"`
+	BookFoundFrom    int                `json:"bookFoundFrom"`
 	Ignore           bool               `json:"ignore"`
 }
 

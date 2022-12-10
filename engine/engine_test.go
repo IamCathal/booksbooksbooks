@@ -96,6 +96,7 @@ func TestWorkerAddsOtherAuthorBooksWhenFlagIsEnabled(t *testing.T) {
 
 	mockController.On("GetPage", "https://thebookshop.ie/search.php?search_query=Parsons%2C%20Kelly%20%2F%20Doing%20Harm&section=product").
 		Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
+	mockController.On("Get", mock.AnythingOfType("string")).Return([]byte(`[{"imageUrl":"https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1183241465i/1393636._SY75_.jpg","bookId":"1393636","workId":"3634570","bookUrl":"/book/show/1393636.Le_Messie_de_Dune","from_search":true,"from_srp":true,"qid":"4ejfQvIV1E","rank":1,"title":"The Lie","bookTitleBare":"The Lie","numPages":316,"avgRating":"3.89","ratingsCount":220075,"author":{"id":58,"name":"Kelly Parsons","isGoodreadsAuthor":false,"profileUrl":"https://www.goodreads.com/author/show/58.Frank_Herbert","worksListUrl":"https://www.goodreads.com/author/list/58.Frank_Herbert"},"kcrPreviewUrl":null,"description":{"html":"<b>This is an alternate cover edition for ISBN 978-2-266-15451-2.</b><br/><br/>Paul Atréides a triomphé de ses ennemis. En douze ans de guerre sainte, ses Fremen ont conquis l&apos;univers. Il est …","truncated":true,"fullContentUrl":"https://www.goodreads.com/book/show/1393636.Le_Messie_de_Dune"}}]`))
 
 	Worker(validShelfURL, &websocket.Conn{})
 

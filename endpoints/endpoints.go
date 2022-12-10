@@ -46,6 +46,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
 	r.HandleFunc("/purgeignoredauthorsfromavailablebooks", purgeIgnoredAuthorsFromAvailableBooks).Methods("POST")
 	r.HandleFunc("/getautomatedcrawlshelfstats", getAutomatedCrawlShelfStats).Methods("GET")
+	r.HandleFunc("/goodreads", goodreadSearch).Methods("POST")
 	r.Use(logMiddleware)
 
 	settingsRouter := r.PathPrefix("/settings").Subrouter()
@@ -192,6 +193,20 @@ func getAutomatedCrawlShelfStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
+}
+
+func goodreadSearch(w http.ResponseWriter, r *http.Request) {
+	searchBook := dtos.TheBookshopBook{
+		Author: "King, Stephen",
+		Title:  "The Waste Lands",
+	}
+	found, result := goodreads.SearchGoodreads(searchBook)
+	if !found {
+		fmt.Println("cant be found")
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 }
 
 func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {

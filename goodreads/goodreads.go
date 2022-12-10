@@ -1,12 +1,15 @@
 package goodreads
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/segmentio/ksuid"
 	"go.uber.org/zap"
 )
 
@@ -127,21 +130,34 @@ func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 	return allBooks
 }
 
-// func getPage(pageURL string) io.ReadCloser {
-// 	client := &http.Client{}
-// 	req, err := http.NewRequest("GET", pageURL, nil)
-// 	checkErr(err)
+func SearchGoodreads(bookPurchaseInfo dtos.TheBookshopBook) (bool, dtos.BasicGoodReadsBook) {
+	fmt.Printf("going back to search for: %+v\n", bookPurchaseInfo)
+	bookSearchName := fmt.Sprintf("%s %s", bookPurchaseInfo.Author, extractPureTitle(bookPurchaseInfo.Title))
+	body := controller.Cnt.Get(fmt.Sprintf("https://www.goodreads.com/book/auto_complete?format=json&q=%s", url.QueryEscape(bookSearchName)))
 
-// 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
-// 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-// 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
-// 	req.Header.Set("Cache-Control", "no-cache")
-// 	req.Header.Set("Connection", "keep-alive")
-// 	req.Header.Set("Host", "www.goodreads.com")
-// 	req.Header.Set("Pragma", "no-cache")
-// 	req.Header.Set("Referer", getFakeReferrerPage(pageURL))
+	booksFoundRes := []dtos.GoodReadsSearchBookResult{}
+	body = ensureAllAverageRatingsAreOfTypeString(body)
 
-// 	res, err := client.Do(req)
-// 	checkErr(err)
-// 	return res.Body
-// }
+	err := json.Unmarshal(body, &booksFoundRes)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+
+	if len(booksFoundRes) == 0 {
+		logger.Sugar().Infof("Could not find goodreads book for: %+v", bookPurchaseInfo)
+		return false, dtos.BasicGoodReadsBook{}
+	}
+
+	topSearchResult := dtos.BasicGoodReadsBook{
+		ID:         ksuid.New().String(),
+		Title:      booksFoundRes[0].BookTitleBare,
+		Author:     booksFoundRes[0].Author.Name,
+		SeriesText: booksFoundRes[0].Title[len(booksFoundRes[0].BookTitleBare):],
+		Link:       booksFoundRes[0].Description.FullContentURL,
+		Cover:      booksFoundRes[0].ImageURL,
+		// Isbn13:  ,
+		// Asin:    ,
+		Rating: float32(strToFloat(booksFoundRes[0].AvgRating)),
+	}
+	return true, topSearchResult
+}

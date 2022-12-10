@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -36,6 +37,7 @@ type Cntr struct{}
 type CntrInterface interface {
 	// Goodreads and TheBookshop
 	GetPage(url string) *html.Node
+	Get(url string) []byte
 
 	// Websocket and notifications
 	WriteWsMessage(msg []byte, ws *websocket.Conn) error
@@ -63,6 +65,25 @@ func (control Cntr) GetPage(url string) *html.Node {
 	doc, err := html.Parse(res.Body)
 	checkErr(err)
 	return doc
+}
+
+func (control Cntr) Get(url string) []byte {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	checkErr(err)
+
+	if contains := strings.Contains(url, "thebookshop.ie"); contains {
+		setBookBookBooksHeaders(req)
+	}
+	if contains := strings.Contains(url, "goodreads.com"); contains {
+		setGoodreadsHeaders(req, url)
+	}
+
+	res, err := client.Do(req)
+	checkErr(err)
+	body, err := io.ReadAll(res.Body)
+	checkErr(err)
+	return body
 }
 
 func (control Cntr) WriteWsMessage(msg []byte, ws *websocket.Conn) error {

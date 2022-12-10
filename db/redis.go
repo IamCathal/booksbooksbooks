@@ -28,6 +28,7 @@ var (
 	ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST = "addMoreAuthorBooksToAvailableBooksList"
 	KNOWN_AUTHORS                                 = "knownAuthors"
 	IGNORE_AUTHORS                                = "ignoreAuthors"
+	OTHER_BOOKS_IN_SERIES_LOOKUP                  = "otherBooksInSeriesLookup"
 	DEFAULT_TTL                                   = time.Duration(0)
 )
 
@@ -415,4 +416,26 @@ func PurgeIgnoredAuthorsFromAvailableBooks() {
 		}
 	}
 	SetAvailableBooks(availableBooksWithoutPurgedAuthor)
+}
+
+func SetOtherBooksInSeriesLookup(enabled bool) {
+	err := redisClient.Set(ctx, OTHER_BOOKS_IN_SERIES_LOOKUP, enabled, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetOtherBooksInSeriesLookup() bool {
+	enabled, err := redisClient.Get(ctx, OTHER_BOOKS_IN_SERIES_LOOKUP).Result()
+	if err == redis.Nil {
+		SetOtherBooksInSeriesLookup(false)
+		return GetOtherBooksInSeriesLookup()
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	if enabled == "" {
+		SetOtherBooksInSeriesLookup(false)
+		return GetOtherBooksInSeriesLookup()
+	}
+	return strToBool(enabled)
 }

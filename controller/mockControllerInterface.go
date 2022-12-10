@@ -60,6 +60,22 @@ func (_m *MockCntrInterface) GetPage(url string) *html.Node {
 	return r0
 }
 
+// GetPage provides a mock function with given fields: url
+func (_m *MockCntrInterface) Get(url string) []byte {
+	ret := _m.Called(url)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(string) []byte); ok {
+		r0 = rf(url)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	return r0
+}
+
 // Sleep provides a mock function with given fields: duration
 func (_m *MockCntrInterface) Sleep(duration time.Duration) {
 	_m.Called(duration)

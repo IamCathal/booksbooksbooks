@@ -25,16 +25,13 @@ var (
 	GOODREADS_SHELF_URL_PREFIX = GOODREADS_BASE_BOOK_URL + "/review/list/"
 )
 
-func checkErr(err error) {
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
 func CheckIsShelfURL(checkURL string) bool {
 	hasPrefix := strings.HasPrefix(checkURL, GOODREADS_SHELF_URL_PREFIX)
 	properURL, err := url.Parse(checkURL)
-	checkErr(err)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+
 	shelfParam := properURL.Query().Get("shelf")
 
 	return hasPrefix && shelfParam != ""
@@ -119,8 +116,18 @@ func extractLoadedCount(loadedCountText string) (int, int) {
 
 func strToInt(str string) int {
 	intVersion, err := strconv.Atoi(str)
-	checkErr(err)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 	return intVersion
+}
+
+func strToFloat(floatString string) float64 {
+	floatVal, err := strconv.ParseFloat(floatString, 64)
+	if err != nil {
+		logger.Sugar().Fatalf("failed to parse floatString: %s", floatString)
+	}
+	return floatVal
 }
 
 func totalPagesToCrawl(totalBooks int) int {
@@ -140,4 +147,18 @@ func divmod(big, little int) (int, int) {
 func getFakeReferrerPage(URL string) string {
 	splitStringByShelfParam := strings.Split(URL, "?")
 	return splitStringByShelfParam[0]
+}
+
+func extractPureTitle(fullTitle string) string {
+	title := fullTitle
+	if strings.Contains(title, "(") {
+		return strings.TrimSpace(title[:strings.Index(title, "(")])
+	}
+	return strings.TrimSpace(title)
+}
+
+func ensureAllAverageRatingsAreOfTypeString(jsonData []byte) []byte {
+	stringJson := string(jsonData)
+	stringJson = strings.ReplaceAll(stringJson, `avgRating":0.0,`, `avgRating":"0.0",`)
+	return []byte(stringJson)
 }
