@@ -49,6 +49,7 @@ function renderAvailableBooks(availableBookList) {
                 pureTitle = pureTitle.substring(0, pureTitle.indexOf("("))
             }
 
+            let moreInfoText = book.bookInfo.title == "" ? `` : `<a class="ml-2" href="${book.bookInfo.link}" >More info </a>`
             document.getElementById("availableBooks").innerHTML +=
             `
                         <div class="col-3 pt-3 searchResultBook" style="line-height: 75%">
@@ -72,7 +73,7 @@ function renderAvailableBooks(availableBookList) {
                                         ${book.bookPurchaseInfo.price}
                                     </div>
                                     <div class="row" style="font-size: 0.6rem;">
-                                        <a href="${book.bookPurchaseInfo.link}"> Buy now </a> <a class="ml-2" href="${book.bookInfo.link}" >More info </a>
+                                        <a href="${book.bookPurchaseInfo.link}"> Buy now </a> ${moreInfoText}
                                     </div>
                                     <div class="row" style="font-size: 0.6rem;">
                                         ${getFoundFromBadge(book.bookFoundFrom)}
