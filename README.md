@@ -1,6 +1,6 @@
 # booksbooksbooks
 
-I use GoodReads for my book reccomendations and I buy my books mostly from TheBookshop.ie. I made this project to be able to automatically check if books on my "shopping list" are available on TheBookshop. Still in active development but hoping to make a 1.0 release before the end of November 2022
+I use GoodReads for my book reccomendations and I buy my books mostly from TheBookshop.ie. I made this project to be able to automatically check if books on my "shopping list" are available on TheBookshop. Still in active development and if there is not an official release version then don't expect even master to work properly all of the time
 
 |      |  |
 | ----------- | ----------- |
