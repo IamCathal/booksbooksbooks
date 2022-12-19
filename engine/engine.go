@@ -79,6 +79,8 @@ func automatedCheck() {
 	}
 
 	sendFreeShippingWebhookIfFreeShippingEligible()
+	close(stubBooksFoundFromGoodReadsChan)
+	close(stubSearchResultsFromTheBookshopChan)
 }
 
 func Worker(shelfURL string, ws *websocket.Conn) {
@@ -111,7 +113,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	}
 
 	for {
-		if allBooksFound(currCrawlStats) {
+		if allBooksFoundInShelfCrawl(currCrawlStats) {
 			break
 		}
 
@@ -208,7 +210,119 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	close(searchResultBooksChan)
 }
 
-func allBooksFound(crawlStats dtos.CrawlStats) bool {
+func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
+	statsChan := make(chan int, 1)
+	seriesDetailsChan := make(chan dtos.Series, 200)
+	initialShelfLookupChan := make(chan dtos.BasicGoodReadsBook, 200)
+	lookUpBooksOnTheBookshopChan := make(chan dtos.EnchancedSearchResult, 400)
+
+	booksFromShelf := goodreads.GetBooksFromShelf(db.GetOwnedBooksShelfURL(), statsChan, initialShelfLookupChan)
+	close(initialShelfLookupChan)
+	ownedBooksThatAreInASeries := extractGoodreadsBooksThatAreInSeries(booksFromShelf)
+
+	knownSeriesToTheirLinks := make(map[string]bool)
+	seriesLinks := []string{}
+
+	for _, bookInASeries := range ownedBooksThatAreInASeries {
+		baseSeriesTitle := goodreads.FilterSeriesTitleFromSeriesText(bookInASeries.SeriesText)
+		if _, exists := knownSeriesToTheirLinks[baseSeriesTitle]; !exists {
+			knownSeriesToTheirLinks[baseSeriesTitle] = true
+			seriesLinks = append(seriesLinks, goodreads.GetSeriesLink(bookInASeries))
+		}
+	}
+
+	seriesCrawlStats := dtos.SeriesCrawlStats{
+		BooksInShelf:               len(booksFromShelf),
+		SeriesCount:                len(seriesLinks),
+		TotalBooksInSeries:         -1,
+		BooksSearchedOnTheBookshop: 0,
+		SeriesLookedUp:             0,
+		BookMatchesFound:           0,
+	}
+	writeOverallSeriesCrawlStatsMessage(seriesCrawlStats, ws)
+	logger.Sugar().Infof("Found %d series in shelf: %s\n", len(seriesLinks), db.GetOwnedBooksShelfURL())
+
+	for _, seriesLink := range seriesLinks {
+		logger.Sugar().Infof("Getting series details from series link: %s", seriesLink)
+		go goodreads.GetSeriesDetailsFromLink(seriesLink, seriesDetailsChan)
+	}
+
+	theBookshopMatchesFound := make(map[string]dtos.TheBookshopBook)
+	shelfSeriesDetails := []dtos.Series{}
+
+	for {
+		if allBooksFoundInSeriesCrawl(seriesCrawlStats) {
+			logger.Sugar().Infof("Finished series crawl: %+v", seriesCrawlStats)
+			break
+		}
+
+		select {
+		case seriesInfo := <-seriesDetailsChan:
+			seriesCrawlStats.SeriesLookedUp++
+			if seriesCrawlStats.TotalBooksInSeries == -1 {
+				seriesCrawlStats.TotalBooksInSeries = 0
+			}
+			seriesCrawlStats.TotalBooksInSeries += len(seriesInfo.Books)
+			writeNewSeriesFoundMessage(seriesInfo, seriesCrawlStats, ws)
+
+			shelfSeriesDetails = append(shelfSeriesDetails, seriesInfo)
+			logger.Sugar().Infof("[SeriesLookedUp: %d][BooksSearchedOnTheBookshop: %d/%d] Found series: %s which have %d books in total",
+				seriesCrawlStats.SeriesLookedUp, seriesCrawlStats.BooksSearchedOnTheBookshop, seriesCrawlStats.TotalBooksInSeries, seriesInfo.Title, len(seriesInfo.Books))
+
+			for _, bookInSeries := range seriesInfo.Books {
+				go thebookshop.SearchForBook(bookInSeries.BookInfo, lookUpBooksOnTheBookshopChan)
+			}
+
+		case theBookshopSearchResult := <-lookUpBooksOnTheBookshopChan:
+			seriesCrawlStats.BooksSearchedOnTheBookshop++
+			logger.Sugar().Infof("[SeriesLookedUp: %d][BooksSearchedOnTheBookshop: %d/%d] Series lookup search for %s - %s had %d matches",
+				seriesCrawlStats.SeriesLookedUp, seriesCrawlStats.BooksSearchedOnTheBookshop, seriesCrawlStats.TotalBooksInSeries,
+				theBookshopSearchResult.SearchBook.Author, theBookshopSearchResult.SearchBook.Title,
+				len(theBookshopSearchResult.TitleMatches))
+
+			if len(theBookshopSearchResult.TitleMatches) > 0 {
+				seriesCrawlStats.BookMatchesFound++
+				searchBookLink := theBookshopSearchResult.SearchBook.Link
+				theBookshopMatchesFound[searchBookLink] = theBookshopSearchResult.TitleMatches[0]
+
+				writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, theBookshopSearchResult.TitleMatches[0], seriesCrawlStats, ws)
+			} else {
+				writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, dtos.TheBookshopBook{}, seriesCrawlStats, ws)
+			}
+		}
+	}
+	close(lookUpBooksOnTheBookshopChan)
+	close(seriesDetailsChan)
+
+	logger.Sugar().Infof("Found %d matches out of %d searches for series crawl lookup of shelf: %s\n",
+		seriesCrawlStats.BookMatchesFound, seriesCrawlStats.BooksSearchedOnTheBookshop, db.GetOwnedBooksShelfURL())
+
+	updatedShelfSeriesDetailsWithMatches := shelfSeriesDetails
+
+	for bookLink, match := range theBookshopMatchesFound {
+		logger.Sugar().Infof("Inserting match %s -> %+v into series details: %+v", bookLink, match)
+
+		for k, bookSeries := range shelfSeriesDetails {
+			for i := 0; i < len(bookSeries.Books); i++ {
+				currBook := bookSeries.Books[i]
+				if _, exists := theBookshopMatchesFound[currBook.BookInfo.Link]; exists {
+					updatedShelfSeriesDetailsWithMatches[k].Books[i].TheBookshopMatch = theBookshopMatchesFound[currBook.BookInfo.Link]
+				}
+			}
+		}
+	}
+
+	db.SetSeriesCrawlBooks(updatedShelfSeriesDetailsWithMatches)
+	return updatedShelfSeriesDetailsWithMatches
+}
+
+func allBooksFoundInSeriesCrawl(crawlStats dtos.SeriesCrawlStats) bool {
+	return crawlStats.BooksSearchedOnTheBookshop == crawlStats.TotalBooksInSeries &&
+		(crawlStats.SeriesLookedUp == crawlStats.SeriesCount) &&
+		crawlStats.TotalBooksInSeries != -1
+}
+
+func allBooksFoundInShelfCrawl(crawlStats dtos.CrawlStats) bool {
 	if ((crawlStats.BooksCrawled == crawlStats.TotalBooks) &&
 		(crawlStats.BooksSearched == crawlStats.TotalBooks)) && crawlStats.TotalBooks != -1 {
 		return true

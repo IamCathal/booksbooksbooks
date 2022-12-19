@@ -1,5 +1,18 @@
 package dtos
 
+type BasicGoodReadsBook struct {
+	ID            string  `json:"id"`
+	Title         string  `json:"title"`
+	Author        string  `json:"author"`
+	SeriesText    string  `json:"seriesText"`
+	Link          string  `json:"link"`
+	Cover         string  `json:"cover"`
+	Isbn13        string  `json:"isbn13"`
+	Asin          string  `json:"asin"`
+	Rating        float32 `json:"rating"`
+	PublishedYear int     `json:"published"`
+}
+
 type GoodReadsSearchBookResult struct {
 	ImageURL      string               `json:"imageUrl"`
 	BookID        string               `json:"bookId"`

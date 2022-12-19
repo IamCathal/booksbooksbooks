@@ -4,6 +4,7 @@ getAndRenderSettings()
 
 function getAndRenderSettings() {
     getAndRenderAutomatedShelfCheckURL()
+    getAndRenderOwnedBooksShelfURL()
     getAndRenderDiscordWebhookURL()
     getAndRenderDiscordMessageFormatPreference()
     getAndRenderAutomatedCrawlTime()
@@ -22,39 +23,39 @@ document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener(
     })
 })
 
-document.getElementById("settingsTestShelfURLButton").addEventListener("click", (ev) => {
-    document.getElementById("shelfPreviewRow").style.display = "none"
-    document.getElementById("shelfURLCheckStatsBox").innerHTML = ""
-    document.getElementById("shelfUrlCheckStatsTextBox").textContent = ""
+document.getElementById("settingsTestAutomatedShelfURLButton").addEventListener("click", (ev) => {
+    document.getElementById("automatedCheckShelfPreviewRow").style.display = "none"
+    document.getElementById("automatedCheckShelfURLCheckStatsBox").innerHTML = ""
+    document.getElementById("shelfUrlAutomatedCheckStatsTextBox").textContent = ""
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
 
-    document.getElementById("settingsTestShelfURLButton").classList.add("skeleton")
+    document.getElementById("settingsTestAutomatedShelfURLButton").classList.add("skeleton")
     
     setAutomatedShelfCheckURL(shelfUrl).then((res) => {
         getPreviewForBookShelf(shelfUrl).then(bookPreview => {
-            document.getElementById("shelfPreviewRow").style.display = "flex"
+            document.getElementById("automatedCheckShelfPreviewRow").style.display = "flex"
     
-            document.getElementById("shelfUrlCheckStatsTextBox").textContent = 
+            document.getElementById("shelfUrlAutomatedCheckStatsTextBox").textContent = 
                 `Found ${bookPreview.totalBooks} books. Should take roughly ${Math.floor(getSWAGEstimateForCrawlTime(bookPreview.totalBooks))}s to crawl`
             bookPreview.books.forEach(book => {
-                document.getElementById("shelfURLCheckStatsBox").innerHTML += `
+                document.getElementById("automatedCheckShelfURLCheckStatsBox").innerHTML += `
                                 <div class="col-1 pr-1">
                                     <img 
                                         src="${book.cover}"
-                                        style="width: 2.5rem"
+                                        style="width: 2rem"
                                     >
                                 </div>
                 `
             })
-            document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
+            document.getElementById("settingsTestAutomatedShelfURLButton").classList.remove("skeleton")
         }, (err) => {
             console.error(err)
-            document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
+            document.getElementById("settingsTestAutomatedShelfURLButton").classList.remove("skeleton")
         })
     }, (err) => {
-        document.getElementById("settingsTestShelfURLButton").classList.remove("skeleton")
-        document.getElementById("shelfPreviewRow").style.display = "flex"
-        document.getElementById("shelfURLCheckStatsBox").innerHTML +=
+        document.getElementById("settingsTestAutomatedShelfURLButton").classList.remove("skeleton")
+        document.getElementById("automatedCheckShelfPreviewRow").style.display = "flex"
+        document.getElementById("shelfUrlAutomatedCheckStatsTextBox").innerHTML +=
         `
             <div class="col text-center">
                 <p class="pl-4 mb-0">That's not a valid Goodreads shelf URL. This is an example of a valid shelf URL:</p>
@@ -69,9 +70,59 @@ document.getElementById("settingsTestWebhookURLButton").addEventListener("click"
     testDiscordWebhookURL(webhookURL)
 })
 
+document.getElementById("settingsTestOwnedBooksShelfURLButton").addEventListener("click", (ev) => {
+    document.getElementById("ownedShelfPreviewRow").style.display = "none"
+    document.getElementById("ownedShelfURLCheckStatsBox").innerHTML = ""
+    document.getElementById("shelfUrlOwnedStatsTextBox").textContent = ""
+    const shelfUrl = document.getElementById("ownedBookshelfURLInputBox").value
+
+    document.getElementById("settingsTestOwnedBooksShelfURLButton").classList.add("skeleton")
+    
+    setOwnedBooksShelfURL(shelfUrl).then((res) => {
+        getPreviewForBookShelf(shelfUrl).then(bookPreview => {
+            document.getElementById("ownedShelfPreviewRow").style.display = "flex"
+    
+            document.getElementById("shelfUrlOwnedStatsTextBox").textContent = 
+                `Found ${bookPreview.totalBooks} books`
+            bookPreview.books.forEach(book => {
+                document.getElementById("ownedShelfURLCheckStatsBox").innerHTML += `
+                                <div class="col-1 pr-1">
+                                    <img 
+                                        src="${book.cover}"
+                                        style="width: 2rem"
+                                    >
+                                </div>
+                `
+            })
+            document.getElementById("settingsTestOwnedBooksShelfURLButton").classList.remove("skeleton")
+        }, (err) => {
+            console.error(err)
+            document.getElementById("settingsTestOwnedBooksShelfURLButton").classList.remove("skeleton")
+        })
+    }, (err) => {
+        document.getElementById("settingsTestOwnedBooksShelfURLButton").classList.remove("skeleton")
+        document.getElementById("ownedShelfPreviewRow").style.display = "flex"
+        document.getElementById("ownedShelfURLCheckStatsBox").innerHTML +=
+        `
+            <div class="col text-center">
+                <p class="pl-4 mb-0">That's not a valid Goodreads shelf URL. This is an example of a valid shelf URL:</p>
+                <p class=" pl-4 pb-0"> <a href="https://www.goodreads.com/review/list/26367680-stephen-king?shelf=read">https://www.goodreads.com/review/list/26367680-stephen-king?shelf=read </a> </p>
+            </div>
+        `
+    })
+})
+
 function getAndRenderAutomatedShelfCheckURL() {
     getAutomatedShelfCheckURL().then(url => {
         document.getElementById("shelfCheckURLInputBox").value = url
+    }, (err) => {
+        console.error(err)
+    })
+}
+
+function getAndRenderOwnedBooksShelfURL() {
+    getOwnedBooksShelfURL().then(url => {
+        document.getElementById("ownedBookshelfURLInputBox").value = url
     }, (err) => {
         console.error(err)
     })
@@ -242,10 +293,12 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("settingsLinkBox").style = swayaaangBorders(0.8)
+    document.getElementById("seriesLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("bigStyleBox").style = swayaaangBorders(1.6)
     document.getElementById("smallStyleBox").style = swayaaangBorders(1.6)
-    document.getElementById("settingsTestShelfURLButton").style = swayaaangBorders(0.4)
+    document.getElementById("settingsTestAutomatedShelfURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsTestWebhookURLButton").style = swayaaangBorders(0.4)
+    document.getElementById("settingsTestOwnedBooksShelfURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsSetAutomatedCheckTimeButton").style = swayaaangBorders(0.4)
     document.getElementById("purgeIgnoredAuthorsButton").style = swayaaangBorders(0.6)
     document.getElementById("clearKnownAuthors").style = swayaaangBorders(0.6)
@@ -323,6 +376,36 @@ function getAutomatedShelfCheckURL(){
 function setAutomatedShelfCheckURL(shelfURL){
     return new Promise((resolve, reject) => {
         fetch(`/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`, {
+            method: "POST"
+        })
+        .then((res) => res.json())
+        .then((res) => {
+            if (res.hasOwnProperty("error")) {
+                reject()
+            } else {
+                resolve(res)
+            }
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getOwnedBooksShelfURL(){
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getownedbooksshelfurl`)
+        .then((res) => res.json())
+        .then((res) => {
+            resolve(res.shelfURL)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setOwnedBooksShelfURL(shelfURL){
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/setownedbooksshelfurl?shelfurl=${encodeURIComponent(shelfURL)}`, {
             method: "POST"
         })
         .then((res) => res.json())

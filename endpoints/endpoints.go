@@ -35,10 +35,10 @@ func InitConfig(conf dtos.AppConfig, newLogger *zap.Logger) {
 func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", index).Methods("GET")
-	r.HandleFunc("/ws", liveFeed).Methods("GET")
 	r.HandleFunc("/status", status).Methods("POST")
 	r.HandleFunc("/settings", settings).Methods("GET")
 	r.HandleFunc("/available", available).Methods("GET")
+	r.HandleFunc("/series", series).Methods("GET")
 	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
 	r.HandleFunc("/ignorebook", ignoreBook).Methods("POST")
@@ -46,8 +46,12 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
 	r.HandleFunc("/purgeignoredauthorsfromavailablebooks", purgeIgnoredAuthorsFromAvailableBooks).Methods("POST")
 	r.HandleFunc("/getautomatedcrawlshelfstats", getAutomatedCrawlShelfStats).Methods("GET")
-	r.HandleFunc("/goodreads", goodreadSearch).Methods("POST")
+	r.HandleFunc("/getseriescrawl", getSeriesCrawl).Methods("GET")
 	r.Use(logMiddleware)
+
+	websocketRouter := r.PathPrefix("/ws").Subrouter()
+	websocketRouter.HandleFunc("/shelfcrawl", shelfCrawl).Methods("GET")
+	websocketRouter.HandleFunc("/seriescrawl", seriesCrawl).Methods("GET")
 
 	settingsRouter := r.PathPrefix("/settings").Subrouter()
 	settingsRouter.HandleFunc("/getpreviewforshelf", getPreviewForShelf).Methods("GET")
@@ -71,6 +75,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/getknownauthors", getKnownAuthors).Methods("Get")
 	settingsRouter.HandleFunc("/clearknownauthors", clearKnownAuthors).Methods("POST")
 	settingsRouter.HandleFunc("/toggleauthorignore", toggleAuthorIgnore).Methods("POST")
+	settingsRouter.HandleFunc("/getownedbooksshelfurl", getOwnedBooksShelfURL).Methods("GET")
+	settingsRouter.HandleFunc("/setownedbooksshelfurl", setOwnedBooksShelfURL).Methods("POST")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -87,17 +93,31 @@ func available(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/available.html")
 }
 
+func series(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/series.html")
+}
+
 func settings(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/settings.html")
 }
 
-func liveFeed(w http.ResponseWriter, r *http.Request) {
+func shelfCrawl(w http.ResponseWriter, r *http.Request) {
 	ws := setupWebSocket(w, r)
 	if ws == nil {
 		SendBasicInvalidResponse(w, r, "unable to upgrade websocket", http.StatusBadRequest)
 		return
 	}
 	engine.Worker(r.URL.Query().Get("shelfurl"), ws)
+	ws.Close()
+}
+
+func seriesCrawl(w http.ResponseWriter, r *http.Request) {
+	ws := setupWebSocket(w, r)
+	if ws == nil {
+		SendBasicInvalidResponse(w, r, "unable to upgrade websocket", http.StatusBadRequest)
+		return
+	}
+	engine.SeriesLookupWorker(ws)
 	ws.Close()
 }
 
@@ -195,18 +215,10 @@ func getAutomatedCrawlShelfStats(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
-func goodreadSearch(w http.ResponseWriter, r *http.Request) {
-	searchBook := dtos.TheBookshopBook{
-		Author: "King, Stephen",
-		Title:  "The Waste Lands",
-	}
-	found, result := goodreads.SearchGoodreads(searchBook)
-	if !found {
-		fmt.Println("cant be found")
-	}
+func getSeriesCrawl(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(result)
+	json.NewEncoder(w).Encode(db.GetSeriesCrawlBooks())
 }
 
 func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
@@ -385,6 +397,29 @@ func toggleAuthorIgnore(w http.ResponseWriter, r *http.Request) {
 	}
 	db.ToggleAuthorIgnore(author)
 	w.WriteHeader(http.StatusOK)
+}
+
+func getOwnedBooksShelfURL(w http.ResponseWriter, r *http.Request) {
+	bookShelfURL := db.GetOwnedBooksShelfURL()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dtos.AutomatedShelfCheckURLResponse{ShelURL: bookShelfURL})
+}
+
+func setOwnedBooksShelfURL(w http.ResponseWriter, r *http.Request) {
+	bookShelfURL := r.URL.Query().Get("shelfurl")
+	if isValidShelfURL := goodreads.CheckIsShelfURL(bookShelfURL); !isValidShelfURL {
+		errorMsg := fmt.Sprintf("Invalid shelfurl '%s' given", bookShelfURL)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+
+	db.SetOwnedBooksShelfURL(bookShelfURL)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(bookShelfURL)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {

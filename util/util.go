@@ -79,7 +79,7 @@ func SendBookIsNoLongerAvailableNotification(book dtos.TheBookshopBook) {
 			URL: book.Cover,
 		}
 	}
-	if onlyWhenFreeShippingKicksIn := db.GetSendAlertOnlyWhenFreeShippingKicksIn(); !onlyWhenFreeShippingKicksIn {
+	if bookIsNoLongerAvailableFlag := db.GetSendAlertWhenBookNoLongerAvailable(); bookIsNoLongerAvailableFlag {
 		controller.Cnt.DeliverWebhook(message)
 	}
 }

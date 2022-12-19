@@ -120,7 +120,7 @@ function disableBackgroundVisualToggle(buttonID) {
 
 function initWebsocketConn(shelfURL) {
     let booksFound = 0
-    const ws = new WebSocket(`ws://${getCurrentHostname()}/ws?shelfurl=${encodeURIComponent(shelfURL)}`);
+    const ws = new WebSocket(`ws://${getCurrentHostname()}/ws/shelfcrawl?shelfurl=${encodeURIComponent(shelfURL)}`);
 
     ws.onopen = function(e) {
     };
@@ -511,6 +511,7 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
     document.getElementById("shelfLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
     document.getElementById("settingsLinkBox").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
+    document.getElementById("seriesLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("newBookAvailableInsertPoint").style = `border: 2px solid #c0c0c0; ${swayaaangBorders(0.8)}`
 
 }

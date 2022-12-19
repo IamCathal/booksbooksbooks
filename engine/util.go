@@ -28,66 +28,6 @@ func writeErrorMsg(msg string, ws *websocket.Conn) {
 	}
 }
 
-func writeTotalBooksInShelfWsMessage(stats dtos.CrawlStats, ws *websocket.Conn) {
-	totalBooksMsg := dtos.WsTotalBooks{
-		TotalBooks: stats.TotalBooks,
-		CrawlStats: stats,
-	}
-	jsonStr, err := json.Marshal(totalBooksMsg)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
-func writeBookFromShelfWsMessage(bookInfo dtos.BasicGoodReadsBook, stats dtos.CrawlStats, ws *websocket.Conn) {
-	goodReadsBookMsg := dtos.WsGoodreadsBook{
-		BookInfo:   bookInfo,
-		CrawlStats: stats,
-	}
-	jsonStr, err := json.Marshal(goodReadsBookMsg)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
-func writeNewAvailableBookWsMsg(bookInfo dtos.TheBookshopBook, stats dtos.CrawlStats, ws *websocket.Conn) {
-	newAvaialbleBookMsg := dtos.WsNewBookAvailable{
-		Book:       bookInfo,
-		CrawlStats: stats,
-	}
-	jsonStr, err := json.Marshal(newAvaialbleBookMsg)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
-func writeSearchResultReturnedMsg(searchResult dtos.EnchancedSearchResult, stats dtos.CrawlStats, ws *websocket.Conn) {
-	searchResultMsg := dtos.WsBookshopSearchResult{
-		SearchResult: searchResult,
-		CrawlStats:   stats,
-	}
-	jsonStr, err := json.Marshal(searchResultMsg)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	err = controller.Cnt.WriteWsMessage(jsonStr, ws)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
 func checkAvailabilityOfExistingAvailableBooksList() {
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
 	booksFromLastTimeThatAreStillAvailable := lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(booksThatWereAvailableLastTime)
@@ -221,4 +161,50 @@ func getConciseBookInfoFromAvailableBooks(bookList []dtos.AvailableBook) []strin
 		info = append(info, fmt.Sprintf("%s: %s", book.BookInfo.Author, book.BookInfo.Title))
 	}
 	return info
+}
+
+func extractGoodreadsBooksThatAreInSeries(allBooks []dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
+	booksThatAreInASeries := []dtos.BasicGoodReadsBook{}
+	for _, book := range allBooks {
+		if book.SeriesText != "" {
+			booksThatAreInASeries = append(booksThatAreInASeries, book)
+		}
+	}
+	return booksThatAreInASeries
+}
+
+func extractAvailableBooksThatAreInSeries(allBooks []dtos.AvailableBook) []dtos.AvailableBook {
+	booksThatAreInASeries := []dtos.AvailableBook{}
+	for _, book := range allBooks {
+		if book.BookInfo.SeriesText != "" {
+			booksThatAreInASeries = append(booksThatAreInASeries, book)
+		}
+	}
+	return booksThatAreInASeries
+}
+
+func mergeBooksThatAreInASeries(ownedBooks []dtos.BasicGoodReadsBook, availableBooks []dtos.AvailableBook) []dtos.AvailableBook {
+	mergedBooksList := []dtos.AvailableBook{}
+	seenBooks := make(map[string]bool)
+
+	for _, ownedBook := range ownedBooks {
+		key := fmt.Sprintf("%s/%s", ownedBook.Author, ownedBook.Title)
+		if _, exists := seenBooks[key]; !exists {
+			seenBooks[key] = true
+			availableBook := dtos.AvailableBook{
+				BookInfo: ownedBook,
+			}
+			mergedBooksList = append(mergedBooksList, availableBook)
+		}
+	}
+
+	for _, availableBook := range availableBooks {
+		key := fmt.Sprintf("%s/%s", availableBook.BookInfo.Author, availableBook.BookInfo.Title)
+		if _, exists := seenBooks[key]; !exists {
+			seenBooks[key] = true
+			mergedBooksList = append(mergedBooksList, availableBook)
+		}
+	}
+
+	return mergedBooksList
 }

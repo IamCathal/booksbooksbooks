@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	validShelfURL        = "https://www.goodreads.com/review/list/26367680?shelf=read"
-	rothfussSearchResult = ""
+	validShelfURL                          = "https://www.goodreads.com/review/list/26367680?shelf=read"
+	parsonsKellyDoingHarmTheBookshopSearch = ""
 )
 
 func TestMain(m *testing.M) {
@@ -38,11 +38,11 @@ func TestMain(m *testing.M) {
 }
 
 func loadMockSearchResults() {
-	data, err := os.ReadFile("testData/rothfussTheBookshopSearch.html")
+	data, err := os.ReadFile("../testData/parsonsKellyDoingHarmTheBookshop.html")
 	if err != nil {
 		panic(err)
 	}
-	rothfussSearchResult = string(data)
+	parsonsKellyDoingHarmTheBookshopSearch = string(data)
 }
 
 func TestURLEncodeBookSearch(t *testing.T) {
@@ -103,7 +103,7 @@ func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
 	controller.SetController(mockController)
 
 	bookSearchResultsChan := make(chan dtos.EnchancedSearchResult, 200)
-	mockController.On("GetPage", mock.AnythingOfType("string")).Return(getHtmlNode(rothfussSearchResult))
+	mockController.On("GetPage", mock.AnythingOfType("string")).Return(getHtmlNode(parsonsKellyDoingHarmTheBookshopSearch))
 
 	startTime := time.Now()
 	SLEEP_DURATION = time.Duration(12 * time.Millisecond)

@@ -189,6 +189,7 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("settingsLinkBox").style = swayaaangBorders(0.8)
+    document.getElementById("seriesLinkBox").style = swayaaangBorders(0.8)
 }
 
 function swayaaangBorders(borderRadius) {

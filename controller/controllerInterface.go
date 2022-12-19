@@ -37,7 +37,7 @@ type Cntr struct{}
 type CntrInterface interface {
 	// Goodreads and TheBookshop
 	GetPage(url string) *html.Node
-	Get(url string) []byte
+	Get(pageURL string) []byte
 
 	// Websocket and notifications
 	WriteWsMessage(msg []byte, ws *websocket.Conn) error
@@ -48,41 +48,55 @@ type CntrInterface interface {
 	Sleep(duration time.Duration)
 }
 
-func (control Cntr) GetPage(url string) *html.Node {
+func (control Cntr) GetPage(pageURL string) *html.Node {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	checkErr(err)
+	req, err := http.NewRequest("GET", pageURL, nil)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 
-	if contains := strings.Contains(url, "thebookshop.ie"); contains {
+	if contains := strings.Contains(pageURL, "thebookshop.ie"); contains {
 		setBookBookBooksHeaders(req)
 	}
-	if contains := strings.Contains(url, "goodreads.com"); contains {
-		setGoodreadsHeaders(req, url)
+	if contains := strings.Contains(pageURL, "goodreads.com"); contains {
+		setGoodreadsHeaders(req, pageURL)
 	}
 
 	res, err := client.Do(req)
-	checkErr(err)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 	doc, err := html.Parse(res.Body)
-	checkErr(err)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 	return doc
 }
 
-func (control Cntr) Get(url string) []byte {
+func (control Cntr) Get(pageURL string) []byte {
+	fmt.Printf("Get: '%s'\n", pageURL)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	checkErr(err)
+	req, err := http.NewRequest("GET", pageURL, nil)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 
-	if contains := strings.Contains(url, "thebookshop.ie"); contains {
+	if contains := strings.Contains(pageURL, "thebookshop.ie"); contains {
 		setBookBookBooksHeaders(req)
 	}
-	if contains := strings.Contains(url, "goodreads.com"); contains {
-		setGoodreadsHeaders(req, url)
+	if contains := strings.Contains(pageURL, "goodreads.com"); contains {
+		setGoodreadsHeaders(req, pageURL)
 	}
 
 	res, err := client.Do(req)
-	checkErr(err)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
 	body, err := io.ReadAll(res.Body)
-	checkErr(err)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	// fmt.Printf("The HTML: \n\n%s\n\n", string(body))
 	return body
 }
 
@@ -162,10 +176,4 @@ func setBookBookBooksHeaders(req *http.Request) {
 func getFakeGoodreadsReferrerPage(URL string) string {
 	splitStringByShelfParam := strings.Split(URL, "?")
 	return splitStringByShelfParam[0]
-}
-
-func checkErr(err error) {
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
 }

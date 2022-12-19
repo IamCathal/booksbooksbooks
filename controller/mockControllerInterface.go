@@ -45,12 +45,12 @@ func (_m *MockCntrInterface) GetFormattedTime() string {
 }
 
 // GetPage provides a mock function with given fields: url
-func (_m *MockCntrInterface) GetPage(url string) *html.Node {
-	ret := _m.Called(url)
+func (_m *MockCntrInterface) GetPage(pageURL string) *html.Node {
+	ret := _m.Called(pageURL)
 
 	var r0 *html.Node
 	if rf, ok := ret.Get(0).(func(string) *html.Node); ok {
-		r0 = rf(url)
+		r0 = rf(pageURL)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*html.Node)
@@ -61,12 +61,12 @@ func (_m *MockCntrInterface) GetPage(url string) *html.Node {
 }
 
 // GetPage provides a mock function with given fields: url
-func (_m *MockCntrInterface) Get(url string) []byte {
-	ret := _m.Called(url)
+func (_m *MockCntrInterface) Get(pageURL string) []byte {
+	ret := _m.Called(pageURL)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(url)
+		r0 = rf(pageURL)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)

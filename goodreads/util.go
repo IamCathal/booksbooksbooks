@@ -1,14 +1,20 @@
 package goodreads
 
 import (
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/PuerkitoBio/goquery"
+	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/segmentio/ksuid"
+	"go.uber.org/zap"
+	"golang.org/x/net/html"
 )
 
 var (
@@ -16,6 +22,7 @@ var (
 	// title and its series information if
 	// the series information is given
 	TITLE_AND_SERIES_INFO_SEPERATOR = regexp.MustCompile("[ ]{3,}")
+	NUMBER_MATCH                    = regexp.MustCompile("[0-9]{1,}")
 	// Goodreads returns 30 books per page
 	BOOK_COUNT_PER_PAGE = 30
 	// Base URL that book links are built on
@@ -64,6 +71,25 @@ func processBook(fullTitle, author, cover, isbn13, asin, rating, link string) dt
 		Rating:     float32(value),
 	}
 	return newBook
+}
+
+func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
+	allBooks := []dtos.BasicGoodReadsBook{}
+	doc.Find("tbody#booksBody").Each(func(i int, bookReviews *goquery.Selection) {
+		bookReviews.Find("tr").Each(func(k int, bookReviewRow *goquery.Selection) {
+			title := bookReviewRow.Find("td[class='field title'] a").Text()
+			author := bookReviewRow.Find("td[class='field author'] a").Text()
+			cover, _ := bookReviewRow.Find("td[class='field cover'] img").Attr("src")
+			isbn13 := bookReviewRow.Find("td[class='field isbn13'] div").Text()
+			asin := bookReviewRow.Find("td[class='field asin'] div").Text()
+			rating := bookReviewRow.Find("td[class='field avg_rating'] div").Text()
+			link, _ := bookReviewRow.Find("td[class='field title'] a").Attr("href")
+
+			currBook := processBook(title, author, cover, isbn13, asin, rating, link)
+			allBooks = append(allBooks, currBook)
+		})
+	})
+	return allBooks
 }
 
 func GetAvailableBooksFromSearchResult(searchResults []dtos.EnchancedSearchResult) []dtos.AvailableBook {
@@ -144,11 +170,6 @@ func divmod(big, little int) (int, int) {
 	return quotient, remainder
 }
 
-func getFakeReferrerPage(URL string) string {
-	splitStringByShelfParam := strings.Split(URL, "?")
-	return splitStringByShelfParam[0]
-}
-
 func extractPureTitle(fullTitle string) string {
 	title := fullTitle
 	if strings.Contains(title, "(") {
@@ -160,5 +181,137 @@ func extractPureTitle(fullTitle string) string {
 func ensureAllAverageRatingsAreOfTypeString(jsonData []byte) []byte {
 	stringJson := string(jsonData)
 	stringJson = strings.ReplaceAll(stringJson, `avgRating":0.0,`, `avgRating":"0.0",`)
+	stringJson = strings.ReplaceAll(stringJson, `avgRating":0,`, `avgRating":"0.0",`)
 	return []byte(stringJson)
+}
+
+func getSeriesLink(htmlPage *html.Node) string {
+	doc := goquery.NewDocumentFromNode(htmlPage)
+	bookSeriesLink := ""
+	doc.Find("h2[id='bookSeries']").Each(func(i int, bookSeriesElem *goquery.Selection) {
+		seriesLink, _ := bookSeriesElem.Find("a").Attr("href")
+		bookSeriesLink = seriesLink
+	})
+	return bookSeriesLink
+}
+
+func extractSeriesTitleAndAuthorFromFullSeriesTitle(fullTitle string) (string, string) {
+	splitTitle := strings.Split(fullTitle, "by")
+	if len(splitTitle) != 2 {
+		logger.Sugar().Infof("could not split this series title: '%s'", fullTitle)
+		return fullTitle, ""
+	}
+	return strings.TrimSpace(splitTitle[0]), strings.TrimSpace(splitTitle[1])
+}
+
+func extractPrimaryAndTotalWorks(fullWorksText string) (int, int) {
+	fullWorksText = strings.Replace(fullWorksText, " primary works • ", " ", 1)
+	fullWorksText = strings.Replace(fullWorksText, " total works", "", 1)
+	splitBySpace := strings.Split(fullWorksText, " ")
+
+	intPrimaryWorks, err := strconv.Atoi(splitBySpace[0])
+	if err != nil {
+		panic(err)
+	}
+	intTotalWorks, err := strconv.Atoi(splitBySpace[1])
+	if err != nil {
+		panic(err)
+	}
+	return intPrimaryWorks, intTotalWorks
+}
+
+func extractSeriesInfo(seriesPageLink string) dtos.Series {
+	seriesInfo := dtos.Series{
+		ID:   ksuid.New().String(),
+		Link: GOODREADS_BASE_URL + seriesPageLink,
+	}
+	authorInMainTitle := false
+
+	fullSeriesPageLink := GOODREADS_BASE_BOOK_URL + seriesPageLink
+	seriesPage := controller.Cnt.GetPage(fullSeriesPageLink)
+
+	doc := goquery.NewDocumentFromNode(seriesPage)
+	doc.Find("div[class='responsiveSeriesHeader']").Each(func(i int, worksInfo *goquery.Selection) {
+		worksInfo.Children().Each(func(i int, child *goquery.Selection) {
+			switch i {
+			case 0:
+				seriesTitle, author := extractSeriesTitleAndAuthorFromFullSeriesTitle(child.Text())
+				if author != "" {
+					authorInMainTitle = true
+					seriesInfo.Author = author
+				}
+				seriesInfo.Title = seriesTitle
+			case 1:
+				primaryWorks, totalWorks := extractPrimaryAndTotalWorks(child.Text())
+				seriesInfo.PrimaryWorks = primaryWorks
+				seriesInfo.TotalWorks = totalWorks
+			default:
+				break
+			}
+
+		})
+	})
+
+	doc.Find("div[class='listWithDividers__item']").Each(func(i int, bookRow *goquery.Selection) {
+		currBookInSeries := dtos.SeriesBook{}
+		currBookInSeries.BookInfo.ID = ksuid.New().String()
+		currBookInSeries.BookInfo.SeriesText = seriesInfo.Title
+		bookRow.Find("h3").Each(func(k int, bookSeriesElement *goquery.Selection) {
+			if k == 0 {
+				currBookInSeries.BookSeriesText = bookSeriesElement.Text()
+				currBookInSeries.RealBookOrder = i + 1
+			}
+		})
+		bookRow.Find("div[class='responsiveBook__media'] > a").Each(func(i int, linkElem *goquery.Selection) {
+			link, _ := linkElem.Attr("href")
+			currBookInSeries.BookInfo.Link = GOODREADS_BASE_BOOK_URL + link
+		})
+		bookRow.Find("div[class='responsiveBook__media'] > a > img").Each(func(i int, imgElem *goquery.Selection) {
+			cover, _ := imgElem.Attr("src")
+			currBookInSeries.BookInfo.Cover = cover
+			title, _ := imgElem.Attr("alt")
+			currBookInSeries.BookInfo.Title = title
+		})
+		bookRow.Find("img[class='responsiveBook__img']").Each(func(i int, imgElem *goquery.Selection) {
+			cover, _ := imgElem.Attr("src")
+			currBookInSeries.BookInfo.Cover = cover
+		})
+		bookRow.Find("span[itemprop='author'] > span[itemprop='name'] > a").Each(func(i int, authorLink *goquery.Selection) {
+			currBookInSeries.BookInfo.Author = authorLink.Text()
+		})
+		seriesInfo.Books = append(seriesInfo.Books, currBookInSeries)
+	})
+
+	if !authorInMainTitle {
+		// TODO get most common authors or all authors
+		seriesInfo.Author = seriesInfo.Books[0].BookInfo.Author
+	}
+
+	return seriesInfo
+}
+
+func FilterSeriesTitleFromSeriesText(seriesText string) string {
+	formatted := strings.ReplaceAll(seriesText, "(", "")
+	formatted = strings.ReplaceAll(formatted, ")", "")
+	formatted = strings.ReplaceAll(formatted, "#", "")
+	formatted = strings.ReplaceAll(formatted, ",", "")
+	formatted = strings.ReplaceAll(formatted, ".", "")
+	formatted = NUMBER_MATCH.ReplaceAllString(formatted, "")
+	return strings.TrimSpace(formatted)
+}
+
+func sleepIfLongerThanAllotedTimeSinceLastRequest() {
+	logger.Sugar().Debugw(fmt.Sprintf("Time since last goodreads request was %+v Default is %+v", time.Since(lastRequestMade), SLEEP_DURATION),
+		zap.String("dignostics", "goodReadsEngine"))
+	if time.Since(lastRequestMade) > SLEEP_DURATION {
+		lastRequestMade = time.Now()
+		logger.Sugar().Debugw(fmt.Sprintf("[goodreads] Time since last request more than %d, not sleeping", SLEEP_DURATION),
+			zap.String("dignostics", "goodReadsEngine"))
+		return
+	}
+	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
+	logger.Sugar().Debugw(fmt.Sprintf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference),
+		zap.String("dignostics", "goodReadsEngine"))
+	controller.Cnt.Sleep(timeDifference)
+	lastRequestMade = time.Now()
 }

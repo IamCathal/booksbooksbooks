@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="static/stylesheets/main.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> 
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicons/favicon-16x16.png">
+    
+    <title>BooksBooksBooks</title>
+
+</head>
+
+    <body>
+
+        <div class="container mt-4">
+            <div class="row justify-content-md-center pt-1 pb-1">
+                <a href="/">
+                    <div class="col mr-2 text-center linkBox" id="availableLinkBox">
+                        Shelf
+                    </div>
+                </a>
+                <a href="/series">
+                    <div class="col ml-2 mr-2 text-center linkBox selectedBackground" id="seriesLinkBox">
+                        Series
+                    </div>
+                </a>
+                <a href="/available">
+                    <div class="col ml-3 mr-3 text-center linkBox" id="shelfLinkBox">
+                        Available
+                    </div>
+                </a>
+                <a href="/settings">
+                    <div class="col ml-4 text-center linkBox" id="settingsLinkBox">
+                        Settings
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="container pt-3 mt-3 swankyBorders" style="border: 2px solid #c0c0c0">
+            <div class="row pl-3 pr-3">
+                <div class="col">
+                    <div class="row pb-3">
+                        <div class="col text-center">
+                            Find all books from any series found in the specified <a href="/settings#ownedBookshelfURLInputBox">owned books shelf</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col text-center">
+                            <button class="seriesCrawlButton pt-1 pb-1 pl-3 pr-3 ml-2 mr-2" id="seriesCrawlButtonElem" style="border-top-left-radius: 0.6rem; border-bottom-left-radius: 0.6rem;"> Crawl </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col text-center" id="crawlInfoBox" style="display:none">
+                            <div class="row justify-content-md-center pt-2 pb-2">
+                               <div class="col crawlInfoCol">
+                                   <div class="row justify-content-md-center" style="font-size: 0.8rem">
+                                       Series Found
+                                   </div>     
+                                   <div class="row justify-content-md-center bold" style="font-size: 2rem" id="statsSeriesFound">
+                                       
+                                   </div>     
+                               </div>
+                               <div class="col crawlInfoCol">
+                                   <div class="row justify-content-md-center" style="font-size: 0.8rem">
+                                       Total books in all series
+                                   </div>     
+                                   <div class="row justify-content-md-center bold" style="font-size: 2rem" id="statsBooksInAllSeries">
+                                       
+                                   </div>          
+                               </div>
+                               <div class="col crawlInfoCol">
+                                   <div class="row justify-content-md-center" style="font-size: 0.8rem">
+                                        Books not available on TheBookshop
+                                   </div>     
+                                   <div class="row justify-content-md-center bold" style="font-size: 2rem" id="statsNotAvailable">
+                                       
+                                   </div>         
+                               </div>
+                               <div class="col crawlInfoCol">
+                                   <div class="row justify-content-md-center" style="font-size: 0.8rem">
+                                       Books available on TheBookshop
+                                   </div>     
+                                   <div class="row justify-content-md-center bold" style="font-size: 2rem" id="statsAvailable">
+                                       
+                                   </div>         
+                               </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row crawlProgressBar mt-2 mb-2" id="crawlProgressDiv">
+                       <span class="crawlProgressBarSpan" id="crawlProgressBarSpanID"></span>
+                   </div>
+
+
+                    <div class="row pt-2">
+                        <div class="col" id="seriesRowsOutputDiv">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="static/javascript/series.js"></script>
+
+    </body>
+</html>

@@ -29,6 +29,8 @@ var (
 	KNOWN_AUTHORS                                 = "knownAuthors"
 	IGNORE_AUTHORS                                = "ignoreAuthors"
 	OTHER_BOOKS_IN_SERIES_LOOKUP                  = "otherBooksInSeriesLookup"
+	OWNED_BOOKS_SHELF_URL                         = "ownedBooksShelfURL"
+	SERIES_CRAWL_BOOKS                            = "seriesCrawlBooks"
 	DEFAULT_TTL                                   = time.Duration(0)
 )
 
@@ -438,4 +440,49 @@ func GetOtherBooksInSeriesLookup() bool {
 		return GetOtherBooksInSeriesLookup()
 	}
 	return strToBool(enabled)
+}
+
+func SetOwnedBooksShelfURL(shelfURL string) {
+	err := redisClient.Set(ctx, OWNED_BOOKS_SHELF_URL, shelfURL, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetOwnedBooksShelfURL() string {
+	shelfURL, err := redisClient.Get(ctx, OWNED_BOOKS_SHELF_URL).Result()
+	if err == redis.Nil {
+		return ""
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return shelfURL
+}
+
+func SetSeriesCrawlBooks(seriesCrawlBooks []dtos.Series) {
+	seriesCrawlBooksJson, err := json.Marshal(seriesCrawlBooks)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	err = redisClient.Set(ctx, SERIES_CRAWL_BOOKS, seriesCrawlBooksJson, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetSeriesCrawlBooks() []dtos.Series {
+	seriesCrawlBooksStr, err := redisClient.Get(ctx, SERIES_CRAWL_BOOKS).Result()
+	if err == redis.Nil {
+		return []dtos.Series{}
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	seriesCrawlBooks := []dtos.Series{}
+	if seriesCrawlBooksStr != "" {
+		err = json.Unmarshal([]byte(seriesCrawlBooksStr), &seriesCrawlBooks)
+		if err != nil {
+			logger.Sugar().Fatal(err)
+		}
+	}
+	return seriesCrawlBooks
 }

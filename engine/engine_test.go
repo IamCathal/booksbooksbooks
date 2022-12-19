@@ -22,7 +22,6 @@ import (
 var (
 	validShelfURL = "https://www.goodreads.com/review/list/26367680?shelf=read"
 
-	// eee
 	stephenKingGoodreadsShelf              = ""
 	stephenKingGoodreadsShelfOneBook       = ""
 	parsonsKellyDoingHarmTheBookshopSearch = ""
@@ -52,9 +51,9 @@ func TestMain(m *testing.M) {
 }
 
 func loadMockSearchResults() {
-	stephenKingGoodreadsShelf = readFile("testData/stephenKingGoodreadsShelf.html")
-	stephenKingGoodreadsShelfOneBook = readFile("testData/stephenKingGoodreadsShelfOneBook.html")
-	parsonsKellyDoingHarmTheBookshopSearch = readFile("testData/parsonsKellyDoingHarmTheBookshop.html")
+	stephenKingGoodreadsShelf = readFile("../testData/stephenKingGoodreadsShelf.html")
+	stephenKingGoodreadsShelfOneBook = readFile("../testData/stephenKingGoodreadsShelfOneBook.html")
+	parsonsKellyDoingHarmTheBookshopSearch = readFile("../testData/parsonsKellyDoingHarmTheBookshop.html")
 }
 
 func TestWorker(t *testing.T) {
@@ -192,6 +191,10 @@ func TestFilterIgnoredAuthorsFiltersNothingWhenNoAuthorIsIgnored(t *testing.T) {
 func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
 	resetDBFields()
 	ignoredAuthor := "Patrick F. Hamilton"
+	patrickNessTheKnife := dtos.TheBookshopBook{
+		Title:  "The Knife of Never Letting Go",
+		Author: "Patrick Ness",
+	}
 
 	searchResult := dtos.EnchancedSearchResult{
 		SearchBook: dtos.BasicGoodReadsBook{
@@ -199,10 +202,7 @@ func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
 			Author: ignoredAuthor,
 		},
 		TitleMatches: []dtos.TheBookshopBook{
-			{
-				Title:  "The Knife of Never Letting Go",
-				Author: "Patrick Ness",
-			},
+			patrickNessTheKnife,
 		},
 		AuthorMatches: []dtos.TheBookshopBook{
 			{
@@ -216,6 +216,7 @@ func TestFilterIgnoredAuthorsFiltersOutIgnoredAuthors(t *testing.T) {
 	filteredSearchResults := filterIgnoredAuthors(searchResult)
 
 	assert.Equal(t, len(filteredSearchResults.TitleMatches), 1)
+	assert.DeepEqual(t, patrickNessTheKnife, filteredSearchResults.TitleMatches[0])
 	assert.Equal(t, len(filteredSearchResults.AuthorMatches), 0)
 }
 
@@ -309,10 +310,206 @@ func TestFreeShippingNotificationIsTriggeredWhenTotalIsOverThreshold(t *testing.
 	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 1)
 }
 
+func TestExtractGoodreadsBookThatAreInASeries(t *testing.T) {
+	bookList := []dtos.BasicGoodReadsBook{
+		{
+			SeriesText: "The Kingkiller chronicle",
+		},
+		{
+			SeriesText: "The Kingkiller chronicle",
+		},
+		{
+			SeriesText: "",
+		},
+	}
+
+	assert.Equal(t, len(extractGoodreadsBooksThatAreInSeries(bookList)), 2)
+}
+
+func TestExtractGoodreadsBookThatAreInASeriesReturnsNothingWhenNoBooksAreInASeries(t *testing.T) {
+	bookList := []dtos.BasicGoodReadsBook{
+		{
+			SeriesText: "",
+		},
+		{
+			SeriesText: "",
+		},
+		{
+			SeriesText: "",
+		},
+		{
+			SeriesText: "",
+		},
+	}
+
+	assert.Equal(t, len(extractGoodreadsBooksThatAreInSeries(bookList)), 0)
+}
+
+func TestExtractAvailableBooksThatAreInASeries(t *testing.T) {
+	bookList := []dtos.AvailableBook{
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				SeriesText: "Chaos Walking",
+			},
+		},
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				SeriesText: "The Kingkiller chronicle",
+			},
+		},
+	}
+	assert.Equal(t, len(extractAvailableBooksThatAreInSeries(bookList)), 2)
+}
+
+func TestExtractAvailableBooksThatAreInASeriesReturnsNothingWhenNoBooksAreInASeries(t *testing.T) {
+	bookList := []dtos.AvailableBook{
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				SeriesText: "",
+			},
+		},
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				SeriesText: "",
+			},
+		},
+	}
+	assert.Equal(t, len(extractAvailableBooksThatAreInSeries(bookList)), 0)
+}
+
+func TestMergeBooksThatAreInASeries(t *testing.T) {
+	ownedBookList := []dtos.BasicGoodReadsBook{
+		{
+			Title:      "The Wise Man's Fear",
+			Author:     "Patrick Rothfuss",
+			SeriesText: "The Kingkiller chronicle",
+		},
+	}
+	availableBookList := []dtos.AvailableBook{
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				Title:  "The Name Of The Wind",
+				Author: "Patrick Rothfuss",
+			},
+		},
+	}
+
+	assert.Equal(t, len(mergeBooksThatAreInASeries(ownedBookList, availableBookList)), 2)
+}
+
+func TestMergeBooksThatAreInASeriesDoesNotIncludeDuplicates(t *testing.T) {
+	ownedBookList := []dtos.BasicGoodReadsBook{
+		{
+			Title:      "The Wise Man's Fear",
+			Author:     "Patrick Rothfuss",
+			SeriesText: "The Kingkiller chronicle",
+		},
+	}
+	availableBookList := []dtos.AvailableBook{
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				Title:  "The Wise Man's Fear",
+				Author: "Patrick Rothfuss",
+			},
+		},
+	}
+
+	assert.Equal(t, len(mergeBooksThatAreInASeries(ownedBookList, availableBookList)), 1)
+}
+
+func TestNotifyAboutBooksThatAreNoLongerAvailableDoesNothingWhenOldBooksAreStillAvailable(t *testing.T) {
+	resetDBFields()
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+
+	currentAvailableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link",
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link 2",
+			},
+		},
+	}
+	db.SetAvailableBooks(currentAvailableBooks)
+	db.SetSendAlertWhenBookNoLongerAvailable(true)
+	previouslyAvailableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link",
+			},
+		},
+	}
+
+	notifyAboutBooksThatAreNoLongerAvailable(previouslyAvailableBooks)
+
+	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 0)
+}
+
+func TestNotifyAboutBooksThatAreNoLongerAvailableNotifiesWhenItNeedsTo(t *testing.T) {
+	resetDBFields()
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	currentAvailableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link",
+			},
+		},
+	}
+	db.SetAvailableBooks(currentAvailableBooks)
+	db.SetSendAlertWhenBookNoLongerAvailable(true)
+	previouslyAvailableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link",
+			},
+		},
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link 2",
+			},
+		},
+	}
+
+	notifyAboutBooksThatAreNoLongerAvailable(previouslyAvailableBooks)
+
+	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 1)
+}
+
+func TestNotifyAboutBooksThatAreNoLongerAvailableDoesNotNotifyWhenFlagIsDisabled(t *testing.T) {
+	resetDBFields()
+	mockController := controller.MockCntrInterface{}
+	controller.SetController(&mockController)
+	mockController.On("DeliverWebhook", mock.AnythingOfType("dtos.DiscordMsg")).Return(nil)
+
+	currentAvailableBooks := []dtos.AvailableBook{}
+	db.SetAvailableBooks(currentAvailableBooks)
+	db.SetSendAlertWhenBookNoLongerAvailable(false)
+	previouslyAvailableBooks := []dtos.AvailableBook{
+		{
+			BookPurchaseInfo: dtos.TheBookshopBook{
+				Link: "example link",
+			},
+		},
+	}
+
+	notifyAboutBooksThatAreNoLongerAvailable(previouslyAvailableBooks)
+
+	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 0)
+}
+
 func resetDBFields() {
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 	db.SetAddMoreAuthorBooksToAvailableBooksList(false)
+	db.SetSendAlertWhenBookNoLongerAvailable(false)
 	db.SetAvailableBooks([]dtos.AvailableBook{})
+	db.SetDiscordWebhookURL("")
 }
 
 func getHtmlNode(webpageStr string) *html.Node {

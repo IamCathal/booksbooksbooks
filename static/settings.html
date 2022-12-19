@@ -25,19 +25,24 @@
     <body>
 
         <div class="container mt-4">
-            <div class="row justify-content-md-center  pt-1 pb-1">
+            <div class="row justify-content-md-center pt-1 pb-1">
                 <a href="/">
                     <div class="col mr-2 text-center linkBox" id="availableLinkBox">
                         Shelf
                     </div>
                 </a>
+                <a href="/series">
+                    <div class="col ml-2 mr-2 text-center linkBox" id="seriesLinkBox">
+                        Series
+                    </div>
+                </a>
                 <a href="/available">
-                    <div class="col ml-2 mr-2 text-center linkBox" id="shelfLinkBox">
+                    <div class="col ml-3 mr-3 text-center linkBox" id="shelfLinkBox">
                         Available
                     </div>
                 </a>
                 <a href="/settings">
-                    <div class="col ml-3 text-center linkBox selectedBackground" id="settingsLinkBox">
+                    <div class="col ml-4 text-center linkBox selectedBackground" id="settingsLinkBox">
                         Settings
                     </div>
                 </a>
@@ -53,14 +58,21 @@
 
             <div class="row">
                 <div class="col" style="font-size: 1.8rem; font-weight: bold">
-                    Automated Crawling
+                    Shelf Crawling
                 </div>
             </div>
 
             <hr style="background-color: #c0c0c0" class="mt-0 mb-1"/>
             
-            <div class="row pt-1 pb-1">
+            <div class="row pt-1 pb-3">
                 <div class="col">
+                    <div class="row pb-3">
+                        <div class="col">
+                            A regular crawl will search all books that are found in the provided shelf. The automated shelf check URL will 
+                            be the shelf that's used for automatic crawling at the provided time. If no URL is given then the automated 
+                            crawl isn't executed and likewise for the time.
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-3">
                             Automated Check Shelf URL
@@ -73,21 +85,99 @@
                             >
                         </div>
                         <div class="col-1" >
-                            <button class="settingsTestButton" id="settingsTestShelfURLButton" style="width: 3rem;"> Test </button>
+                            <button class="settingsTestButton" id="settingsTestAutomatedShelfURLButton" style="width: 3rem;"> Test </button>
                         </div>
                     </div>
-                    <div class="row" id="shelfPreviewRow" style="display: none">
+                    <div class="row" id="automatedCheckShelfPreviewRow" style="display: none">
                         <div class="col-3">
                             
                         </div>
                         <div class="col thinBorder mt-2 ml-3 mr-3">
                             <div class="row pt-1 pb-1">
-                                <div class="col text-center" id="shelfUrlCheckStatsTextBox" style="font-size: 0.8rem">
+                                <div class="col text-center" id="shelfUrlAutomatedCheckStatsTextBox" style="font-size: 0.8rem">
                                 
                                 </div>
                             
                             </div>
-                            <div class="row pt-1" id="shelfURLCheckStatsBox">
+                            <div class="row pt-1 pb-2" id="automatedCheckShelfURLCheckStatsBox">
+                                
+                            </div>
+                        </div>
+                        <div class="col-1" >
+                            
+                        </div>
+                    </div>
+                    <div class="row pt-2 pb-2">
+                        <div class="col-3">
+                            Automated Check Time
+                        </div>
+                        <div class="col-2">
+                                Every day at <span id="automatedCheckTime" style="font-weight: bold"> </span>
+                        </div>
+                        <div class="col">
+                            <button class="settingsTestButton" id="settingsSetAutomatedCheckTimeButton" style="width: 5rem;"> Configure </button>
+                        </div>
+                    </div>
+                    <div class="row pt-2 pb-2">
+                        <div class="col-4">
+                            <div class="row">
+                                <div class="col-9">
+                                    If more books from an author are found then add the books to the available list
+                                </div>
+                                <div class="col">
+                                    <input id="addMoreAuthorBooksToAvailableList" type="checkbox">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+        
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col" style="font-size: 1.8rem; font-weight: bold">
+                    Series Crawling
+                </div>
+            </div>
+
+            <hr style="background-color: #c0c0c0" class="mt-0 mb-1"/>
+
+            <div class="row pl-3 pb-1 pr-3">
+                All of the books in the provided shelf are queried to see if they're a part of a series. If a book is part of a series 
+                then all of the other books in the series are searched on TheBookshop.
+            </div>
+
+            <div class="row pt-1 pb-3">
+                <div class="col">
+                    <div class="row">
+                        <div class="col-3">
+                            Owned books Shelf URL
+                        </div>
+                        <div class="col">
+                            <input
+                                type="text"
+                                class="settingsInputBox"
+                                id="ownedBookshelfURLInputBox"
+                            >
+                        </div>
+                        <div class="col-1" >
+                            <button class="settingsTestButton" id="settingsTestOwnedBooksShelfURLButton" style="width: 3rem;"> Test </button>
+                        </div>
+                    </div>
+                    <div class="row" id="ownedShelfPreviewRow" style="display: none">
+                        <div class="col-3">
+                            
+                        </div>
+                        <div class="col thinBorder mt-2 ml-3 mr-3">
+                            <div class="row pt-1 pb-1">
+                                <div class="col text-center" id="shelfUrlOwnedStatsTextBox" style="font-size: 0.8rem">
+                                
+                                </div>
+                            
+                            </div>
+                            <div class="row pt-1 pb-2" id="ownedShelfURLCheckStatsBox">
                                 
                             </div>
                         </div>
@@ -98,17 +188,6 @@
                 </div>
             </div>
 
-            <div class="row pt-2 pb-2">
-                <div class="col-3">
-                    Automated Check Time
-                </div>
-                <div class="col-2">
-                        Every day at <span id="automatedCheckTime" style="font-weight: bold"> </span>
-                </div>
-                <div class="col">
-                    <button class="settingsTestButton" id="settingsSetAutomatedCheckTimeButton" style="width: 5rem;"> Configure </button>
-                </div>
-            </div>
 
             <div class="row pt-3">
                 <div class="col" style="font-size: 1.8rem; font-weight: bold">
@@ -156,7 +235,7 @@
             </div>
 
             <div class="row pt-2 pb-2">
-                <div class="col">
+                <div class="col-4">
                     <div class="row">
                         <div class="col-9">
                             Send an alert when a book is no longer available
@@ -166,7 +245,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-4">
                     <div class="row">
                         <div class="col-9">
                             Send an alert <span style="font-weight: bolder; text-decoration: underline;">only</span> when the total cost of available books exceeds €20 (free shipping)
@@ -176,19 +255,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="row">
-                        <div class="col-9">
-                            If more books from an author are found then add the books to the available list
-                        </div>
-                        <div class="col">
-                            <input id="addMoreAuthorBooksToAvailableList" type="checkbox">
-                        </div>
-                    </div>
-                </div>
+              
             </div>
 
-            <div class="row pt-3">
+            <!-- <div class="row pt-3">
                 <div class="col" style="font-size: 1.8rem; font-weight: bold">
                     Search Settings
                 </div>
@@ -219,7 +289,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
 
             <div class="row pt-3">

@@ -14,9 +14,10 @@ import (
 )
 
 var (
-	logger          *zap.Logger
-	lastRequestMade time.Time
-	SLEEP_DURATION  = time.Duration(1 * time.Second)
+	logger             *zap.Logger
+	lastRequestMade    time.Time
+	SLEEP_DURATION     = time.Duration(1 * time.Second)
+	GOODREADS_BASE_URL = "https://goodreads.com"
 )
 
 func init() {
@@ -53,11 +54,11 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 	}
 	allBooks = append(allBooks, extractedBooks...)
 
-	logger.Sugar().Infof("Extracted all %d books on page 1\n", len(extractedBooks))
+	logger.Sugar().Infof("Extracted all %d books on page 1", len(extractedBooks))
 
 	if len(allBooks) < totalBooks {
 		totalPagesToCrawl := totalPagesToCrawl(totalBooks)
-		logger.Sugar().Info("Shelf had >%d books, %d pages will need to be crawled", BOOK_COUNT_PER_PAGE, totalPagesToCrawl)
+		logger.Sugar().Infof("Shelf had >%d books, %d pages will need to be crawled", BOOK_COUNT_PER_PAGE, totalPagesToCrawl)
 		currPageToView := 2
 		for {
 			if len(allBooks) == totalBooks {
@@ -78,22 +79,6 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 	return allBooks
 }
 
-func sleepIfLongerThanAllotedTimeSinceLastRequest() {
-	logger.Sugar().Debugw(fmt.Sprintf("Time since last goodreads request was %+v Default is %+v", time.Since(lastRequestMade), SLEEP_DURATION),
-		zap.String("dignostics", "goodReadsEngine"))
-	if time.Since(lastRequestMade) > SLEEP_DURATION {
-		lastRequestMade = time.Now()
-		logger.Sugar().Debugw(fmt.Sprintf("[goodreads] Time since last request more than %d, not sleeping", SLEEP_DURATION),
-			zap.String("dignostics", "goodReadsEngine"))
-		return
-	}
-	timeDifference := SLEEP_DURATION - time.Since(lastRequestMade)
-	logger.Sugar().Debugw(fmt.Sprintf("Time since last request was less than %d, sleeping for %+v", SLEEP_DURATION, timeDifference),
-		zap.String("dignostics", "goodReadsEngine"))
-	controller.Cnt.Sleep(timeDifference)
-	lastRequestMade = time.Now()
-}
-
 func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
 	doc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(shelfURL))
 	totalBooks := 0
@@ -109,25 +94,6 @@ func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
 		return extractedBooks[:12], totalBooks
 	}
 	return extractedBooks, totalBooks
-}
-
-func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
-	allBooks := []dtos.BasicGoodReadsBook{}
-	doc.Find("tbody#booksBody").Each(func(i int, bookReviews *goquery.Selection) {
-		bookReviews.Find("tr").Each(func(k int, bookReviewRow *goquery.Selection) {
-			title := bookReviewRow.Find("td[class='field title'] a").Text()
-			author := bookReviewRow.Find("td[class='field author'] a").Text()
-			cover, _ := bookReviewRow.Find("td[class='field cover'] img").Attr("src")
-			isbn13 := bookReviewRow.Find("td[class='field isbn13'] div").Text()
-			asin := bookReviewRow.Find("td[class='field asin'] div").Text()
-			rating := bookReviewRow.Find("td[class='field avg_rating'] div").Text()
-			link, _ := bookReviewRow.Find("td[class='field title'] a").Attr("href")
-
-			currBook := processBook(title, author, cover, isbn13, asin, rating, link)
-			allBooks = append(allBooks, currBook)
-		})
-	})
-	return allBooks
 }
 
 func SearchGoodreads(bookPurchaseInfo dtos.TheBookshopBook) (bool, dtos.BasicGoodReadsBook) {
@@ -160,4 +126,19 @@ func SearchGoodreads(bookPurchaseInfo dtos.TheBookshopBook) (bool, dtos.BasicGoo
 		Rating: float32(strToFloat(booksFoundRes[0].AvgRating)),
 	}
 	return true, topSearchResult
+}
+
+func GetSeriesLink(bookInSeries dtos.BasicGoodReadsBook) string {
+	individualBookPage := controller.Cnt.GetPage(bookInSeries.Link)
+	return getSeriesLink(individualBookPage)
+}
+
+func GetSeriesDetailsFromLink(seriesLink string, seriesDetailsChan chan<- dtos.Series) dtos.Series {
+	seriesInfo := extractSeriesInfo(seriesLink)
+	seriesDetailsChan <- seriesInfo
+	return seriesInfo
+}
+
+func GetSeriesDetails(bookInSeries dtos.BasicGoodReadsBook) dtos.Series {
+	return extractSeriesInfo(GetSeriesLink(bookInSeries))
 }
