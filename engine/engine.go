@@ -175,6 +175,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 						if !found {
 							logger.Sugar().Warnf("Couldn't find a goodreads listing for thebookshop author match book: %+v", authorMatch)
 							db.AddAvailableBook(dtos.AvailableBook{BookPurchaseInfo: authorMatch, BookFoundFrom: dtos.AUTHOR_MATCH})
+							writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
 						} else {
 							logger.Sugar().Infof("Found author match book on goodreads: %+v", goodReadsListingForAuthorMatch)
 
