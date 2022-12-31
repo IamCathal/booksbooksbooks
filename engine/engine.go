@@ -46,13 +46,14 @@ func automatedCheck() {
 	stubSearchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
-	checkAvailabilityOfExistingAvailableBooksList()
+	checkAvailabilityOfExistingAvailableBooksList(booksThatWereAvailableLastTime)
+
+	logger.Sugar().Infof("Checking now for the books currently listed on automated check shelf: %s", db.GetAutomatedBookShelfCheck())
 
 	booksFromShelf := goodreads.GetBooksFromShelf(db.GetAutomatedBookShelfCheck(), stubStatsChan, stubBooksFoundFromGoodReadsChan)
 	db.SetTotalBooksInAutomatedBookShelfCheck(len(booksFromShelf))
 
 	logger.Sugar().Infof("%d books were found from GoodReads shelf: %s\n", len(booksFromShelf), db.GetAutomatedBookShelfCheck())
-	close(stubBooksFoundFromGoodReadsChan)
 
 	searchResults := []dtos.EnchancedSearchResult{}
 	for _, book := range booksFromShelf {
@@ -71,10 +72,18 @@ func automatedCheck() {
 
 	logger.Sugar().Infof("%d new books were found in this search: %v", len(newBooksThatNeedNotification),
 		getConciseBookInfoFromAvailableBooks(newBooksThatNeedNotification))
+
 	for _, newBook := range newBooksThatNeedNotification {
+		logger.Sugar().Infof("Available book %s - %s was found through %d",
+			newBook.BookPurchaseInfo.Author, newBook.BookPurchaseInfo.Title, newBook.BookFoundFrom)
 		if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
+			logger.Sugar().Infof("Author %s is not ignored, adding their book %s to the available book list and sending a webhook notification",
+				newBook.BookPurchaseInfo.Author, newBook.BookPurchaseInfo.Title)
 			db.AddAvailableBook(newBook)
 			util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo, true)
+		} else {
+			logger.Sugar().Infof("Author %s is ignored, their book %s will not be added to the available book list",
+				newBook.BookPurchaseInfo.Author, newBook.BookPurchaseInfo.Title)
 		}
 	}
 
@@ -188,7 +197,6 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 							writeNewAvailableBookWsMsg(authorMatch, currCrawlStats, ws)
 							db.AddAvailableBook(updatedAvailableBook)
 						}
-
 					}
 				}
 			}

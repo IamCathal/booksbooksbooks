@@ -154,7 +154,7 @@ func TestCheckAvailabilityOfExistingAvailableBooksListNoticesBooksThatAreNoLonge
 
 	assert.Equal(t, len(db.GetAvailableBooks()), 1)
 
-	checkAvailabilityOfExistingAvailableBooksList()
+	checkAvailabilityOfExistingAvailableBooksList(db.GetAvailableBooks())
 
 	// Assert that the previously available book is removed
 	// when it is found to not be available anymore
@@ -502,6 +502,31 @@ func TestNotifyAboutBooksThatAreNoLongerAvailableDoesNotNotifyWhenFlagIsDisabled
 	notifyAboutBooksThatAreNoLongerAvailable(previouslyAvailableBooks)
 
 	mockController.AssertNumberOfCalls(t, "DeliverWebhook", 0)
+}
+
+func TestGetConciseBookInfoFromAvailableBooks(t *testing.T) {
+	expectedConciseInfoElements := []string{
+		"Herbert, Frank: Dune",
+		"Herbert, Frank: Dune Messiah",
+	}
+	availableBooks := []dtos.AvailableBook{
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				Author: "Herbert, Frank",
+				Title:  "Dune",
+			},
+		},
+		{
+			BookInfo: dtos.BasicGoodReadsBook{
+				Author: "Herbert, Frank",
+				Title:  "Dune Messiah",
+			},
+		},
+	}
+
+	actualConciseInfoElements := getConciseBookInfoFromAvailableBooks(availableBooks)
+
+	assert.DeepEqual(t, expectedConciseInfoElements, actualConciseInfoElements)
 }
 
 func resetDBFields() {

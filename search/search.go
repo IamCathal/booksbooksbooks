@@ -33,8 +33,12 @@ func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.Th
 		}
 	}
 
-	if len(potentialTitleMatches) >= 2 {
+	if len(potentialTitleMatches) >= 1 {
 		logger.Sugar().Infof("%d potential title matches found for book: %+v matches: %+v",
+			len(potentialAuthorMatches), bookInfo, potentialTitleMatches)
+	}
+	if len(potentialAuthorMatches) >= 1 {
+		logger.Sugar().Infof("%d potential author matches found for book: %+v matches: %+v",
 			len(potentialAuthorMatches), bookInfo, potentialTitleMatches)
 	}
 	return dtos.EnchancedSearchResult{

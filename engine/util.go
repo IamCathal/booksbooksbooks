@@ -28,13 +28,12 @@ func writeErrorMsg(msg string, ws *websocket.Conn) {
 	}
 }
 
-func checkAvailabilityOfExistingAvailableBooksList() {
-	booksThatWereAvailableLastTime := db.GetAvailableBooks()
-	booksFromLastTimeThatAreStillAvailable := lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(booksThatWereAvailableLastTime)
-
-	logger.Sugar().Infof("%d books were available from the last automated check: %v\n",
+func checkAvailabilityOfExistingAvailableBooksList(booksThatWereAvailableLastTime []dtos.AvailableBook) {
+	logger.Sugar().Infof("%d books were available from the last automated check: %v",
 		len(booksThatWereAvailableLastTime), getConciseBookInfoFromAvailableBooks(booksThatWereAvailableLastTime))
-	logger.Sugar().Infof("%d books from the previous available list that are still available now: %v\n",
+
+	booksFromLastTimeThatAreStillAvailable := lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(booksThatWereAvailableLastTime)
+	logger.Sugar().Infof("%d books from the previous available list that are still available now: %v",
 		len(booksFromLastTimeThatAreStillAvailable), getConciseBookInfoFromAvailableBooks(booksFromLastTimeThatAreStillAvailable))
 
 	booksThatAreNowNotAvailable := findBooksThatAreNowNotAvailable(booksThatWereAvailableLastTime, booksFromLastTimeThatAreStillAvailable)
@@ -55,6 +54,8 @@ func lookUpAvailabilityOfBooksThatWerePreviouslyAvailable(previouslyAvailableBoo
 			Title:  book.BookPurchaseInfo.Title,
 			Author: book.BookPurchaseInfo.Author,
 		}
+		logger.Sugar().Infof("Checking availability of previously available book: %s by %s (found through %d)",
+			searchBook.Author, searchBook.Title, book.BookFoundFrom)
 		searchResult := thebookshop.SearchForBook(searchBook, stubSearchResultsFromTheBookshopChan)
 
 		if len(searchResult.TitleMatches) > 0 {
