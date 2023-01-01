@@ -252,16 +252,24 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 		})
 	})
 
+	currBookSeriesText := ""
+
 	doc.Find("div[class='listWithDividers__item']").Each(func(i int, bookRow *goquery.Selection) {
 		currBookInSeries := dtos.SeriesBook{}
 		currBookInSeries.BookInfo.ID = ksuid.New().String()
 		currBookInSeries.BookInfo.SeriesText = seriesInfo.Title
 		bookRow.Find("h3").Each(func(k int, bookSeriesElement *goquery.Selection) {
 			if k == 0 {
-				currBookInSeries.BookSeriesText = bookSeriesElement.Text()
+				if isLumpedTogetherBook := strings.HasPrefix(bookSeriesElement.Text(), "Shelve"); isLumpedTogetherBook {
+					currBookInSeries.BookSeriesText = currBookSeriesText
+				} else {
+					currBookInSeries.BookSeriesText = bookSeriesElement.Text()
+					currBookSeriesText = currBookInSeries.BookSeriesText
+				}
 				currBookInSeries.RealBookOrder = i + 1
 			}
 		})
+		fmt.Println(" ")
 		bookRow.Find("div[class='responsiveBook__media'] > a").Each(func(i int, linkElem *goquery.Selection) {
 			link, _ := linkElem.Attr("href")
 			currBookInSeries.BookInfo.Link = GOODREADS_BASE_BOOK_URL + link
