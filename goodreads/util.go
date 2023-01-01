@@ -287,6 +287,13 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 		bookRow.Find("span[itemprop='author'] > span[itemprop='name'] > a").Each(func(i int, authorLink *goquery.Selection) {
 			currBookInSeries.BookInfo.Author = authorLink.Text()
 		})
+		bookRow.Find("div[class='communityRating']").Each(func(i int, communitRatingElems *goquery.Selection) {
+			fmt.Println(communitRatingElems.Text())
+			rating, publishedYear := extractCommunityRatingElementsFromText(communitRatingElems.Text())
+			currBookInSeries.BookInfo.Rating = rating
+			currBookInSeries.BookInfo.PublishedYear = publishedYear
+		})
+
 		seriesInfo.Books = append(seriesInfo.Books, currBookInSeries)
 	})
 
@@ -322,4 +329,12 @@ func sleepIfLongerThanAllotedTimeSinceLastRequest() {
 		zap.String("dignostics", "goodReadsEngine"))
 	controller.Cnt.Sleep(timeDifference)
 	lastRequestMade = time.Now()
+}
+
+func extractCommunityRatingElementsFromText(ratingRawText string) (float32, int) {
+	splitRatings := strings.Split(ratingRawText, "·")
+	rating := strToFloat(strings.TrimSpace(splitRatings[0]))
+	publishYear := strings.TrimSpace(strings.Split(splitRatings[3], " ")[2])
+
+	return float32(rating), strToInt(publishYear)
 }
