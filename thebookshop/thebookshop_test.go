@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/controller"
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/search"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +31,11 @@ func TestMain(m *testing.M) {
 	}
 	SetLogger(logger)
 	search.SetLogger(logger)
+	db.SetLogger(logger)
 	loadMockSearchResults()
+
+	db.ConnectToRedis()
+	db.SetTestDataIdentifiers()
 
 	code := m.Run()
 

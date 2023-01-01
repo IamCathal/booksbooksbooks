@@ -31,6 +31,7 @@ var (
 	OTHER_BOOKS_IN_SERIES_LOOKUP                  = "otherBooksInSeriesLookup"
 	OWNED_BOOKS_SHELF_URL                         = "ownedBooksShelfURL"
 	SERIES_CRAWL_BOOKS                            = "seriesCrawlBooks"
+	ONLY_ENGLISH_BOOKS_TOGGLE                     = "onlyEnglishBooksToggle"
 	DEFAULT_TTL                                   = time.Duration(0)
 )
 
@@ -485,4 +486,26 @@ func GetSeriesCrawlBooks() []dtos.Series {
 		}
 	}
 	return seriesCrawlBooks
+}
+
+func SetOnlyEnglishBooks(enabled bool) {
+	err := redisClient.Set(ctx, ONLY_ENGLISH_BOOKS_TOGGLE, enabled, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetOnlyEnglishBooks() bool {
+	enabled, err := redisClient.Get(ctx, ONLY_ENGLISH_BOOKS_TOGGLE).Result()
+	if err == redis.Nil {
+		SetOnlyEnglishBooks(false)
+		return GetOnlyEnglishBooks()
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	if enabled == "" {
+		SetOnlyEnglishBooks(false)
+		return GetOnlyEnglishBooks()
+	}
+	return strToBool(enabled)
 }

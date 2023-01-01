@@ -161,4 +161,12 @@ func SetTestDataIdentifiers() {
 	DISCORD_MESSAGE_FORMAT = "test-discordMessageFormat"
 	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE = "test-sendAlertWhenBookNoLongerAvailable"
 	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "test-sendAlertWhenFreeShippingKicksIn"
+	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF = "test-totalBooksInAutomatedBookShelf"
+	ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST = "test-addMoreAuthorBooksToAvailableBooksList"
+	KNOWN_AUTHORS = "test-knownAuthors"
+	IGNORE_AUTHORS = "test-ignoreAuthors"
+	OTHER_BOOKS_IN_SERIES_LOOKUP = "test-otherBooksInSeriesLookup"
+	OWNED_BOOKS_SHELF_URL = "test-ownedBooksShelfURL"
+	SERIES_CRAWL_BOOKS = "test-seriesCrawlBooks"
+	ONLY_ENGLISH_BOOKS_TOGGLE = "test-onlyEnglishBooksToggle"
 }

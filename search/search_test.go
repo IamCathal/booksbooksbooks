@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
-	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"gotest.tools/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -18,6 +19,10 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	SetLogger(logger)
+	db.SetLogger(logger)
+
+	db.ConnectToRedis()
+	db.SetTestDataIdentifiers()
 
 	code := m.Run()
 
@@ -25,6 +30,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestSearchCorrectlyExtractsActualAuthorMatches(t *testing.T) {
+	resetDBFields()
 	nameOfTheWind := dtos.TheBookshopBook{
 		Author: "Patrick rothfuss",
 		Title:  "the name of the wind",
@@ -56,10 +62,15 @@ func TestSearchCorrectlyExtractsActualAuthorMatches(t *testing.T) {
 
 	actualSearchResult := SearchAllRankFind(searchBookInfo, searchResults)
 
-	assert.Equal(t, expectedAuthorMatches, actualSearchResult.AuthorMatches)
+	assert.DeepEqual(t, expectedAuthorMatches, actualSearchResult.AuthorMatches)
 }
 
 func TestSearchCorrectlyExtractsActualTitleMatches(t *testing.T) {
+	resetDBFields()
+	wiseMansFearResult := dtos.TheBookshopBook{
+		Author: "paTRICK ROTHFUSS",
+		Title:  "THE WISE MANS FEAR",
+	}
 	searchBookInfo := dtos.BasicGoodReadsBook{
 		Author: "Patrick Rothfuss",
 		Title:  "the wise mans fear",
@@ -73,18 +84,16 @@ func TestSearchCorrectlyExtractsActualTitleMatches(t *testing.T) {
 			Author: "St Aubyn, Edward",
 			Title:  "Patrick Melrose volume 1",
 		},
-		{
-			Author: "paTRICK ROTHFUSS",
-			Title:  "THE WISE MANS FEAR",
-		},
+		wiseMansFearResult,
 	}
 
 	actualSearchResult := SearchAllRankFind(searchBookInfo, searchResults)
 
-	assert.Len(t, actualSearchResult.TitleMatches, 1)
+	assert.DeepEqual(t, []dtos.TheBookshopBook{wiseMansFearResult}, actualSearchResult.TitleMatches)
 }
 
 func TestSearchParametersIgnoreNonAlphaNumericSymbols(t *testing.T) {
+	resetDBFields()
 	searchBookInfo := dtos.BasicGoodReadsBook{
 		Author: "Patrick Rothfuss",
 		Title:  "the wise mans fear",
@@ -98,5 +107,78 @@ func TestSearchParametersIgnoreNonAlphaNumericSymbols(t *testing.T) {
 
 	actualSearchResult := SearchAllRankFind(searchBookInfo, searchResults)
 
-	assert.Len(t, actualSearchResult.TitleMatches, 1)
+	assert.DeepEqual(t, searchResults, actualSearchResult.TitleMatches)
+}
+
+func TestSearchAllRankFindDoesNotReturnNonEnglishBooksWhenSettingIsEnabled(t *testing.T) {
+	resetDBFields()
+	searchBook := dtos.BasicGoodReadsBook{
+		Title:  "The Wise Man's Fear",
+		Author: "Patrick Rothfuss",
+	}
+	searchResults := []dtos.TheBookshopBook{
+		{
+			Title:  "The Wise Man's Fear",
+			Author: "Patrick Rothfuss",
+		},
+		{
+			Title:  "имя ветра",
+			Author: "Patrick Rothfuss",
+		},
+	}
+	db.SetOnlyEnglishBooks(true)
+
+	searchResult := SearchAllRankFind(searchBook, searchResults)
+
+	assert.Equal(t, 1, len(searchResult.TitleMatches))
+	assert.Equal(t, 1, len(searchResult.AuthorMatches))
+}
+
+func TestSearchAllRankFindDoesReturnNonEnglishBooksWhenSettingIsDisabled(t *testing.T) {
+	resetDBFields()
+	searchBook := dtos.BasicGoodReadsBook{
+		Title:  "The Wise Man's Fear",
+		Author: "Patrick Rothfuss",
+	}
+	searchResults := []dtos.TheBookshopBook{
+		{
+			Title:  "имя ветра",
+			Author: "Patrick Rothfuss",
+		},
+	}
+	db.SetOnlyEnglishBooks(false)
+
+	searchResult := SearchAllRankFind(searchBook, searchResults)
+
+	assert.DeepEqual(t, []dtos.TheBookshopBook{}, searchResult.TitleMatches)
+	assert.DeepEqual(t, searchResults, searchResult.AuthorMatches)
+}
+
+func TestIsBookEnglishDetectsBookWithFrenchFada(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("Parrot, André - Sumer - FRENCH LANGUAGE Edition"))
+}
+
+func TestIsBookEnglishDetectsBookWithAUmlaut(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("Doerr, Anthony -Kaikki se valo jota emme näe - HB - Finnish"))
+}
+func TestIsBookEnglishDetectsBookWithPolishFancyZ(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("McCaffrey, Anne -Historia Nerilki ( Jeźdźcy smoków z"))
+}
+func TestIsBookEnglishDetectsBookWithCyrillicLetters(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("имя ветра"))
+}
+func TestIsBookEnglishDetectsBookWithFSharphesS(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("Schiller, Friedrich - Geschichte des dreißigjährigen Kriegs"))
+}
+func TestIsBookEnglishDetectsEnglishTitleBook(t *testing.T) {
+	assert.Equal(t, true, isBookEnglish("Collins, Suzanne / The Hunger Games ( Hunger Games Trilogy "))
+}
+
+func resetDBFields() {
+	db.SetKnownAuthors([]dtos.KnownAuthor{})
+	db.SetAddMoreAuthorBooksToAvailableBooksList(false)
+	db.SetSendAlertWhenBookNoLongerAvailable(false)
+	db.SetOnlyEnglishBooks(false)
+	db.SetAvailableBooks([]dtos.AvailableBook{})
+	db.SetDiscordWebhookURL("")
 }

@@ -10,6 +10,7 @@ function getAndRenderSettings() {
     getAndRenderAutomatedCrawlTime()
     getAndRenderSendAlertsWhenBookNoLongerAvailable()
     getAndRenderSendAlertOnlyWhenFreeShippingKicksIn()
+    getAndRenderOnlyConsiderEnglishBooks()
     getAndRenderAddMoreAuthorBooksToAvailableList()
     getAndRenderKnownAuthorsList()
 }
@@ -181,6 +182,18 @@ function getAndRenderSendAlertOnlyWhenFreeShippingKicksIn() {
     })
 }
 
+function getAndRenderOnlyConsiderEnglishBooks() {
+    getOnlyConsiderEnglishBooks().then(enabled => {
+        if (enabled == true) {
+            document.getElementById("onlyEnglishBooksEnable").checked = true
+        } else {
+            document.getElementById("onlyEnglishBooksEnable").checked = false
+        }
+    }, (err) => {
+        console.error(err)
+    })
+}
+
 function getAndRenderKnownAuthorsList() {
     document.getElementById("knownAuthors").innerHTML = ""
     getKnownAuthorList().then(authors => {
@@ -229,6 +242,14 @@ document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").addEventListen
         setSendAlertOnlyWhenFreeShippingKicksIn("true")
     } else {
         setSendAlertOnlyWhenFreeShippingKicksIn("false")
+    }
+})
+
+document.getElementById("onlyEnglishBooksEnable").addEventListener("change", (ev) => {
+    if (ev.currentTarget.checked) {
+        setOnlyConsiderEnglishBooks("true")
+    } else {
+        setOnlyConsiderEnglishBooks("false")
     }
 })
 
@@ -634,6 +655,41 @@ function getSendAlertOnlyWhenFreeShippingKicksIn() {
         });
     })
 }
+
+function getOnlyConsiderEnglishBooks() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getonlyenglishbooksenabled`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.enabled)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setOnlyConsiderEnglishBooks(enabled) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/setonlyenglishbooksenabled?enabled=${enabled}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
 
 function setAddMoreBooksFromAuthorToAvailableBooksList(enabled) {
     return new Promise((resolve, reject) => {

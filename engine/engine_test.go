@@ -12,6 +12,7 @@ import (
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
+	"github.com/iamcathal/booksbooksbooks/search"
 	"github.com/iamcathal/booksbooksbooks/thebookshop"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
@@ -38,6 +39,7 @@ func TestMain(m *testing.M) {
 	db.SetLogger(logger)
 	goodreads.SetLogger(logger)
 	thebookshop.SetLogger(logger)
+	search.SetLogger(logger)
 	thebookshop.SLEEP_DURATION = time.Duration(100 * time.Nanosecond)
 	goodreads.SLEEP_DURATION = time.Duration(100 * time.Nanosecond)
 
@@ -535,6 +537,7 @@ func resetDBFields() {
 	db.SetSendAlertWhenBookNoLongerAvailable(false)
 	db.SetAvailableBooks([]dtos.AvailableBook{})
 	db.SetDiscordWebhookURL("")
+	db.SetOnlyEnglishBooks(false)
 }
 
 func getHtmlNode(webpageStr string) *html.Node {

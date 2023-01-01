@@ -77,6 +77,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/toggleauthorignore", toggleAuthorIgnore).Methods("POST")
 	settingsRouter.HandleFunc("/getownedbooksshelfurl", getOwnedBooksShelfURL).Methods("GET")
 	settingsRouter.HandleFunc("/setownedbooksshelfurl", setOwnedBooksShelfURL).Methods("POST")
+	settingsRouter.HandleFunc("/getonlyenglishbooksenabled", getOnlyEnglishBooksEnabled).Methods("GET")
+	settingsRouter.HandleFunc("/setonlyenglishbooksenabled", setOnlyEnglishBooksEnabled).Methods("POST")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -420,6 +422,26 @@ func setOwnedBooksShelfURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(bookShelfURL)
+}
+
+func getOnlyEnglishBooksEnabled(w http.ResponseWriter, r *http.Request) {
+	res := dtos.BooleanSettingStatusResponse{
+		Enabled: db.GetOnlyEnglishBooks(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func setOnlyEnglishBooksEnabled(w http.ResponseWriter, r *http.Request) {
+	enabled := r.URL.Query().Get("enabled")
+	enabledBool, isValid := strToBool(enabled)
+	if !isValid {
+		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.SetOnlyEnglishBooks(enabledBool)
+	w.WriteHeader(http.StatusOK)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
