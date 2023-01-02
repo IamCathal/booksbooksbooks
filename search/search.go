@@ -87,7 +87,43 @@ func removeNonEnglishBooks(searchResult dtos.EnchancedSearchResult) dtos.Enchanc
 }
 
 func isBookEnglish(bookDetail string) bool {
-	return !NON_ENGLISH_CHARACTER.MatchString(bookDetail)
+	hasNonEnglishCharacters := NON_ENGLISH_CHARACTER.MatchString(bookDetail)
+	if hasNonEnglishCharacters {
+		return false
+	}
+
+	// A very crude BUT lightweight way of detecting a good amount
+	// of non english books. Using an actual language detection
+	// library would be like using an airplane to thread a needle
+	experimentalNonEnglishSnippets := []string{
+		" de ",
+		" le ",
+		" en ",
+		" francais ",
+		" del ",
+		" el ",
+		" los ",
+		" las ",
+		" und ",
+		" der ",
+		" des ",
+		" dem ",
+		" y ",
+		" ein ",
+		" eine ",
+		" einer ",
+		" l'",
+		" d'",
+		" la ",
+		" c'est ",
+	}
+	for _, nonEnglishSnippet := range experimentalNonEnglishSnippets {
+		if strings.Contains(strings.ToLower(bookDetail), nonEnglishSnippet) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func removeUnnecessaryBitsFromTheBookshopTitle(fullTitleText string) (string, string) {

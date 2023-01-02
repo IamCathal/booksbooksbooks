@@ -277,6 +277,18 @@ func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesPInformationBeyondFirst
 	assert.Equal(t, expectedTitle, actualTitle)
 }
 
+func TestIsBookEnglishDetectFrenchDune(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("Herbert, Frank - Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"))
+}
+
+func TestIsBookEnglishDetectsFrenchBook(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("Purdy, James - Les Enfants , C'est tout - PB Gallimard - 1968 "))
+}
+
+func TestIsBookEnglishDetectsSpanishBook(t *testing.T) {
+	assert.Equal(t, false, isBookEnglish("Auel, Jean M. - El Clan Del Oso Cavernario ( Spanish Edition)"))
+}
+
 func resetDBFields() {
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 	db.SetAddMoreAuthorBooksToAvailableBooksList(false)
