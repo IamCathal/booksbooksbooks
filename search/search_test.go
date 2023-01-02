@@ -174,6 +174,109 @@ func TestIsBookEnglishDetectsEnglishTitleBook(t *testing.T) {
 	assert.Equal(t, true, isBookEnglish("Collins, Suzanne / The Hunger Games ( Hunger Games Trilogy "))
 }
 
+func TestRemoveallBetweenSubstrings(t *testing.T) {
+	sourceText := "Mockingjay( Hunger Games Trilogy - Book 3 )"
+	assert.Equal(t, "Mockingjay", removeAllBetweenSubStrings(sourceText, "(", ")"))
+}
+func TestRemoveallBetweenSubstringsDoesNothingWhenBothIndicesAreNotFound(t *testing.T) {
+	sourceText := "Mockingjay( Hunger Games Trilogy - Book 3 )"
+	assert.Equal(t, sourceText, removeAllBetweenSubStrings(sourceText, "+", "-"))
+}
+
+func TestRemoveallBetweenSubstringsDoesNothingWhenOneIndexIsNotFound(t *testing.T) {
+	sourceText := "Mockingjay( Hunger Games Trilogy - Book 3 )"
+	assert.Equal(t, sourceText, removeAllBetweenSubStrings(sourceText, "+", ")"))
+}
+
+func TestRemoveAllTextPastFirstDashIfPossibleRemovesAllTextBeyondOneDash(t *testing.T) {
+	assert.Equal(t, "The History of Tom Jones ", removeAllTextAfterFirstDashIfPossible("The History of Tom Jones - HB - Heritage Press NY"))
+}
+
+func TestRemoveAllTextPastFirstDashIfPossibleRemovesAllTextWhenMoreThanThanTwoDashesAreFound(t *testing.T) {
+	assert.Equal(t, "The History of Tom Jones ", removeAllTextAfterFirstDashIfPossible("The History of Tom Jones - HB - Heritage Press NY - SIGNED"))
+}
+
+func TestRemoveAllTextPastFirstDashIfPossibleDoesNothingWhenNoDashesAreFound(t *testing.T) {
+	assert.Equal(t, "The History of Tom Jones", removeAllTextAfterFirstDashIfPossible("The History of Tom Jones"))
+}
+
+func TestExtractAuthorFromTitleSplitBySlash(t *testing.T) {
+	rawTitleText := "Tolkien, J. R. R. / The Lord of the Rings"
+	expectedAuthor := "Tolkien, J. R. R."
+	expectedTitle := "The Lord of the Rings"
+
+	author, title := ExtractAuthorFromTheBookShopTitle(rawTitleText)
+
+	assert.Equal(t, expectedAuthor, author)
+	assert.Equal(t, expectedTitle, title)
+}
+
+func TestExtractAuthorFromTitleSplitByHyphen(t *testing.T) {
+	rawTitleText := "Tolkien, J. R. R. - The Lord of the Rings"
+	expectedAuthor := "Tolkien, J. R. R."
+	expectedTitle := "The Lord of the Rings"
+
+	author, title := ExtractAuthorFromTheBookShopTitle(rawTitleText)
+
+	assert.Equal(t, expectedAuthor, author)
+	assert.Equal(t, expectedTitle, title)
+}
+
+func TestExtractAuthorFromTitleSplitByTwoHypens(t *testing.T) {
+	rawTitleText := "Herbert, Frank - Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"
+	expectedAuthor := "Herbert, Frank"
+	expectedTitle := "Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"
+
+	author, title := ExtractAuthorFromTheBookShopTitle(rawTitleText)
+
+	assert.Equal(t, expectedAuthor, author)
+	assert.Equal(t, expectedTitle, title)
+}
+
+func TestExtractAuthorFromTitleReturnsEverythingWhenCantSplit(t *testing.T) {
+	rawTitleText := "Tolkien, J. R. R. [] The Lord of the Rings"
+	expectedAuthor := rawTitleText
+	expectedTitle := rawTitleText
+
+	author, title := ExtractAuthorFromTheBookShopTitle(rawTitleText)
+
+	assert.Equal(t, expectedAuthor, author)
+	assert.Equal(t, expectedTitle, title)
+}
+
+func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesParenthesisEnclosedText(t *testing.T) {
+	testFullTitle := "Drabble, Margaret - The Waterfall ( Vintage Penguin PB 1974 - Originally 1969)"
+	expectedAuthor := "Drabble, Margaret"
+	expectedTitle := "The Waterfall"
+
+	actualAuthor, actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
+
+	assert.Equal(t, expectedAuthor, actualAuthor)
+	assert.Equal(t, expectedTitle, actualTitle)
+}
+
+func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesPInformationBeyondFirstDash(t *testing.T) {
+	testFullTitle := "O'Shea, Peter - Historic Murders of South Cork - SIGNED PB - BRAND NEW"
+	expectedAuthor := "O'Shea, Peter"
+	expectedTitle := "Historic Murders of South Cork"
+
+	actualAuthor, actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
+
+	assert.Equal(t, expectedAuthor, actualAuthor)
+	assert.Equal(t, expectedTitle, actualTitle)
+}
+
+func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesPInformationBeyondFirstDashAndParenthesisEnclosedText(t *testing.T) {
+	testFullTitle := "O'Shea, Peter - Historic Murders of South Cork - SIGNED PB - BRAND NEW - 2021 ( Murder Most Local - Book 4 ) "
+	expectedAuthor := "O'Shea, Peter"
+	expectedTitle := "Historic Murders of South Cork"
+
+	actualAuthor, actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
+
+	assert.Equal(t, expectedAuthor, actualAuthor)
+	assert.Equal(t, expectedTitle, actualTitle)
+}
+
 func resetDBFields() {
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 	db.SetAddMoreAuthorBooksToAvailableBooksList(false)

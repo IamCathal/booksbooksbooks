@@ -288,6 +288,16 @@ func TestFilterSeriesTitleFromSeriesTextWithDotInTitleSequence(t *testing.T) {
 	assert.Equal(t, "Sorcery Ascendant", FilterSeriesTitleFromSeriesText("(Sorcery Ascendant, #0.5)"))
 }
 
+func TestExtractCommunityRatingElements(t *testing.T) {
+	expectedRating := float32(3.83)
+	expectedPublishedYear := 2022
+
+	actualRating, actualPublishedYear := extractCommunityRatingElementsFromText("3.83 · 332239 Ratings · 40480 Reviews · published 2022 · 151 editions")
+
+	assert.Equal(t, expectedPublishedYear, actualPublishedYear)
+	assert.Equal(t, expectedRating, actualRating)
+}
+
 func resetDBFields() {
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 	db.SetAddMoreAuthorBooksToAvailableBooksList(false)

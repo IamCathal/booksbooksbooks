@@ -59,50 +59,6 @@ func TestURLEncodeBookSearch(t *testing.T) {
 	assert.Equal(t, actualEncodedURIParams, urlEncodeBookSearch(bookInfo))
 }
 
-func TestExtractAuthorFromTitleSplitBySlash(t *testing.T) {
-	rawTitleText := "Tolkien, J. R. R. / The Lord of the Rings"
-	expectedAuthor := "Tolkien, J. R. R."
-	expectedTitle := "The Lord of the Rings"
-
-	author, title := extractAuthorFromTitle(rawTitleText)
-
-	assert.Equal(t, expectedAuthor, author)
-	assert.Equal(t, expectedTitle, title)
-}
-
-func TestExtractAuthorFromTitleSplitByHyphen(t *testing.T) {
-	rawTitleText := "Tolkien, J. R. R. - The Lord of the Rings"
-	expectedAuthor := "Tolkien, J. R. R."
-	expectedTitle := "The Lord of the Rings"
-
-	author, title := extractAuthorFromTitle(rawTitleText)
-
-	assert.Equal(t, expectedAuthor, author)
-	assert.Equal(t, expectedTitle, title)
-}
-
-func TestExtractAuthorFromTitleSplitByTwoHypens(t *testing.T) {
-	rawTitleText := "Herbert, Frank - Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"
-	expectedAuthor := "Herbert, Frank"
-	expectedTitle := "Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"
-
-	author, title := extractAuthorFromTitle(rawTitleText)
-
-	assert.Equal(t, expectedAuthor, author)
-	assert.Equal(t, expectedTitle, title)
-}
-
-func TestExtractAuthorFromTitleReturnsEverythingWhenCantSplit(t *testing.T) {
-	rawTitleText := "Tolkien, J. R. R. [] The Lord of the Rings"
-	expectedAuthor := rawTitleText
-	expectedTitle := rawTitleText
-
-	author, title := extractAuthorFromTitle(rawTitleText)
-
-	assert.Equal(t, expectedAuthor, author)
-	assert.Equal(t, expectedTitle, title)
-}
-
 func TestSearchForBookRespectsSleepDurationBetweenRequests(t *testing.T) {
 	mockController := &controller.MockCntrInterface{}
 	controller.SetController(mockController)

@@ -63,7 +63,7 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 
 			bookPrice := bookProduct.Find("span[data-product-price-without-tax='']").Text()
 			cover, _ := bookProduct.Find("img[class='card-image']").Attr("src")
-			author, title := extractAuthorFromTitle(bookTitle)
+			author, title := search.ExtractAuthorFromTheBookShopTitle(bookTitle)
 			foundBook := dtos.TheBookshopBook{
 				Title:  title,
 				Author: author,
