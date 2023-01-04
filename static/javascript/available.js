@@ -118,6 +118,9 @@ function renderAvailableBooks(availableBookList) {
             document.getElementById("ignoredPriceStatsDiv").textContent = `€${totalIgnoredBookCost.toFixed(2)}`
         }
 
+        const ignoredBooksCount = availableBookList.filter(x => x.ignore == true).length
+        document.getElementById("ignoredBooksDropdown").textContent = `View ${ignoredBooksCount} Ignored Books`
+
         document.querySelectorAll(".unignoreBook").forEach(element => {
             element.addEventListener("click", (ev) => {
                 unignoreBook(ev.target.id).then((res) => {
@@ -166,7 +169,7 @@ function getFoundFromBadge(enumVal) {
 function renderStatsOnAutomatedShelf(stats) {
     console.log(stats)
     document.getElementById("automatedShelfStatsBox").innerHTML = 
-    ` Available books from <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a> which has ${stats.totalBooks} books, ${stats.availableBooks} available and ${stats.ignoredAvailableBooks} ignored*`
+    ` Available books from <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a> which has ${stats.totalBooks} ${stats.totalBooks > 1 ? "books" : "book"}, ${stats.availableBooks} available and ${stats.ignoredAvailableBooks} ignored*`
 }
 
 function getBookCost(bookCostString) {
