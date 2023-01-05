@@ -1,6 +1,7 @@
 package search
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -90,24 +91,6 @@ func TestSearchCorrectlyExtractsActualTitleMatches(t *testing.T) {
 	actualSearchResult := SearchAllRankFind(searchBookInfo, searchResults)
 
 	assert.DeepEqual(t, []dtos.TheBookshopBook{wiseMansFearResult}, actualSearchResult.TitleMatches)
-}
-
-func TestSearchParametersIgnoreNonAlphaNumericSymbols(t *testing.T) {
-	resetDBFields()
-	searchBookInfo := dtos.BasicGoodReadsBook{
-		Author: "Patrick Rothfuss",
-		Title:  "the wise mans fear",
-	}
-	searchResults := []dtos.TheBookshopBook{
-		{
-			Author: "paTRICK ROTHFUSS",
-			Title:  "THE '''''''''''''''''WISE MAN''''''''''''''''''''''S FEAR",
-		},
-	}
-
-	actualSearchResult := SearchAllRankFind(searchBookInfo, searchResults)
-
-	assert.DeepEqual(t, searchResults, actualSearchResult.TitleMatches)
 }
 
 func TestSearchAllRankFindDoesNotReturnNonEnglishBooksWhenSettingIsEnabled(t *testing.T) {
@@ -287,6 +270,90 @@ func TestIsBookEnglishDetectsFrenchBook(t *testing.T) {
 
 func TestIsBookEnglishDetectsSpanishBook(t *testing.T) {
 	assert.Equal(t, false, isBookEnglish("Auel, Jean M. - El Clan Del Oso Cavernario ( Spanish Edition)"))
+}
+
+func TestRemoveEmptyStringElementsInArr(t *testing.T) {
+	expectedArr := []string{"hello", "world"}
+	assert.DeepEqual(t, expectedArr, removeEmptyStringElementsInArr([]string{"hello", "", "world"}))
+}
+
+func TestRemoveEmptyStringElementsInArrDoesNothingWhenNoEmptyElementsAreGiven(t *testing.T) {
+	expectedArr := []string{"hello", "world"}
+	assert.DeepEqual(t, expectedArr, removeEmptyStringElementsInArr([]string{"hello", "world"}))
+}
+
+func TestGetAuthorFullNameInCorrectOrderForPeterFHamilton(t *testing.T) {
+	assert.Equal(t, "Peter F. Hamilton", getAuthorFullNameInCorrectOrder("Hamilton, Peter F."))
+}
+
+func TestGetAuthorFullNameInCorrectOrderForPatrickRothfuss(t *testing.T) {
+	assert.Equal(t, "Patrick Rothfuss", getAuthorFullNameInCorrectOrder("Rothfuss, Patrick"))
+}
+
+func TestGetAuthorFullNameInCorrectOrderForJohnWCampbellJr(t *testing.T) {
+	assert.Equal(t, "John W. Campbell Jr.", getAuthorFullNameInCorrectOrder("Campbell Jr., John W. "))
+}
+
+func TestTokeniseTitle(t *testing.T) {
+	expectedTokenisedTitle := []string{"the", "name", "of", "the", "wind"}
+	assert.DeepEqual(t, expectedTokenisedTitle, tokeniseTitle("the name of the wind"))
+}
+
+func TestTokeniseTitleHandlesMultipleSpaces(t *testing.T) {
+	expectedTokenisedTitle := []string{"the", "name", "of", "the", "wind"}
+	assert.DeepEqual(t, expectedTokenisedTitle, tokeniseTitle("the name of               the wind"))
+}
+
+func TestTokeniseTitleLowercasesAllTokens(t *testing.T) {
+	expectedTokenisedTitle := []string{"the", "name", "of", "the", "wind"}
+	assert.DeepEqual(t, expectedTokenisedTitle, tokeniseTitle("THE NamE of THe WINd"))
+}
+
+func TestLowercaseAllStringElement(t *testing.T) {
+	assert.DeepEqual(t, []string{"hello"}, lowercaseAllStringElements([]string{"heLLO"}))
+}
+
+func TestTitleMatch(t *testing.T) {
+	searchBookTokens := []string{"the", "name", "of", "the", "wind"}
+	searchResultTokens := []string{"the", "name", "of", "the", "wind"}
+
+	assert.Equal(t, true, titlesMatch(searchBookTokens, searchResultTokens))
+}
+
+func TestGetTheBookshopTitleGetsRidOfTextInParethesis(t *testing.T) {
+	assert.Equal(t, "The Crystal Run", getPureTheBookshopTitle("Sheila O'Flanagan / The Crystal Run (Signed by the Author) "))
+}
+
+func TestGetTheBookshopTitleGetsRidOfTextAfterTooManyDashes(t *testing.T) {
+	assert.Equal(t, "Black Juice", getPureTheBookshopTitle("Lanagan , Margo - Black Juice - HB - Gollancz - Short Stories"))
+}
+
+func TestGetTheBookshopTitlDoesNothingToARegularTitle(t *testing.T) {
+	assert.Equal(t, "Teranesia", getPureTheBookshopTitle("Egan, Greg / Teranesia"))
+}
+
+func TestBookWithLongTitleDoesntMatchWithSmallerSubstringMatch(t *testing.T) {
+	resetDBFields()
+
+	searchBook := dtos.BasicGoodReadsBook{
+		Title:  "How To Fall In Love",
+		Author: "Ahern, Cecelia",
+	}
+	searchResultsFromTheBookShop := []dtos.TheBookshopBook{
+		{
+			Title:  "Fall In Love",
+			Author: "Ahern, Cecelia",
+		},
+		{
+			Title:  fmt.Sprintf("%s.", searchBook.Title),
+			Author: "Ahern, Cecelia",
+		},
+	}
+
+	searchResult := SearchAllRankFind(searchBook, searchResultsFromTheBookShop)
+
+	assert.Equal(t, 0, len(searchResult.TitleMatches))
+	assert.Equal(t, len(searchResultsFromTheBookShop), len(searchResult.AuthorMatches))
 }
 
 func resetDBFields() {

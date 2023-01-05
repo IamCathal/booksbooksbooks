@@ -7,7 +7,6 @@ import (
 
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
-	"github.com/lithammer/fuzzysearch/fuzzy"
 	"go.uber.org/zap"
 )
 
@@ -26,18 +25,22 @@ func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.Th
 	potentialTitleMatches := []dtos.TheBookshopBook{}
 
 	for _, searchResult := range searchResults {
-		authorAndTitleTheBookshop := fmt.Sprintf("%s %s", searchResult.Author, searchResult.Title)
-		// theBookshopAuthor, theBookshopTitle := ExtractAuthorFromTheBookShopTitle(searchResult.Title)
-		authorAndTitleGoodreads := fmt.Sprintf("%s %s", bookInfo.Author, bookInfo.Title)
 
-		if fuzzy.MatchNormalizedFold(authorAndTitleGoodreads, authorAndTitleTheBookshop) {
-			fmt.Printf("title match foundn\n")
-			potentialTitleMatches = append(potentialTitleMatches, searchResult)
-		}
-		if fuzzy.MatchNormalizedFold(bookInfo.Author, searchResult.Author) {
-			fmt.Printf("author match foundn\n")
+		if strings.EqualFold(bookInfo.Author, searchResult.Author) {
 			potentialAuthorMatches = append(potentialAuthorMatches, searchResult)
+
+			if strings.Contains(searchResult.Title, ":") {
+				continue
+			}
+
+			theBookSearchResultTitleTokens := tokeniseTitle(searchResult.Title)
+			goodReadsSearchBookTitleTokens := tokeniseTitle(bookInfo.Title)
+
+			if titlesMatch(goodReadsSearchBookTitleTokens, theBookSearchResultTitleTokens) {
+				potentialTitleMatches = append(potentialTitleMatches, searchResult)
+			}
 		}
+
 	}
 
 	searchResult := dtos.EnchancedSearchResult{
@@ -126,6 +129,12 @@ func isBookEnglish(bookDetail string) bool {
 	return true
 }
 
+func getPureTheBookshopTitle(unfilteredTitle string) string {
+	_, titleWithoutParenthesesText := removeUnnecessaryBitsFromTheBookshopTitle(unfilteredTitle)
+	titleWithoutDashesText := removeAllTextAfterFirstDashIfPossible(titleWithoutParenthesesText)
+	return titleWithoutDashesText
+}
+
 func removeUnnecessaryBitsFromTheBookshopTitle(fullTitleText string) (string, string) {
 	author, title := ExtractAuthorFromTheBookShopTitle(fullTitleText)
 
@@ -171,4 +180,55 @@ func ExtractAuthorFromTheBookShopTitle(fullBookTitle string) (string, string) {
 	}
 
 	return strings.TrimSpace(fullBookTitle), strings.TrimSpace(fullBookTitle)
+}
+
+func getAuthorFullNameInCorrectOrder(authorWithLastnameFirst string) string {
+	nameArr := strings.Split(authorWithLastnameFirst, ",")
+	if len(nameArr) == 1 {
+		return strings.TrimSpace(nameArr[0])
+	}
+
+	nameArr = removeEmptyStringElementsInArr(nameArr)
+	if len(nameArr) == 2 {
+		return fmt.Sprintf("%s %s", strings.TrimSpace(nameArr[1]), strings.TrimSpace(nameArr[0]))
+	}
+
+	logger.Sugar().Infof("Failed to split author '%s' by non existant comma", authorWithLastnameFirst)
+	return authorWithLastnameFirst
+}
+
+func tokeniseTitle(title string) []string {
+	titleWords := strings.Split(getPureTheBookshopTitle(title), " ")
+	titleWordsNoEmpties := removeEmptyStringElementsInArr(titleWords)
+	return lowercaseAllStringElements(titleWordsNoEmpties)
+}
+
+func removeEmptyStringElementsInArr(arr []string) []string {
+	noEmptyElementsArr := []string{}
+	for _, elem := range arr {
+		if elem != "" {
+			noEmptyElementsArr = append(noEmptyElementsArr, elem)
+		}
+	}
+	return noEmptyElementsArr
+}
+
+func lowercaseAllStringElements(arr []string) []string {
+	lowerCasedArr := []string{}
+	for _, elem := range arr {
+		lowerCasedArr = append(lowerCasedArr, strings.ToLower(elem))
+	}
+	return lowerCasedArr
+}
+
+func titlesMatch(searchBookTokens, searchResultTokens []string) bool {
+	if len(searchBookTokens) != len(searchResultTokens) {
+		return false
+	}
+	for i, searchBookToken := range searchBookTokens {
+		if searchBookToken != searchResultTokens[i] {
+			return false
+		}
+	}
+	return true
 }
