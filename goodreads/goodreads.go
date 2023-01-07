@@ -97,7 +97,6 @@ func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
 }
 
 func SearchGoodreads(bookPurchaseInfo dtos.TheBookshopBook) (bool, dtos.BasicGoodReadsBook) {
-	fmt.Printf("going back to search for: %+v\n", bookPurchaseInfo)
 	bookSearchName := fmt.Sprintf("%s %s", bookPurchaseInfo.Author, extractPureTitle(bookPurchaseInfo.Title))
 	body := controller.Cnt.Get(fmt.Sprintf("https://www.goodreads.com/book/auto_complete?format=json&q=%s", url.QueryEscape(bookSearchName)))
 

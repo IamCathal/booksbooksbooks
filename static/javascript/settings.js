@@ -310,6 +310,22 @@ document.getElementById("disableDiscordNotifications").addEventListener("click",
     })
 })
 
+document.getElementById("purgeAuthorMatches").addEventListener("click", (ev) => {
+    purgeAuthorMatches().then(() => {
+        
+    }, (err) => {
+        console.error(err)
+    })
+})
+
+document.getElementById("purgeSeriesMatches").addEventListener("click", (ev) => {
+    purgeAuthorMatches().then(() => {
+        
+    }, (err) => {
+        console.error(err)
+    })
+})
+
 function giveSwayaaangBordersToItems() {
     document.getElementById("availableLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("shelfLinkBox").style = swayaaangBorders(0.8)
@@ -325,6 +341,8 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("clearKnownAuthors").style = swayaaangBorders(0.6)
     document.getElementById("disableAutomatedChecks").style = swayaaangBorders(0.6)
     document.getElementById("disableDiscordNotifications").style = swayaaangBorders(0.6)
+    document.getElementById("purgeAuthorMatches").style = swayaaangBorders(0.6)
+    document.getElementById("purgeSeriesMatches").style = swayaaangBorders(0.6)
 }
 
 document.getElementById("bigStyleBox").addEventListener("click", () => {
@@ -553,6 +571,41 @@ function clearDiscordWebhook(webhookURL) {
         });
     })
 }
+
+function purgeAuthorMatches() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/purgeauthormatches`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then(() => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function purgeSeriesMatches() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/purgeseriesmatches`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then(() => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
 
 function setDiscordMessageFormat(messageFormat) {
     return new Promise((resolve, reject) => {

@@ -79,6 +79,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/setownedbooksshelfurl", setOwnedBooksShelfURL).Methods("POST")
 	settingsRouter.HandleFunc("/getonlyenglishbooksenabled", getOnlyEnglishBooksEnabled).Methods("GET")
 	settingsRouter.HandleFunc("/setonlyenglishbooksenabled", setOnlyEnglishBooksEnabled).Methods("POST")
+	settingsRouter.HandleFunc("/purgeauthormatches", purgeAuthorMatches).Methods("POST")
+	settingsRouter.HandleFunc("/purgeseriesmatches", purgeSeriesMatches).Methods("POST")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -441,6 +443,34 @@ func setOnlyEnglishBooksEnabled(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db.SetOnlyEnglishBooks(enabledBool)
+	w.WriteHeader(http.StatusOK)
+}
+
+func purgeAuthorMatches(w http.ResponseWriter, r *http.Request) {
+	allAvailableBooks := db.GetAvailableBooks()
+	availableBooksThatAreNotAuthorMatches := []dtos.AvailableBook{}
+
+	for _, book := range allAvailableBooks {
+		if book.BookFoundFrom != dtos.AUTHOR_MATCH {
+			availableBooksThatAreNotAuthorMatches = append(availableBooksThatAreNotAuthorMatches, book)
+		}
+	}
+	db.SetAvailableBooks(availableBooksThatAreNotAuthorMatches)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func purgeSeriesMatches(w http.ResponseWriter, r *http.Request) {
+	allAvailableBooks := db.GetAvailableBooks()
+	availableBooksThatAreNotAuthorMatches := []dtos.AvailableBook{}
+
+	for _, book := range allAvailableBooks {
+		if book.BookFoundFrom != dtos.SERIES_MATCH {
+			availableBooksThatAreNotAuthorMatches = append(availableBooksThatAreNotAuthorMatches, book)
+		}
+	}
+	db.SetAvailableBooks(availableBooksThatAreNotAuthorMatches)
+
 	w.WriteHeader(http.StatusOK)
 }
 

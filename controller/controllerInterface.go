@@ -74,7 +74,6 @@ func (control Cntr) GetPage(pageURL string) *html.Node {
 }
 
 func (control Cntr) Get(pageURL string) []byte {
-	fmt.Printf("Get: '%s'\n", pageURL)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", pageURL, nil)
 	if err != nil {

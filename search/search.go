@@ -25,22 +25,31 @@ func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.Th
 	potentialTitleMatches := []dtos.TheBookshopBook{}
 
 	for _, searchResult := range searchResults {
+		searchResultAuthor := getAuthorFullNameInCorrectOrder(searchResult.Author)
+		searchBookAuthor := bookInfo.Author
+		if isAuthorNameReversed(bookInfo.Author) {
+			// When retrieving author names for books on a series page the author's
+			// names are in correct order e.g Patrick Rothfuss
+			// When retrieving author names from a shelf page the author's
+			// name are in reverse order e.g Rothfuss, Patrick
+			searchBookAuthor = getAuthorFullNameInCorrectOrder(bookInfo.Author)
+		}
 
-		if strings.EqualFold(bookInfo.Author, searchResult.Author) {
+		if strings.EqualFold(searchBookAuthor, searchResultAuthor) {
 			potentialAuthorMatches = append(potentialAuthorMatches, searchResult)
 
 			if strings.Contains(searchResult.Title, ":") {
 				continue
 			}
 
-			theBookSearchResultTitleTokens := tokeniseTitle(searchResult.Title)
+			theBookshopPureTitle := getPureTheBookshopTitle(searchResult.Title)
+			theBookSearchResultTitleTokens := tokeniseTitle(theBookshopPureTitle)
 			goodReadsSearchBookTitleTokens := tokeniseTitle(bookInfo.Title)
 
 			if titlesMatch(goodReadsSearchBookTitleTokens, theBookSearchResultTitleTokens) {
 				potentialTitleMatches = append(potentialTitleMatches, searchResult)
 			}
 		}
-
 	}
 
 	searchResult := dtos.EnchancedSearchResult{
@@ -130,18 +139,16 @@ func isBookEnglish(bookDetail string) bool {
 }
 
 func getPureTheBookshopTitle(unfilteredTitle string) string {
-	_, titleWithoutParenthesesText := removeUnnecessaryBitsFromTheBookshopTitle(unfilteredTitle)
+	titleWithoutParenthesesText := removeUnnecessaryBitsFromTheBookshopTitle(unfilteredTitle)
 	titleWithoutDashesText := removeAllTextAfterFirstDashIfPossible(titleWithoutParenthesesText)
 	return titleWithoutDashesText
 }
 
-func removeUnnecessaryBitsFromTheBookshopTitle(fullTitleText string) (string, string) {
-	author, title := ExtractAuthorFromTheBookShopTitle(fullTitleText)
+func removeUnnecessaryBitsFromTheBookshopTitle(fullTitleText string) string {
+	titleWithoutParethesisText := removeAllBetweenSubStrings(fullTitleText, "(", ")")
+	titleWithoutDashesText := removeAllTextAfterFirstDashIfPossible(titleWithoutParethesisText)
 
-	title = removeAllBetweenSubStrings(title, "(", ")")
-	title = removeAllTextAfterFirstDashIfPossible(title)
-
-	return strings.TrimSpace(author), strings.TrimSpace(title)
+	return strings.TrimSpace(titleWithoutDashesText)
 }
 
 func removeAllBetweenSubStrings(sourceText, startSubstring, endSubstring string) string {
@@ -193,12 +200,21 @@ func getAuthorFullNameInCorrectOrder(authorWithLastnameFirst string) string {
 		return fmt.Sprintf("%s %s", strings.TrimSpace(nameArr[1]), strings.TrimSpace(nameArr[0]))
 	}
 
-	logger.Sugar().Infof("Failed to split author '%s' by non existant comma", authorWithLastnameFirst)
+	logger.Sugar().Infof("Failed to split author '%s' by non existant or >3 commas", authorWithLastnameFirst)
 	return authorWithLastnameFirst
 }
 
+func isAuthorNameReversed(authorString string) bool {
+	// this is very experimental
+	return strings.ContainsAny(authorString, ",")
+}
+
+func removeCommaFromAuthorName(authorName string) string {
+	return strings.ReplaceAll(authorName, ",", "")
+}
+
 func tokeniseTitle(title string) []string {
-	titleWords := strings.Split(getPureTheBookshopTitle(title), " ")
+	titleWords := strings.Split(title, " ")
 	titleWordsNoEmpties := removeEmptyStringElementsInArr(titleWords)
 	return lowercaseAllStringElements(titleWordsNoEmpties)
 }

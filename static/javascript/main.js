@@ -128,6 +128,8 @@ function initWebsocketConn(shelfURL) {
     ws.onmessage = function(event) {
         const msg = JSON.parse(event.data)
 
+        console.log(msg)
+
         if (isErrorMsg(msg)) {
             console.error(`Error returned from backend: ${msg.error}`)
         }
@@ -245,7 +247,7 @@ function renderAndAddBookToNewAvailableBookList(newAvailableBook) {
 }
 
 function fillInSearchResult(msg) {
-    if (msg.titleMatches.length == 0) {
+    if (msg.titleMatches == null || msg.titleMatches.length == 0) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
         <div class="col">
@@ -284,7 +286,7 @@ function fillInSearchResult(msg) {
     </div>
     `
     }
-    if (msg.titleMatches.length == 1) {
+    if (msg.titleMatches != null && msg.titleMatches.length == 1) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">
         <div class="col">
@@ -322,7 +324,7 @@ function fillInSearchResult(msg) {
         </div>
     </div>
     `
-    if (msg.authorMatches.length >= 1) {
+    if (msg.authorMatches != null && msg.authorMatches.length >= 1) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
             <div class="row">
                 <div class="col text-center" style="font-size: 0.6rem">
@@ -338,7 +340,7 @@ function fillInSearchResult(msg) {
     return
     }
 
-    if (msg.titleMatches.length >= 2) {
+    if (msg.titleMatches != null && msg.titleMatches.length >= 2) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
         <div class="row">
         <div class="col">
@@ -401,7 +403,7 @@ function fillInSearchResult(msg) {
     </div>`
     }
 
-    if (msg.authorMatches.length >= 1) {
+    if (msg.authorMatches != null && msg.authorMatches.length >= 1) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML += `
             <div class="row">
                 <div class="col text-center" style="font-size: 0.6rem">

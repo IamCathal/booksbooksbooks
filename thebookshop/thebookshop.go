@@ -74,7 +74,6 @@ func searchTheBookshop(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan c
 			allBooks = append(allBooks, foundBook)
 		})
 	})
-
 	refinedSearchResults := FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 	bookSearchResultsChan <- refinedSearchResults
 	return refinedSearchResults

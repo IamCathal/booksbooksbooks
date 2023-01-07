@@ -228,35 +228,29 @@ func TestExtractAuthorFromTitleReturnsEverythingWhenCantSplit(t *testing.T) {
 }
 
 func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesParenthesisEnclosedText(t *testing.T) {
-	testFullTitle := "Drabble, Margaret - The Waterfall ( Vintage Penguin PB 1974 - Originally 1969)"
-	expectedAuthor := "Drabble, Margaret"
+	testFullTitle := "The Waterfall ( Vintage Penguin PB 1974 - Originally 1969)"
 	expectedTitle := "The Waterfall"
 
-	actualAuthor, actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
+	actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
 
-	assert.Equal(t, expectedAuthor, actualAuthor)
 	assert.Equal(t, expectedTitle, actualTitle)
 }
 
 func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesPInformationBeyondFirstDash(t *testing.T) {
-	testFullTitle := "O'Shea, Peter - Historic Murders of South Cork - SIGNED PB - BRAND NEW"
-	expectedAuthor := "O'Shea, Peter"
+	testFullTitle := "Historic Murders of South Cork - SIGNED PB - BRAND NEW"
 	expectedTitle := "Historic Murders of South Cork"
 
-	actualAuthor, actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
+	actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
 
-	assert.Equal(t, expectedAuthor, actualAuthor)
 	assert.Equal(t, expectedTitle, actualTitle)
 }
 
 func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesPInformationBeyondFirstDashAndParenthesisEnclosedText(t *testing.T) {
-	testFullTitle := "O'Shea, Peter - Historic Murders of South Cork - SIGNED PB - BRAND NEW - 2021 ( Murder Most Local - Book 4 ) "
-	expectedAuthor := "O'Shea, Peter"
+	testFullTitle := "Historic Murders of South Cork - SIGNED PB - BRAND NEW - 2021 ( Murder Most Local - Book 4 ) "
 	expectedTitle := "Historic Murders of South Cork"
 
-	actualAuthor, actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
+	actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
 
-	assert.Equal(t, expectedAuthor, actualAuthor)
 	assert.Equal(t, expectedTitle, actualTitle)
 }
 
@@ -321,15 +315,19 @@ func TestTitleMatch(t *testing.T) {
 }
 
 func TestGetTheBookshopTitleGetsRidOfTextInParethesis(t *testing.T) {
-	assert.Equal(t, "The Crystal Run", getPureTheBookshopTitle("Sheila O'Flanagan / The Crystal Run (Signed by the Author) "))
+	assert.Equal(t, "The Crystal Run", getPureTheBookshopTitle("The Crystal Run (Signed by the Author) "))
 }
 
 func TestGetTheBookshopTitleGetsRidOfTextAfterTooManyDashes(t *testing.T) {
-	assert.Equal(t, "Black Juice", getPureTheBookshopTitle("Lanagan , Margo - Black Juice - HB - Gollancz - Short Stories"))
+	assert.Equal(t, "Black Juice", getPureTheBookshopTitle("Black Juice - HB - Gollancz - Short Stories"))
 }
 
-func TestGetTheBookshopTitlDoesNothingToARegularTitle(t *testing.T) {
-	assert.Equal(t, "Teranesia", getPureTheBookshopTitle("Egan, Greg / Teranesia"))
+func TestGetTheBookshopTitleDoesNothingToARegularTitle(t *testing.T) {
+	assert.Equal(t, "Teranesia", getPureTheBookshopTitle("Teranesia"))
+}
+
+func TestGetTheBookshopTitleRemovesParentesisTextFirst(t *testing.T) {
+	assert.Equal(t, "Mockingjay", getPureTheBookshopTitle("Mockingjay ( Hunger Games Trilogy - Book 3 )"))
 }
 
 func TestBookWithLongTitleDoesntMatchWithSmallerSubstringMatch(t *testing.T) {

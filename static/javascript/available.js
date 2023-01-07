@@ -169,7 +169,7 @@ function getFoundFromBadge(enumVal) {
 function renderStatsOnAutomatedShelf(stats) {
     console.log(stats)
     document.getElementById("automatedShelfStatsBox").innerHTML = 
-    ` Available books from <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a> which has ${stats.totalBooks} ${stats.totalBooks > 1 ? "books" : "book"}, ${stats.availableBooks} available and ${stats.ignoredAvailableBooks} ignored*`
+    ` Available books from individual and automated crawls of <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a>`
 }
 
 function getBookCost(bookCostString) {

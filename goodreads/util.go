@@ -269,7 +269,7 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 				currBookInSeries.RealBookOrder = i + 1
 			}
 		})
-		fmt.Println(" ")
+
 		bookRow.Find("div[class='responsiveBook__media'] > a").Each(func(i int, linkElem *goquery.Selection) {
 			link, _ := linkElem.Attr("href")
 			currBookInSeries.BookInfo.Link = GOODREADS_BASE_BOOK_URL + link
@@ -288,7 +288,6 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 			currBookInSeries.BookInfo.Author = authorLink.Text()
 		})
 		bookRow.Find("div[class='communityRating']").Each(func(i int, communitRatingElems *goquery.Selection) {
-			fmt.Println(communitRatingElems.Text())
 			rating, publishedYear := extractCommunityRatingElementsFromText(communitRatingElems.Text())
 			currBookInSeries.BookInfo.Rating = rating
 			currBookInSeries.BookInfo.PublishedYear = publishedYear
