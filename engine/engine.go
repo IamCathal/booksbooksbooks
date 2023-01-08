@@ -297,10 +297,9 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 					searchBookLink := theBookshopSearchResult.SearchBook.Link
 					theBookshopMatchesFound[searchBookLink] = theBookshopSearchResult.TitleMatches[0]
 					previouslyKnownAvailableBooksMap[theBookshopSearchResult.TitleMatches[0].Link] = true
-					writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, theBookshopSearchResult.TitleMatches[0], seriesCrawlStats, ws)
 					db.AddAvailableBook(dtos.AvailableBook{BookInfo: theBookshopSearchResult.SearchBook, BookPurchaseInfo: theBookshopSearchResult.TitleMatches[0], BookFoundFrom: dtos.SERIES_MATCH})
-
 				}
+				writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, theBookshopSearchResult.TitleMatches[0], seriesCrawlStats, ws)
 			} else {
 				writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, dtos.TheBookshopBook{}, seriesCrawlStats, ws)
 			}
