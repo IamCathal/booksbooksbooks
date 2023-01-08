@@ -23,10 +23,11 @@ type WsErrorMsg struct {
 }
 
 type AvailableBook struct {
-	BookInfo         BasicGoodReadsBook `json:"bookInfo"`
-	BookPurchaseInfo TheBookshopBook    `json:"bookPurchaseInfo"`
-	BookFoundFrom    int                `json:"bookFoundFrom"`
-	Ignore           bool               `json:"ignore"`
+	BookInfo             BasicGoodReadsBook `json:"bookInfo"`
+	BookPurchaseInfo     TheBookshopBook    `json:"bookPurchaseInfo"`
+	BookFoundFrom        int                `json:"bookFoundFrom"`
+	Ignore               bool               `json:"ignore"`
+	LastCheckedTimeStamp int64              `json:"lastCheckedTimeStamp"`
 }
 
 type KnownAuthor struct {

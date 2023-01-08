@@ -66,6 +66,7 @@ func ResetAvailableBooks() {
 func AddAvailableBook(newBook dtos.AvailableBook) {
 	availableBooks := GetAvailableBooks()
 	newBook.Ignore = false
+	newBook.LastCheckedTimeStamp = time.Now().Unix()
 	availableBooks = append(availableBooks, newBook)
 
 	availableBooksWithNoDuplicates := removeDuplicateAvailableBooks(availableBooks)

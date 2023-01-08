@@ -49,7 +49,7 @@ function renderAvailableBooks(availableBookList) {
                 pureTitle = pureTitle.substring(0, pureTitle.indexOf("("))
             }
 
-            let moreInfoText = book.bookInfo.title == "" ? `` : `<a class="ml-2" href="${book.bookInfo.link}" >More info </a>`
+            let moreInfoText = book.bookInfo.title == "" ? `` : `<a class="ml-1 thinBorderBox pl-1 pr-1" style="border-radius: 0.2rem" href="${book.bookInfo.link}" >More info </a>`
             document.getElementById("availableBooks").innerHTML +=
             `
                         <div class="col-3 pt-3 searchResultBook" style="line-height: 75%">
@@ -72,14 +72,13 @@ function renderAvailableBooks(availableBookList) {
                                     <div class="row" style="font-weight: bold; font-size: 0.7rem">
                                         ${book.bookPurchaseInfo.price}
                                     </div>
-                                    <div class="row" style="font-size: 0.6rem;">
-                                        <a href="${book.bookPurchaseInfo.link}"> Buy now </a> ${moreInfoText}
-                                    </div>
-                                    <div class="row" style="font-size: 0.6rem;">
-                                        ${getFoundFromBadge(book.bookFoundFrom)}
+                                    <div class="row pt-1" style="font-size: 0.6rem;">
+                                        <a class="thinBorderBox pl-1 pr-1 mr-0" style="border-radius: 0.2rem" href="${book.bookPurchaseInfo.link}"> Buy now </a> 
+                                        ${moreInfoText} 
+                                        <span class="ml-1 pl-1 pr-1 thinBorderBox ignoreBook" style="border-radius: 0.2rem" id="${book.bookPurchaseInfo.link}">Ignore</span>
                                     </div>
                                     <div class="row mt-1 ignoreBook" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
-                                        Ignore this book
+                                        ${getFoundFromBadge(book.bookFoundFrom)} checked ${timeSince(new Date(book.lastCheckedTimeStamp * 1000))} ago
                                     </div>
                                 </div>
                             </div>
@@ -108,7 +107,7 @@ function renderAvailableBooks(availableBookList) {
                                             ${book.bookPurchaseInfo.price}
                                         </div>
                                         <div class="row unignoreBook" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
-                                            Unignore this book
+                                            Unignore
                                         </div>
                                     </div>
                                 </div>
@@ -156,11 +155,11 @@ function renderAvailableBooks(availableBookList) {
 function getFoundFromBadge(enumVal) {
     switch (enumVal) {
         case 0:
-            return `Found as a title match`
+            return `Title match`
         case 1:
-            return `Found as an author match`
+            return `Author match`
         case 2:
-            return `Found as a series match`  
+            return `Series match`  
         default:
             console.error(`invalid enumVal ${enumVal} given`)  
     }
@@ -169,7 +168,7 @@ function getFoundFromBadge(enumVal) {
 function renderStatsOnAutomatedShelf(stats) {
     console.log(stats)
     document.getElementById("automatedShelfStatsBox").innerHTML = 
-    ` Available books from individual and automated crawls of <a href="${stats.shelfURL}">${stats.shelfBreadcrumb.trim()}</a>`
+    `Available books found from all crawls`
 }
 
 function getBookCost(bookCostString) {
@@ -262,4 +261,23 @@ function loadStatsOnAutomatedShelf(bookURL) {
             reject(err)
         });
     })
+}
+
+function timeSince(targetDate) {
+    let seconds = Math.floor((new Date() - targetDate) / 1000)
+    let interval = seconds / 31536000 // years
+    interval = seconds / 2592000; // months
+    interval = seconds / 86400; // days
+    if (interval > 1) {
+        return Math.floor(interval) + "d";
+    }
+    interval = seconds / 3600;
+    if (interval > 1) {
+        return Math.floor(interval) + "h";
+    }
+    interval = seconds / 60;
+    if (interval > 1) {
+        return Math.floor(interval) + "m";
+    }
+    return Math.floor(seconds) + "s";
 }
