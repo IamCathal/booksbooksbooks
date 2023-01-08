@@ -253,7 +253,6 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 	})
 
 	currBookSeriesText := ""
-	logger.Sugar().Infof("PArsing series page %s", seriesPageLink)
 
 	doc.Find("div[class='listWithDividers__item']").Each(func(i int, bookRow *goquery.Selection) {
 		currBookInSeries := dtos.SeriesBook{}

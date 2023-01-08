@@ -230,6 +230,7 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 	close(initialShelfLookupChan)
 	ownedBooksThatAreInASeries := extractGoodreadsBooksThatAreInSeries(booksFromShelf)
 
+	previouslyKnownAvailableBooksMap := db.GetAvailableBooksMap()
 	knownSeriesToTheirLinks := make(map[string]bool)
 	seriesLinks := []string{}
 
@@ -291,11 +292,15 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 				len(theBookshopSearchResult.TitleMatches))
 
 			if len(theBookshopSearchResult.TitleMatches) > 0 {
-				seriesCrawlStats.BookMatchesFound++
-				searchBookLink := theBookshopSearchResult.SearchBook.Link
-				theBookshopMatchesFound[searchBookLink] = theBookshopSearchResult.TitleMatches[0]
+				if bookIsNew := wasNotPreviouslyAvailable(theBookshopSearchResult.TitleMatches[0], previouslyKnownAvailableBooksMap); bookIsNew {
+					seriesCrawlStats.BookMatchesFound++
+					searchBookLink := theBookshopSearchResult.SearchBook.Link
+					theBookshopMatchesFound[searchBookLink] = theBookshopSearchResult.TitleMatches[0]
+					previouslyKnownAvailableBooksMap[theBookshopSearchResult.TitleMatches[0].Link] = true
+					writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, theBookshopSearchResult.TitleMatches[0], seriesCrawlStats, ws)
+					db.AddAvailableBook(dtos.AvailableBook{BookInfo: theBookshopSearchResult.SearchBook, BookPurchaseInfo: theBookshopSearchResult.TitleMatches[0], BookFoundFrom: dtos.SERIES_MATCH})
 
-				writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, theBookshopSearchResult.TitleMatches[0], seriesCrawlStats, ws)
+				}
 			} else {
 				writeSearchResultReturnedMessage(theBookshopSearchResult.SearchBook, dtos.TheBookshopBook{}, seriesCrawlStats, ws)
 			}
