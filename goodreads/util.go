@@ -253,6 +253,7 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 	})
 
 	currBookSeriesText := ""
+	logger.Sugar().Infof("PArsing series page %s", seriesPageLink)
 
 	doc.Find("div[class='listWithDividers__item']").Each(func(i int, bookRow *goquery.Selection) {
 		currBookInSeries := dtos.SeriesBook{}
@@ -333,7 +334,12 @@ func sleepIfLongerThanAllotedTimeSinceLastRequest() {
 func extractCommunityRatingElementsFromText(ratingRawText string) (float32, int) {
 	splitRatings := strings.Split(ratingRawText, "·")
 	rating := strToFloat(strings.TrimSpace(splitRatings[0]))
-	publishYear := strings.TrimSpace(strings.Split(splitRatings[3], " ")[2])
+	publishYear := "0"
+	for _, elem := range splitRatings {
+		if strings.Contains(elem, "published") {
+			publishYear = strings.TrimSpace(strings.Split(elem, " ")[2])
+		}
+	}
 
 	return float32(rating), strToInt(publishYear)
 }

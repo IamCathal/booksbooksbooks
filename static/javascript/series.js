@@ -211,7 +211,7 @@ function renderBooksInSeriesForCurrentCrawl(books) {
                     </div>
                     <div class="row">
                         <div class="col mt-0" style="font-size: 0.7rem">
-                            ${book.bookInfo.rating} stars. Published in 2015
+                            ${book.bookInfo.rating} stars. Published in ${book.bookInfo.published}
                         </div>
                     </div>
                     <div class="row pl-4" style="position: absolute; bottom: 0.5rem; left: 0;  width: 100%">
