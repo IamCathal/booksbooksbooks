@@ -6,6 +6,9 @@
 
 a {
   color: #74797b;
+  background: -webkit-linear-gradient(45deg, #399dfb, #6b25f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* .border {
@@ -71,7 +74,10 @@ body {
 
 .selectedBackground {
   color: #22242f;
-  background-color: #c0c0c0;
+  /* text-decoration: none;
+  background: linear-gradient(90deg, #399dfb 0%, #6b25f7 100%); 
+  background-size: 300% 100%;
+  animation: progress-animation 3s linear alternate infinite; */
 }
 
 .unselectedBackground {
