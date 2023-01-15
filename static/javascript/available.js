@@ -75,10 +75,10 @@ function renderAvailableBooks(availableBookList) {
                                     <div class="row pt-1" style="font-size: 0.6rem;">
                                         <a class="thinBorderBox pl-1 pr-1 mr-0" style="border-radius: 0.2rem" href="${book.bookPurchaseInfo.link}"> Buy now </a> 
                                         ${moreInfoText} 
-                                        <span class="ml-1 pl-1 pr-1 thinBorderBox ignoreBook" style="border-radius: 0.2rem" id="${book.bookPurchaseInfo.link}">Ignore</span>
+                                        <a href="#"><span class="ml-1 pl-1 pr-1 thinBorderBox ignoreBook" style="border-radius: 0.2rem" id="${book.bookPurchaseInfo.link}">Ignore</span></a>
                                     </div>
                                     <div class="row mt-1 ignoreBook" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
-                                        ${getFoundFromBadge(book.bookFoundFrom)} checked ${timeSince(new Date(book.lastCheckedTimeStamp * 1000))} ago
+                                        ${getFoundFromBadge(book.bookFoundFrom)}, checked ${timeSince(new Date(book.lastCheckedTimeStamp * 1000))} ago
                                     </div>
                                 </div>
                             </div>
