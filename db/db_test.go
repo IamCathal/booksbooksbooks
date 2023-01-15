@@ -296,6 +296,93 @@ func TestPurgeAuthorFromAvailableBooksPurgesIgnoredAuthorsAndLeavesTheRest(t *te
 	assert.Equal(t, len(GetAvailableBooks()), 2)
 }
 
+func TestIgnoreBook(t *testing.T) {
+	resetDBFields()
+	ignoredBook := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			Title: "Century Rain",
+		},
+		BookPurchaseInfo: dtos.TheBookshopBook{
+			Link: "testLink",
+		},
+		Ignore: false,
+	}
+	AddAvailableBook(ignoredBook)
+
+	IgnoreBook(ignoredBook.BookPurchaseInfo.Link)
+
+	allAvailableBooks := GetAvailableBooks()
+
+	assert.Equal(t, 1, len(allAvailableBooks))
+	assert.Equal(t, true, allAvailableBooks[0].Ignore)
+}
+
+func TestUnignoreBook(t *testing.T) {
+	resetDBFields()
+	ignoredBook := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			Title: "Century Rain",
+		},
+		BookPurchaseInfo: dtos.TheBookshopBook{
+			Link: "testLink",
+		},
+		Ignore: true,
+	}
+	AddAvailableBook(ignoredBook)
+
+	UnignoreBook(ignoredBook.BookPurchaseInfo.Link)
+
+	allAvailableBooks := GetAvailableBooks()
+
+	assert.Equal(t, 1, len(allAvailableBooks))
+	assert.Equal(t, false, allAvailableBooks[0].Ignore)
+}
+
+func TestGetIgnoredAndNonIgnoredCountOfAvailableBooks(t *testing.T) {
+	resetDBFields()
+	ignoredBook := dtos.AvailableBook{
+		BookInfo: dtos.BasicGoodReadsBook{
+			Title: "Century Rain",
+		},
+		BookPurchaseInfo: dtos.TheBookshopBook{
+			Link: "testLink",
+		},
+		Ignore: false,
+	}
+	AddAvailableBook(ignoredBook)
+
+	actualNonIgnoredCount, actualIgnoredCount := GetIgnoredAndNonIgnoredCountOfAvailableBooks()
+
+	assert.Equal(t, 1, actualNonIgnoredCount)
+	assert.Equal(t, 0, actualIgnoredCount)
+}
+
+func TestIgnoredAuthor(t *testing.T) {
+	resetDBFields()
+	knownAuthorsList := []dtos.KnownAuthor{
+		{
+			Name:   "Iain Banks",
+			Ignore: true,
+		},
+	}
+	SetKnownAuthors(knownAuthorsList)
+
+	assert.True(t, IsIgnoredAuthor(knownAuthorsList[0].Name))
+}
+
+func TestIgnoredAuthorReturnsFalseForAnUnknownAuthor(t *testing.T) {
+	resetDBFields()
+	knownAuthorsList := []dtos.KnownAuthor{
+		{
+			Name:   "Iain Banks",
+			Ignore: true,
+		},
+	}
+	SetKnownAuthors(knownAuthorsList)
+
+	assert.False(t, IsIgnoredAuthor("Mac Leod"))
+}
+
 func resetDBFields() {
 	SetKnownAuthors([]dtos.KnownAuthor{})
 	SetAddMoreAuthorBooksToAvailableBooksList(false)
