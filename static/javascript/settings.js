@@ -319,7 +319,7 @@ document.getElementById("purgeAuthorMatches").addEventListener("click", (ev) => 
 })
 
 document.getElementById("purgeSeriesMatches").addEventListener("click", (ev) => {
-    purgeAuthorMatches().then(() => {
+    purgeSeriesMatches().then(() => {
         
     }, (err) => {
         console.error(err)

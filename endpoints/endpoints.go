@@ -449,6 +449,7 @@ func setOnlyEnglishBooksEnabled(w http.ResponseWriter, r *http.Request) {
 func purgeAuthorMatches(w http.ResponseWriter, r *http.Request) {
 	allAvailableBooks := db.GetAvailableBooks()
 	availableBooksThatAreNotAuthorMatches := []dtos.AvailableBook{}
+	allAvailableBooksCount := len(allAvailableBooks)
 
 	for _, book := range allAvailableBooks {
 		if book.BookFoundFrom != dtos.AUTHOR_MATCH {
@@ -456,20 +457,23 @@ func purgeAuthorMatches(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	db.SetAvailableBooks(availableBooksThatAreNotAuthorMatches)
+	logger.Sugar().Infof("Purged %d author matches", allAvailableBooksCount-len(availableBooksThatAreNotAuthorMatches))
 
 	w.WriteHeader(http.StatusOK)
 }
 
 func purgeSeriesMatches(w http.ResponseWriter, r *http.Request) {
 	allAvailableBooks := db.GetAvailableBooks()
-	availableBooksThatAreNotAuthorMatches := []dtos.AvailableBook{}
+	availableBooksThatAreNotSeriesMatches := []dtos.AvailableBook{}
+	allAvailableBooksCount := len(allAvailableBooks)
 
 	for _, book := range allAvailableBooks {
 		if book.BookFoundFrom != dtos.SERIES_MATCH {
-			availableBooksThatAreNotAuthorMatches = append(availableBooksThatAreNotAuthorMatches, book)
+			availableBooksThatAreNotSeriesMatches = append(availableBooksThatAreNotSeriesMatches, book)
 		}
 	}
-	db.SetAvailableBooks(availableBooksThatAreNotAuthorMatches)
+	db.SetAvailableBooks(availableBooksThatAreNotSeriesMatches)
+	logger.Sugar().Infof("Purged %d series matches", allAvailableBooksCount-len(availableBooksThatAreNotSeriesMatches))
 
 	w.WriteHeader(http.StatusOK)
 }
