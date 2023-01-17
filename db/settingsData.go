@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	RECENT_CRAWL_BREADCRUMBS                      = "recentCrawls"
 	AUTOMATED_BOOK_SHELF_CHECK_URL                = "automatedBookShelfCheck"
 	AUTOMATED_BOOK_SHELF_CRAWL_TIME               = "automatedBookShelfCrawlTime"
 	DISCORD_WEBHOOK_URL                           = "discordWebHookURL"
@@ -24,59 +23,6 @@ var (
 	ONLY_ENGLISH_BOOKS_TOGGLE                     = "onlyEnglishBooksToggle"
 	SERIES_CRAWL_IN_AUTOMATED_CRAWL               = "seriesCrawlInAutomatedCrawl"
 )
-
-func GetRecentCrawlBreadcrumbs() []dtos.RecentCrawlBreadcrumb {
-	recentCrawlBreadcrumbs, err := redisClient.Get(ctx, RECENT_CRAWL_BREADCRUMBS).Result()
-	if err == redis.Nil {
-		return []dtos.RecentCrawlBreadcrumb{}
-	} else if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	recentCrawlBreadcrumbsArr := []dtos.RecentCrawlBreadcrumb{}
-	if recentCrawlBreadcrumbs != "" {
-		err = json.Unmarshal([]byte(recentCrawlBreadcrumbs), &recentCrawlBreadcrumbsArr)
-		if err != nil {
-			logger.Sugar().Fatal(err)
-		}
-	}
-	return recentCrawlBreadcrumbsArr
-}
-
-func AddNewCrawlBreadcrumb(shelfURL string) {
-	recentCrawls := GetRecentCrawlBreadcrumbs()
-
-	updatedCrawlBreadcrumbs := []dtos.RecentCrawlBreadcrumb{
-		{
-			CrawlKey: GetKeyForRecentCrawlBreadcrumb(shelfURL),
-			ShelfURL: shelfURL,
-		},
-	}
-	logger.Sugar().Infof("Creating new crawl breadcrumb with key: %s for shelfURL: %s",
-		updatedCrawlBreadcrumbs[0].CrawlKey, updatedCrawlBreadcrumbs[0].ShelfURL)
-
-	updatedCrawlBreadcrumbs = append(updatedCrawlBreadcrumbs, recentCrawls...)
-	updatedCrawlBreadcrumbs = removeDuplicateRecentCrawls(updatedCrawlBreadcrumbs)
-
-	jsonCrawlBreadcrumbs, err := json.Marshal(updatedCrawlBreadcrumbs)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	err = redisClient.Set(ctx, RECENT_CRAWL_BREADCRUMBS, jsonCrawlBreadcrumbs, DEFAULT_TTL).Err()
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
-func SetRecentCrawlBreadcrumbs(breadCrumbs []dtos.RecentCrawlBreadcrumb) {
-	jsonCrawlBreadcrumbs, err := json.Marshal(breadCrumbs)
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	err = redisClient.Set(ctx, RECENT_CRAWL_BREADCRUMBS, jsonCrawlBreadcrumbs, DEFAULT_TTL).Err()
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
 
 func SetAutomatedBookShelfCheck(shelfURL string) {
 	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL, shelfURL, DEFAULT_TTL).Err()

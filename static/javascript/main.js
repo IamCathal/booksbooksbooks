@@ -22,19 +22,20 @@ function checkToSeeIfShelfURLPreLoaded() {
     }
 }
 
-loadRecentCrawls()
+getAndRenderRecentCrawlBreadcrumbs()
 
-function loadRecentCrawls() {
-    fetch(`/getrecentcrawls`)
+function getAndRenderRecentCrawlBreadcrumbs() {
+    fetch(`/getrecentcrawlbreadcrumbs`)
     .then((res) => res.json())
     .then((res) => {
+        recentCrawlBreadcrumbButtons.innerHTML = ``
         res.forEach((recentCrawl) => {
             console.log(recentCrawl)
-            document.getElementById("recentCrawlButtons").innerHTML += 
+            document.getElementById("recentCrawlBreadcrumbButtons").innerHTML += 
             `
                 <a href="?shelfurl=${encodeURIComponent(recentCrawl.shelfURL)}" class="mr-2">
                     <div class="col text-center recentCrawlBox" style="${swayaaangBorders(0.5)} border: 2px solid #c0c0c0; font-size: 0.8rem" data-shelfURL="${recentCrawl.shelfURL}"> 
-                        ${recentCrawl.crawlKey} 
+                        ${recentCrawl.crawlKey} | ${recentCrawl.bookCount} books, ${recentCrawl.matchesCount} matches
                     </div>
                 </a>
             `
@@ -158,6 +159,7 @@ function initWebsocketConn(shelfURL) {
     }
 
     ws.onclose = function(event) {
+        getAndRenderRecentCrawlBreadcrumbs()
         if (event.wasClean) {
             console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
         } else {

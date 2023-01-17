@@ -84,11 +84,11 @@ func removeDuplicateAvailableBooks(books []dtos.AvailableBook) []dtos.AvailableB
 	return noDuplicateAvailableBooks
 }
 
-func removeDuplicateRecentCrawls(recentCrawls []dtos.RecentCrawlBreadcrumb) []dtos.RecentCrawlBreadcrumb {
+func removeDuplicateRecentCrawls(recentCrawlBreadcrumbs []dtos.RecentCrawlBreadcrumb) []dtos.RecentCrawlBreadcrumb {
 	seenBreadcrumbs := make(map[string]bool)
 	noDuplicateRecentCrawlBreadcrumbs := []dtos.RecentCrawlBreadcrumb{}
 
-	for _, crawl := range recentCrawls {
+	for _, crawl := range recentCrawlBreadcrumbs {
 		_, exists := seenBreadcrumbs[crawl.ShelfURL]
 		if !exists {
 			seenBreadcrumbs[crawl.ShelfURL] = true

@@ -28,6 +28,8 @@ type WsNewBookAvailable struct {
 }
 
 type RecentCrawlBreadcrumb struct {
-	CrawlKey string `json:"crawlKey"`
-	ShelfURL string `json:"shelfURL"`
+	CrawlKey     string `json:"crawlKey"`
+	ShelfURL     string `json:"shelfURL"`
+	BookCount    int    `json:"bookCount"`
+	MatchesCount int    `json:"matchesCount"`
 }

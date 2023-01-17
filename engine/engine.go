@@ -98,7 +98,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 		return
 	}
 
-	db.AddNewCrawlBreadcrumb(shelfURL)
+	// db.AddNewCrawlBreadcrumb(shelfURL)
 	previouslyKnownAvailableBooksMap := db.GetAvailableBooksMap()
 	previouslyKnownAvailableBooks := db.GetAvailableBooks()
 
@@ -212,6 +212,7 @@ func Worker(shelfURL string, ws *websocket.Conn) {
 	}
 
 	db.SetTotalBooksInAutomatedBookShelfCheck(currCrawlStats.TotalBooks)
+	db.AddNewCrawlBreadcrumb(shelfURL, currCrawlStats.TotalBooks)
 
 	logger.Sugar().Infof("Finished. Crawled %d books from GoodReads and made %d searches to TheBookshop.ie which had %d new books",
 		currCrawlStats.BooksCrawled, currCrawlStats.BooksSearched, newBooksFound)

@@ -39,7 +39,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/settings", settings).Methods("GET")
 	r.HandleFunc("/available", available).Methods("GET")
 	r.HandleFunc("/series", series).Methods("GET")
-	r.HandleFunc("/getrecentcrawls", getRecentCrawls).Methods("GET")
+	r.HandleFunc("/getrecentcrawlbreadcrumbs", getRecentCrawlBreadcrumbs).Methods("GET")
 	r.HandleFunc("/getavailablebooks", getAvailableBooks).Methods("GET")
 	r.HandleFunc("/ignorebook", ignoreBook).Methods("POST")
 	r.HandleFunc("/unignorebook", unignoreBook).Methods("POST")
@@ -247,12 +247,12 @@ func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
-func getRecentCrawls(w http.ResponseWriter, r *http.Request) {
-	recentCrawls := db.GetRecentCrawlBreadcrumbs()
+func getRecentCrawlBreadcrumbs(w http.ResponseWriter, r *http.Request) {
+	recentCrawlbreadcrumbs := db.GetRecentCrawlBreadcrumbs()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(recentCrawls)
+	json.NewEncoder(w).Encode(recentCrawlbreadcrumbs)
 }
 
 func getautomatedbookshelfcheckurl(w http.ResponseWriter, r *http.Request) {

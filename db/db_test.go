@@ -97,23 +97,23 @@ func TestNoDuplicateBreadcrumbsAreSaved(t *testing.T) {
 	}
 	assert.Empty(t, GetRecentCrawlBreadcrumbs())
 
-	AddNewCrawlBreadcrumb(breadCrumbs[0].ShelfURL)
+	AddNewCrawlBreadcrumb(breadCrumbs[0].ShelfURL, 0)
 	assert.Len(t, GetRecentCrawlBreadcrumbs(), 1)
 
-	AddNewCrawlBreadcrumb(breadCrumbs[1].ShelfURL)
+	AddNewCrawlBreadcrumb(breadCrumbs[1].ShelfURL, 0)
 	assert.Len(t, GetRecentCrawlBreadcrumbs(), 2)
 
-	AddNewCrawlBreadcrumb(breadCrumbs[2].ShelfURL)
+	AddNewCrawlBreadcrumb(breadCrumbs[2].ShelfURL, 0)
 	assert.Len(t, GetRecentCrawlBreadcrumbs(), 2)
 }
 
 func TestBreadCrumbMakesCorrectCrawlKey(t *testing.T) {
-	AddNewCrawlBreadcrumb(sharonFantasyLink)
+	AddNewCrawlBreadcrumb(sharonFantasyLink, 0)
 	assert.Equal(t, "sharon-fantasy", GetRecentCrawlBreadcrumbs()[0].CrawlKey)
 }
 
 func TestBreadCrumbMakesCorrectCrawlKeyWhenNoUsernameGiven(t *testing.T) {
-	AddNewCrawlBreadcrumb("https://www.goodreads.com/review/list/26367680?shelf=read")
+	AddNewCrawlBreadcrumb("https://www.goodreads.com/review/list/26367680?shelf=read", 0)
 	assert.Equal(t, "26367680-read", GetRecentCrawlBreadcrumbs()[0].CrawlKey)
 }
 

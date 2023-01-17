@@ -123,8 +123,9 @@ func TestWorkerCreatesBreadcrumbForCurrentCrawl(t *testing.T) {
 	Worker(validShelfURL, &websocket.Conn{})
 
 	expectedCrawlBreadCrumb := dtos.RecentCrawlBreadcrumb{
-		CrawlKey: "26367680-read",
-		ShelfURL: validShelfURL,
+		CrawlKey:  "26367680-read",
+		ShelfURL:  validShelfURL,
+		BookCount: 1,
 	}
 	assert.Equal(t, expectedCrawlBreadCrumb, db.GetRecentCrawlBreadcrumbs()[0])
 }
