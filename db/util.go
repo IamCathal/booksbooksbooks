@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
 )
@@ -169,4 +170,6 @@ func SetTestDataIdentifiers() {
 	OWNED_BOOKS_SHELF_URL = "test-ownedBooksShelfURL"
 	SERIES_CRAWL_BOOKS = "test-seriesCrawlBooks"
 	ONLY_ENGLISH_BOOKS_TOGGLE = "test-onlyEnglishBooksToggle"
+	SERIES_CRAWL_IN_AUTOMATED_CRAWL = "test-seriesCrawlInAutomatedCrawl"
+	DEFAULT_TTL = time.Duration(5 * time.Second)
 }

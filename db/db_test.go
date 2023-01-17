@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	redis "github.com/go-redis/redis/v9"
 	"github.com/iamcathal/booksbooksbooks/dtos"
@@ -31,17 +30,6 @@ func connectToDevRedisDatabase() {
 	redisClient = rdb
 }
 
-func nameTempRedisKeys() {
-	AVAILABLE_BOOKS = "test-availableBooks"
-	RECENT_CRAWL_BREADCRUMBS = "test-recentCrawls"
-	AUTOMATED_BOOK_SHELF_CHECK_URL = "test-automatedBookShelfCheck"
-	AUTOMATED_BOOK_SHELF_CRAWL_TIME = "test-automatedBookShelfCrawlTime"
-	DISCORD_WEBHOOK_URL = "test-discordWebHookURL"
-	DISCORD_MESSAGE_FORMAT = "test-discordMessageFormat"
-	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE = "test-sendAlertWhenBookNoLongerAvailable"
-	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "test-sendAlertWhenFreeShippingKicksIn"
-}
-
 func TestMain(m *testing.M) {
 	c := zap.NewProductionConfig()
 	c.OutputPaths = []string{"/dev/null"}
@@ -53,7 +41,6 @@ func TestMain(m *testing.M) {
 
 	connectToDevRedisDatabase()
 	SetTestDataIdentifiers()
-	DEFAULT_TTL = time.Duration(5 * time.Second)
 
 	code := m.Run()
 
