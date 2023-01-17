@@ -48,17 +48,17 @@ func automatedCheck() {
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
 	checkAvailabilityOfExistingAvailableBooksList(booksThatWereAvailableLastTime)
 
+	booksFromShelf := goodreads.GetBooksFromShelf(db.GetAutomatedBookShelfCheck(), stubStatsChan, stubBooksFoundFromGoodReadsChan)
 	logger.Sugar().Infof("Checking now for the books currently listed on automated check shelf: %s", db.GetAutomatedBookShelfCheck())
 
-	booksFromShelf := goodreads.GetBooksFromShelf(db.GetAutomatedBookShelfCheck(), stubStatsChan, stubBooksFoundFromGoodReadsChan)
 	db.SetTotalBooksInAutomatedBookShelfCheck(len(booksFromShelf))
-
 	logger.Sugar().Infof("%d books were found from GoodReads shelf: %s\n", len(booksFromShelf), db.GetAutomatedBookShelfCheck())
 
 	searchResults := []dtos.EnchancedSearchResult{}
 	for _, book := range booksFromShelf {
 		searchResults = append(searchResults, thebookshop.SearchForBook(book, stubSearchResultsFromTheBookshopChan))
 	}
+
 	currentlyAvailableBooksFromShelf := goodreads.GetAvailableBooksFromSearchResult(searchResults)
 	logger.Sugar().Infof("%d search queries were made with %d title/author matches found",
 		len(searchResults), len(currentlyAvailableBooksFromShelf))
@@ -69,7 +69,6 @@ func automatedCheck() {
 			newBooksThatNeedNotification = append(newBooksThatNeedNotification, availableBook)
 		}
 	}
-
 	logger.Sugar().Infof("%d new books were found in this search: %v", len(newBooksThatNeedNotification),
 		getConciseBookInfoFromAvailableBooks(newBooksThatNeedNotification))
 

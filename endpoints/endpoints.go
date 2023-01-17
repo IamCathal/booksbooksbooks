@@ -81,6 +81,8 @@ func SetupRouter() *mux.Router {
 	settingsRouter.HandleFunc("/setonlyenglishbooksenabled", setOnlyEnglishBooksEnabled).Methods("POST")
 	settingsRouter.HandleFunc("/purgeauthormatches", purgeAuthorMatches).Methods("POST")
 	settingsRouter.HandleFunc("/purgeseriesmatches", purgeSeriesMatches).Methods("POST")
+	settingsRouter.HandleFunc("/getseriesinautomatedcrawl", getSeriesInAutomatedCrawl).Methods("GET")
+	settingsRouter.HandleFunc("/setseriesinautomatedcrawl", setSeriesInAutomatedCrawl).Methods("POST")
 	settingsRouter.Use(logMiddleware)
 
 	r.Handle("/static", http.NotFoundHandler())
@@ -475,6 +477,26 @@ func purgeSeriesMatches(w http.ResponseWriter, r *http.Request) {
 	db.SetAvailableBooks(availableBooksThatAreNotSeriesMatches)
 	logger.Sugar().Infof("Purged %d series matches", allAvailableBooksCount-len(availableBooksThatAreNotSeriesMatches))
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func getSeriesInAutomatedCrawl(w http.ResponseWriter, r *http.Request) {
+	res := dtos.BooleanSettingStatusResponse{
+		Enabled: db.GetSeriesCrawlInAutomatedCrawl(),
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func setSeriesInAutomatedCrawl(w http.ResponseWriter, r *http.Request) {
+	enabled := r.URL.Query().Get("enabled")
+	enabledBool, isValid := strToBool(enabled)
+	if !isValid {
+		errorMsg := fmt.Sprintf("Invalid state '%s' given", enabled)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.SetSeriesCrawlInAutomatedCrawl(enabledBool)
 	w.WriteHeader(http.StatusOK)
 }
 

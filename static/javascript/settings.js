@@ -12,6 +12,7 @@ function getAndRenderSettings() {
     getAndRenderSendAlertOnlyWhenFreeShippingKicksIn()
     getAndRenderOnlyConsiderEnglishBooks()
     getAndRenderAddMoreAuthorBooksToAvailableList()
+    getAndRenderSeriesInAutomatedCrawl()
     getAndRenderKnownAuthorsList()
 }
 
@@ -261,12 +262,33 @@ document.getElementById("addMoreAuthorBooksToAvailableList").addEventListener("c
     }
 })
 
+document.getElementById("setSeriesInAutomatedCrawl").addEventListener("change", (ev) => {
+    if (ev.currentTarget.checked) {
+        setSeriesInAutomatedCrawl("true")
+    } else {
+        setSeriesInAutomatedCrawl("false")
+    }
+})
+
+
 function getAndRenderAddMoreAuthorBooksToAvailableList() {
     getAddMoreBooksFromAuthorToAvailableBooksList().then(enabled => {
         if (enabled == true) {
             document.getElementById("addMoreAuthorBooksToAvailableList").checked = true
         } else {
             document.getElementById("addMoreAuthorBooksToAvailableList").checked = false
+        }
+    }, (err) => {
+        console.error(err)
+    })
+}
+
+function getAndRenderSeriesInAutomatedCrawl() {
+    getSeriesInAutomatedCrawl().then(enabled => {
+        if (enabled == true) {
+            document.getElementById("setSeriesInAutomatedCrawl").checked = true
+        } else {
+            document.getElementById("setSeriesInAutomatedCrawl").checked = false
         }
     }, (err) => {
         console.error(err)
@@ -764,6 +786,40 @@ function setAddMoreBooksFromAuthorToAvailableBooksList(enabled) {
 function getAddMoreBooksFromAuthorToAvailableBooksList() {
     return new Promise((resolve, reject) => {
         fetch(`/settings/getaddmoreauthorbookstoavailablelist`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.enabled)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function setSeriesInAutomatedCrawl(enabled) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/setseriesinautomatedcrawl?enabled=${enabled}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getSeriesInAutomatedCrawl() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getseriesinautomatedcrawl`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

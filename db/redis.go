@@ -32,6 +32,7 @@ var (
 	OWNED_BOOKS_SHELF_URL                         = "ownedBooksShelfURL"
 	SERIES_CRAWL_BOOKS                            = "seriesCrawlBooks"
 	ONLY_ENGLISH_BOOKS_TOGGLE                     = "onlyEnglishBooksToggle"
+	SERIES_CRAWL_IN_AUTOMATED_CRAWL               = "seriesCrawlInAutomatedCrawl"
 	DEFAULT_TTL                                   = time.Duration(0)
 )
 
@@ -507,6 +508,28 @@ func GetOnlyEnglishBooks() bool {
 	if enabled == "" {
 		SetOnlyEnglishBooks(false)
 		return GetOnlyEnglishBooks()
+	}
+	return strToBool(enabled)
+}
+
+func SetSeriesCrawlInAutomatedCrawl(enabled bool) {
+	err := redisClient.Set(ctx, SERIES_CRAWL_IN_AUTOMATED_CRAWL, enabled, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func GetSeriesCrawlInAutomatedCrawl() bool {
+	enabled, err := redisClient.Get(ctx, SERIES_CRAWL_IN_AUTOMATED_CRAWL).Result()
+	if err == redis.Nil {
+		SetSeriesCrawlInAutomatedCrawl(false)
+		return GetSeriesCrawlInAutomatedCrawl()
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	if enabled == "" {
+		SetSeriesCrawlInAutomatedCrawl(false)
+		return GetSeriesCrawlInAutomatedCrawl()
 	}
 	return strToBool(enabled)
 }
