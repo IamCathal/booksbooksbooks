@@ -198,6 +198,19 @@ func IsIgnoredAuthor(author string) bool {
 	return false
 }
 
+func getShelvesWithoutDuplicates(shelves []dtos.ShelfToCrawl) []dtos.ShelfToCrawl {
+	shelvesWithoutDupicates := []dtos.ShelfToCrawl{}
+	seenShelves := make(map[string]bool)
+
+	for _, shelf := range shelves {
+		if _, seen := seenShelves[shelf.ShelfURL]; !seen {
+			seenShelves[shelf.ShelfURL] = true
+			shelvesWithoutDupicates = append(shelvesWithoutDupicates, shelf)
+		}
+	}
+	return shelvesWithoutDupicates
+}
+
 func SetTestDataIdentifiers() {
 	AVAILABLE_BOOKS = "test-availableBooks"
 	RECENT_CRAWL_BREADCRUMBS = "test-recentCrawls"
@@ -216,5 +229,6 @@ func SetTestDataIdentifiers() {
 	SERIES_CRAWL_BOOKS = "test-seriesCrawlBooks"
 	ONLY_ENGLISH_BOOKS_TOGGLE = "test-onlyEnglishBooksToggle"
 	SERIES_CRAWL_IN_AUTOMATED_CRAWL = "test-seriesCrawlInAutomatedCrawl"
+	SHELVES_TO_CRAWL = "test-shelvesToCrawl"
 	DEFAULT_TTL = time.Duration(5 * time.Second)
 }

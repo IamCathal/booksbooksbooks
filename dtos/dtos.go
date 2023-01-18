@@ -35,6 +35,12 @@ type KnownAuthor struct {
 	Ignore bool   `json:"ignore"`
 }
 
+type ShelfToCrawl struct {
+	CrawlKey  string `json:"crawlKey"`
+	ShelfURL  string `json:"shelfURL"`
+	BookCount int    `json:"bookCount"`
+}
+
 // Discord embed webhook datastructures
 
 type DiscordMsg struct {

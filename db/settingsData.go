@@ -22,6 +22,7 @@ var (
 	OWNED_BOOKS_SHELF_URL                         = "ownedBooksShelfURL"
 	ONLY_ENGLISH_BOOKS_TOGGLE                     = "onlyEnglishBooksToggle"
 	SERIES_CRAWL_IN_AUTOMATED_CRAWL               = "seriesCrawlInAutomatedCrawl"
+	SHELVES_TO_CRAWL                              = "shelvesToCrawl"
 )
 
 func SetAutomatedBookShelfCheck(shelfURL string) {
@@ -354,4 +355,53 @@ func GetSeriesCrawlInAutomatedCrawl() bool {
 		return GetSeriesCrawlInAutomatedCrawl()
 	}
 	return strToBool(enabled)
+}
+
+func GetShelvesToCrawl() []dtos.ShelfToCrawl {
+	shelvesToCrawl, err := redisClient.Get(ctx, SHELVES_TO_CRAWL).Result()
+	if err == redis.Nil {
+		setShelvesToCrawl([]dtos.ShelfToCrawl{})
+		return GetShelvesToCrawl()
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	shelvesToCrawlArr := []dtos.ShelfToCrawl{}
+	if shelvesToCrawl != "" {
+		err = json.Unmarshal([]byte(shelvesToCrawl), &shelvesToCrawlArr)
+		if err != nil {
+			logger.Sugar().Fatal(err)
+		}
+	} else {
+		setShelvesToCrawl([]dtos.ShelfToCrawl{})
+		return GetShelvesToCrawl()
+	}
+	return shelvesToCrawlArr
+}
+
+func AddShelfToShelvesToCrawl(newShelf dtos.ShelfToCrawl) {
+	shelvesToCrawl := GetShelvesToCrawl()
+	shelvesToCrawl = append(shelvesToCrawl, newShelf)
+	setShelvesToCrawl(shelvesToCrawl)
+}
+
+func setShelvesToCrawl(shelves []dtos.ShelfToCrawl) {
+	shelvesWithoutDuplicates := getShelvesWithoutDuplicates(shelves)
+	jsonShelves, err := json.Marshal(shelvesWithoutDuplicates)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	err = redisClient.Set(ctx, SHELVES_TO_CRAWL, jsonShelves, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func RemoveShelfFromShelvesToCrawl(shelfToRemove dtos.ShelfToCrawl) {
+	shelvesWithoutRequestedShelfToRemove := []dtos.ShelfToCrawl{}
+	for _, existingShelfToCrawl := range GetShelvesToCrawl() {
+		if existingShelfToCrawl.ShelfURL != shelfToRemove.ShelfURL {
+			shelvesWithoutRequestedShelfToRemove = append(shelvesWithoutRequestedShelfToRemove, existingShelfToCrawl)
+		}
+	}
+	setShelvesToCrawl(shelvesWithoutRequestedShelfToRemove)
 }

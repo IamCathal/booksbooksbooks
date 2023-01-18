@@ -32,7 +32,8 @@ func connectToDevRedisDatabase() {
 
 func TestMain(m *testing.M) {
 	c := zap.NewProductionConfig()
-	c.OutputPaths = []string{"/dev/null"}
+	// c.OutputPaths = []string{"/dev/null"}
+	c.OutputPaths = []string{"stdout"}
 	logger, err := c.Build()
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +42,7 @@ func TestMain(m *testing.M) {
 
 	connectToDevRedisDatabase()
 	SetTestDataIdentifiers()
+	resetDBFields()
 
 	code := m.Run()
 
@@ -421,8 +423,24 @@ func TestConvertAuthorNameToSortedStringWithLotsOfUnnecessaryCharacters(t *testi
 	assert.Equal(t, "CollinsSuzanne", convertAuthorNameToSortedString("Collins,   ------Suzanne"))
 }
 
+func TestAddShelfToShelvesToCrawlDoesNotAddDuplicates(t *testing.T) {
+	shelf := "https://www.goodreads.com/review/list/26367680?shelf=read"
+	firstShelfToCrawl := dtos.ShelfToCrawl{
+		CrawlKey:  GetKeyForRecentCrawlBreadcrumb(shelf),
+		ShelfURL:  shelf,
+		BookCount: 12,
+	}
+
+	AddShelfToShelvesToCrawl(firstShelfToCrawl)
+	assert.Equal(t, 1, len(GetShelvesToCrawl()))
+
+	AddShelfToShelvesToCrawl(firstShelfToCrawl)
+	assert.Equal(t, 1, len(GetShelvesToCrawl()))
+}
+
 func resetDBFields() {
 	SetKnownAuthors([]dtos.KnownAuthor{})
+	setShelvesToCrawl([]dtos.ShelfToCrawl{})
 	SetAddMoreAuthorBooksToAvailableBooksList(false)
 	SetAvailableBooks([]dtos.AvailableBook{})
 	SetSendAlertOnlyWhenFreeShippingKicksIn(false)
