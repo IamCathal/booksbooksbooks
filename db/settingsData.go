@@ -213,6 +213,7 @@ func AddAuthorToKnownAuthors(author string) {
 
 	knownAuthors = append(knownAuthors, dtos.KnownAuthor{Name: author, Ignore: false})
 	knownAuthors = removeDuplicateAuthors(knownAuthors)
+	knownAuthors = removeDuplicateAuthorsDisregardingReverseOrder(knownAuthors)
 	jsonKnownAuthors, err := json.Marshal(knownAuthors)
 	if err != nil {
 		logger.Sugar().Fatal(err)

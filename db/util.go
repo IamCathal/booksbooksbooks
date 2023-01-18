@@ -3,11 +3,17 @@ package db
 import (
 	"fmt"
 	"net/url"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
+)
+
+var (
+	ANYTHING_BUT_LETTERS_AND_SPACES = regexp.MustCompile(`[^A-Za-z0-9 ]`)
 )
 
 func GetAvailableBooksMap() map[string]bool {
@@ -110,6 +116,45 @@ func removeDuplicateAuthors(authors []dtos.KnownAuthor) []dtos.KnownAuthor {
 		}
 	}
 	return noDuplicateRecentAuthors
+}
+
+func removeDuplicateAuthorsDisregardingReverseOrder(authors []dtos.KnownAuthor) []dtos.KnownAuthor {
+	// "Collins, Suzanne" isn't an exact duplicate of
+	// of "Suzanne Collins" but to a human it is. This is quite annoying
+	// in terms of writing up good enough solution
+	noDuplicateAuthors := []dtos.KnownAuthor{}
+	seenAuthorSortedStringNames := make(map[string]bool)
+
+	for _, author := range authors {
+		sortedStringName := convertAuthorNameToSortedString(author.Name)
+		if _, seen := seenAuthorSortedStringNames[sortedStringName]; !seen {
+			seenAuthorSortedStringNames[sortedStringName] = true
+			noDuplicateAuthors = append(noDuplicateAuthors, author)
+		}
+	}
+	return noDuplicateAuthors
+}
+
+func convertAuthorNameToSortedString(authorNameRaw string) string {
+	authorNameTokens := getAuthorNameTokens(authorNameRaw)
+	sort.Strings(authorNameTokens)
+	return strings.Join(authorNameTokens, "")
+}
+
+func getAuthorNameTokens(authorNameRaw string) []string {
+	onlyLettersAndSpaces := string(ANYTHING_BUT_LETTERS_AND_SPACES.ReplaceAll([]byte(authorNameRaw), []byte("")))
+	tokens := strings.Split(onlyLettersAndSpaces, " ")
+	return removeEmptyStringElementsInArr(tokens)
+}
+
+func removeEmptyStringElementsInArr(arr []string) []string {
+	noEmptyElementsArr := []string{}
+	for _, elem := range arr {
+		if elem != "" {
+			noEmptyElementsArr = append(noEmptyElementsArr, elem)
+		}
+	}
+	return noEmptyElementsArr
 }
 
 func GetIgnoredAndNonIgnoredCountOfAvailableBooks() (int, int) {

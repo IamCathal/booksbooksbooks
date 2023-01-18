@@ -370,6 +370,57 @@ func TestIgnoredAuthorReturnsFalseForAnUnknownAuthor(t *testing.T) {
 	assert.False(t, IsIgnoredAuthor("Mac Leod"))
 }
 
+func TestAddAuthorToKnownAuthorDoesntAddReverseOrderAuthorDuplicate(t *testing.T) {
+	// if "Suzanne Collins" is a known author then don't add
+	// "Collins, Suzanne" as if she's new
+	resetDBFields()
+
+	AddAuthorToKnownAuthors("Suzanne Collins")
+	assert.Equal(t, 1, len(GetKnownAuthors()))
+
+	AddAuthorToKnownAuthors("Collins, Suzanne")
+	assert.Equal(t, 1, len(GetKnownAuthors()))
+}
+
+func TestRemoveDuplicateAuthorsDisregardingReverseOrder(t *testing.T) {
+	inputAuthorsList := []dtos.KnownAuthor{
+		{
+			Name:   "Suzanne Collins",
+			Ignore: false,
+		},
+		{
+			Name:   "Collins, Suzanne",
+			Ignore: false,
+		},
+	}
+	expectedFilteredAuthorsList := []dtos.KnownAuthor{
+		{
+			Name:   "Suzanne Collins",
+			Ignore: false,
+		},
+	}
+
+	actualFilteredAuthorsList := removeDuplicateAuthorsDisregardingReverseOrder(inputAuthorsList)
+
+	assert.Equal(t, expectedFilteredAuthorsList, actualFilteredAuthorsList)
+}
+
+func TestGetAuthorNameTokens(t *testing.T) {
+	assert.Equal(t, []string{"Collins", "Suzanne"}, getAuthorNameTokens("Collins, Suzanne"))
+}
+
+func TestGetAuthorNameTokensWithAuthorThatDoesntHaveComma(t *testing.T) {
+	assert.Equal(t, []string{"Suzanne", "Collins"}, getAuthorNameTokens("Suzanne Collins"))
+}
+
+func TestConvertAuthorNameToSortedString(t *testing.T) {
+	assert.Equal(t, "CollinsSuzanne", convertAuthorNameToSortedString("Collins, Suzanne"))
+}
+
+func TestConvertAuthorNameToSortedStringWithLotsOfUnnecessaryCharacters(t *testing.T) {
+	assert.Equal(t, "CollinsSuzanne", convertAuthorNameToSortedString("Collins,   ------Suzanne"))
+}
+
 func resetDBFields() {
 	SetKnownAuthors([]dtos.KnownAuthor{})
 	SetAddMoreAuthorBooksToAvailableBooksList(false)
