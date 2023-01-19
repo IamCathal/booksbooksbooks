@@ -29,6 +29,17 @@ func SetLogger(newLogger *zap.Logger) {
 	logger = newLogger
 }
 
+func GetBooksFromShelves(shelveURLs []string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
+	booksFromAllShelves := []dtos.BasicGoodReadsBook{}
+	for _, shelfToCrawl := range shelveURLs {
+		fmt.Println("get books from " + shelfToCrawl)
+		booksFromAllShelves = append(booksFromAllShelves, GetBooksFromShelf(shelfToCrawl, shelfStats, booksFoundFromGoodReadsChan)...)
+	}
+	fmt.Println("done getting all books from shelves")
+	close(shelfStats)
+	return booksFromAllShelves
+}
+
 func GetBooksFromShelf(shelfURL string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	if isShelfURL := CheckIsShelfURL(shelfURL); !isShelfURL {
 		return []dtos.BasicGoodReadsBook{}
@@ -48,7 +59,6 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 	})
 
 	shelfStats <- totalBooks
-	close(shelfStats)
 	extractedBooks := extractBooksFromHTML(doc)
 	for _, book := range extractedBooks {
 		booksFoundFromGoodReadsChan <- book

@@ -26,9 +26,6 @@ func setupSettingsRouter(mainRouter *mux.Router) *mux.Router {
 	settingsRouter.HandleFunc("/getautomatedcrawltime", getAutomatedCrawlTime).Methods("GET")
 	settingsRouter.HandleFunc("/disableautomatedcrawltime", disableAutomatedCrawlTime).Methods("POST")
 
-	settingsRouter.HandleFunc("/getautomatedbookshelfcheckurl", getautomatedbookshelfcheckurl).Methods("GET")
-	settingsRouter.HandleFunc("/setautomatedbookshelfcheckurl", setautomatedbookshelfcheckurl).Methods("POST")
-
 	settingsRouter.HandleFunc("/testdiscordwebhook", testDiscordWebook).Methods("GET")
 	settingsRouter.HandleFunc("/setdiscordwebhook", setDiscordWebook).Methods("POST")
 	settingsRouter.HandleFunc("/getdiscordwebhook", getDiscordWebook).Methods("GET")
@@ -95,22 +92,6 @@ func purgeIgnoredAuthorsFromAvailableBooks(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 }
 
-func getAutomatedCrawlShelfStats(w http.ResponseWriter, r *http.Request) {
-	shelfURL := db.GetAutomatedBookShelfCheck()
-	nonIgnoredBookCount, ignoredBookCount := db.GetIgnoredAndNonIgnoredCountOfAvailableBooks()
-
-	res := dtos.GetAutomatedCrawlShelfStats{
-		ShelfBreadcrumb:       db.GetKeyForRecentCrawlBreadcrumb(shelfURL),
-		ShelfURL:              shelfURL,
-		TotalBooks:            db.GetTotalBooksInAutomatedBookShelfCheck(),
-		AvailableBooks:        nonIgnoredBookCount,
-		IgnoredAvailableBooks: ignoredBookCount,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(res)
-}
-
 func getSeriesCrawl(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -173,29 +154,6 @@ func getRecentCrawlBreadcrumbs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(recentCrawlbreadcrumbs)
-}
-
-func getautomatedbookshelfcheckurl(w http.ResponseWriter, r *http.Request) {
-	bookShelfURL := db.GetAutomatedBookShelfCheck()
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(dtos.AutomatedShelfCheckURLResponse{ShelURL: bookShelfURL})
-}
-
-func setautomatedbookshelfcheckurl(w http.ResponseWriter, r *http.Request) {
-	bookShelfURL := r.URL.Query().Get("shelfurl")
-	if isValidShelfURL := goodreads.CheckIsShelfURL(bookShelfURL); !isValidShelfURL {
-		errorMsg := fmt.Sprintf("Invalid shelfurl '%s' given", bookShelfURL)
-		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
-		return
-	}
-
-	db.SetAutomatedBookShelfCheck(bookShelfURL)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(bookShelfURL)
 }
 
 func getDiscordMessageFormat(w http.ResponseWriter, r *http.Request) {

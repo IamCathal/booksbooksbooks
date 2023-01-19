@@ -46,7 +46,6 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/unignorebook", unignoreBook).Methods("POST")
 	r.HandleFunc("/resetavailablebooks", resetAvailableBooks).Methods("POST")
 	r.HandleFunc("/purgeignoredauthorsfromavailablebooks", purgeIgnoredAuthorsFromAvailableBooks).Methods("POST")
-	r.HandleFunc("/getautomatedcrawlshelfstats", getAutomatedCrawlShelfStats).Methods("GET")
 	r.HandleFunc("/getseriescrawl", getSeriesCrawl).Methods("GET")
 	r.Use(logMiddleware)
 

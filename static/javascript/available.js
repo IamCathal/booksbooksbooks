@@ -1,7 +1,6 @@
 let availableBooks = []
 
 giveSwayaaangBordersToItems()
-loadAndRenderAutomatedShelfStats()
 loadAndRenderAvailableBooks()
 
 function loadAndRenderAvailableBooks() {
@@ -12,14 +11,6 @@ function loadAndRenderAvailableBooks() {
         console.error(err)
     })
     
-}
-
-function loadAndRenderAutomatedShelfStats() {
-    loadStatsOnAutomatedShelf().then(stats => {
-        renderStatsOnAutomatedShelf(stats)
-    }, err => {
-        console.error(err)
-    })
 }
 
 
@@ -165,17 +156,6 @@ function getFoundFromBadge(enumVal) {
     }
 }
 
-function renderStatsOnAutomatedShelf(stats) {
-    console.log(stats)
-    document.getElementById("automatedShelfStatsBox").innerHTML = 
-    `Available books found from all crawls`
-}
-
-function getBookCost(bookCostString) {
-    return parseFloat(bookCostString.replace("€",""))
-}
-
-
 function getAvailableBooks() {
     return new Promise((resolve, reject) => {
         fetch(`/getavailablebooks`)
@@ -186,6 +166,10 @@ function getAvailableBooks() {
             reject(err)
         });
     })
+}
+
+function getBookCost(bookCostString) {
+    return parseFloat(bookCostString.replace("€",""))
 }
 
 function giveSwayaaangBordersToItems() {
@@ -246,17 +230,6 @@ function unignoreBook(bookURL) {
         })
         .then((res) => {
             resolve()
-        }, (err) => {
-            reject(err)
-        });
-    })
-}
-function loadStatsOnAutomatedShelf(bookURL) {
-    return new Promise((resolve, reject) => {
-        fetch(`/getautomatedcrawlshelfstats`)
-        .then((res) => res.json())
-        .then((res) => {
-            resolve(res)
         }, (err) => {
             reject(err)
         });

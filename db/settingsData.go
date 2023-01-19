@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	AUTOMATED_BOOK_SHELF_CHECK_URL                = "automatedBookShelfCheck"
 	AUTOMATED_BOOK_SHELF_CRAWL_TIME               = "automatedBookShelfCrawlTime"
 	DISCORD_WEBHOOK_URL                           = "discordWebHookURL"
 	DISCORD_MESSAGE_FORMAT                        = "discordMessageFormat"
@@ -24,23 +23,6 @@ var (
 	SERIES_CRAWL_IN_AUTOMATED_CRAWL               = "seriesCrawlInAutomatedCrawl"
 	SHELVES_TO_CRAWL                              = "shelvesToCrawl"
 )
-
-func SetAutomatedBookShelfCheck(shelfURL string) {
-	err := redisClient.Set(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL, shelfURL, DEFAULT_TTL).Err()
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
-func GetAutomatedBookShelfCheck() string {
-	shelfURL, err := redisClient.Get(ctx, AUTOMATED_BOOK_SHELF_CHECK_URL).Result()
-	if err == redis.Nil {
-		return ""
-	} else if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	return shelfURL
-}
 
 func SetDiscordWebhookURL(webhookURL string) {
 	err := redisClient.Set(ctx, DISCORD_WEBHOOK_URL, webhookURL, DEFAULT_TTL).Err()

@@ -29,9 +29,17 @@ func AutomatedCheckEngine() {
 		currTime := controller.Cnt.GetFormattedTime()
 		if currTime == db.GetAutomatedBookShelfCrawlTime() {
 			logger.Info("Beginning automated crawl")
-			shelfURL := db.GetAutomatedBookShelfCheck()
-			if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
-				logger.Sugar().Infof("Failed to start automated crawl because shelfURL '%s' isn't valid", shelfURL)
+			allShelvesAreValid := true
+
+			for _, shelfToCrawl := range db.GetShelvesToCrawl() {
+				if !goodreads.CheckIsShelfURL(shelfToCrawl.ShelfURL) {
+					logger.Sugar().Infof("shelfURL '%s' isn't valid", shelfToCrawl.ShelfURL)
+					allShelvesAreValid = false
+				}
+			}
+
+			if !allShelvesAreValid {
+				logger.Info("Failed to start automated crawl because one or more shelfURLs are not valid")
 			} else {
 				go automatedCheck()
 			}
@@ -41,18 +49,18 @@ func AutomatedCheckEngine() {
 }
 
 func automatedCheck() {
-	stubStatsChan := make(chan int, 1)
+	stubStatsChan := make(chan int, 200)
 	stubBooksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
 	stubSearchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
 	checkAvailabilityOfExistingAvailableBooksList(booksThatWereAvailableLastTime)
 
-	booksFromShelf := goodreads.GetBooksFromShelf(db.GetAutomatedBookShelfCheck(), stubStatsChan, stubBooksFoundFromGoodReadsChan)
-	logger.Sugar().Infof("Checking now for the books currently listed on automated check shelf: %s", db.GetAutomatedBookShelfCheck())
+	booksFromShelf := goodreads.GetBooksFromShelves(db.GetShelfURLsFromShelvesToCrawl(), stubStatsChan, stubBooksFoundFromGoodReadsChan)
+	logger.Sugar().Infof("Checking now for the books currently listed in shelves: %+v", db.GetShelfCrawlKeysFromShelvesToCrawl())
 
 	db.SetTotalBooksInAutomatedBookShelfCheck(len(booksFromShelf))
-	logger.Sugar().Infof("%d books were found from GoodReads shelf: %s\n", len(booksFromShelf), db.GetAutomatedBookShelfCheck())
+	logger.Sugar().Infof("%d books were found from shelves shelf: %+v\n", len(booksFromShelf), db.GetShelfCrawlKeysFromShelvesToCrawl())
 
 	searchResults := []dtos.EnchancedSearchResult{}
 	for _, book := range booksFromShelf {
@@ -85,6 +93,12 @@ func automatedCheck() {
 				newBook.BookPurchaseInfo.Author, newBook.BookPurchaseInfo.Title)
 		}
 	}
+
+	logger.Info("Completed automated crawl")
+
+	// Add ws for available books
+	// Add timer countdown for next automated crawl
+	// Add live status for automated crawl
 
 	sendFreeShippingWebhookIfFreeShippingEligible()
 	close(stubBooksFoundFromGoodReadsChan)

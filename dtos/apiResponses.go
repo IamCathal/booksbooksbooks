@@ -36,14 +36,6 @@ type GetPreviewsForShelvesResponse struct {
 	ShelvesToCrawl []ShelfToCrawl `json:"shelvesToCrawlPreviews"`
 }
 
-type GetAutomatedCrawlShelfStats struct {
-	ShelfBreadcrumb       string `json:"shelfBreadcrumb"`
-	ShelfURL              string `json:"shelfURL"`
-	TotalBooks            int    `json:"totalBooks"`
-	AvailableBooks        int    `json:"availableBooks"`
-	IgnoredAvailableBooks int    `json:"ignoredAvailableBooks"`
-}
-
 type GetKnownAuthorsResponse struct {
 	Authors []string `json:"authors"`
 }

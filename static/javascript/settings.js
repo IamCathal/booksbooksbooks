@@ -1,5 +1,6 @@
 giveSwayaaangBordersToItems()
 
+document.getElementById("shelfCheckURLInputBox").value = ""
 getAndRenderSettings()
 
 function getAndRenderSettings() {
