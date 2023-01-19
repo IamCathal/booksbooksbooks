@@ -36,9 +36,10 @@ type KnownAuthor struct {
 }
 
 type ShelfToCrawl struct {
-	CrawlKey  string `json:"crawlKey"`
-	ShelfURL  string `json:"shelfURL"`
-	BookCount int    `json:"bookCount"`
+	CrawlKey  string   `json:"crawlKey"`
+	ShelfURL  string   `json:"shelfURL"`
+	BookCount int      `json:"bookCount"`
+	Covers    []string `json:"coversPreview"`
 }
 
 // Discord embed webhook datastructures

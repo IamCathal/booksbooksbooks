@@ -15,6 +15,9 @@ import (
 func setupSettingsRouter(mainRouter *mux.Router) *mux.Router {
 	settingsRouter := mainRouter.PathPrefix("/settings").Subrouter()
 	settingsRouter.HandleFunc("/getpreviewforshelf", getPreviewForShelf).Methods("GET")
+	settingsRouter.HandleFunc("/getshelvestocrawl", getPreviewsForShelves).Methods("GET")
+	settingsRouter.HandleFunc("/addshelftocrawl", addShelfToCrawl).Methods("POST")
+	settingsRouter.HandleFunc("/removeshelftocrawl", removeShelfToCrawl).Methods("POST")
 
 	settingsRouter.HandleFunc("/setdiscordmessageformat", setDiscordMessageFormat).Methods("POST")
 	settingsRouter.HandleFunc("/getdiscordmessageformat", getDiscordMessageFormat).Methods("GET")
@@ -122,16 +125,46 @@ func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	books, totalBooks := goodreads.GetPreviewForShelf(shelfURL)
 	res := dtos.GetPreviewForShelfResponse{
-		Books:      books,
-		TotalBooks: totalBooks,
+		ShelfToCrawl: goodreads.GenerateShelfToCrawlEntryAndSave(shelfURL),
 	}
-	db.SetTotalBooksInAutomatedBookShelfCheck(totalBooks)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
+}
+
+func getPreviewsForShelves(w http.ResponseWriter, r *http.Request) {
+	res := dtos.GetPreviewsForShelvesResponse{
+		ShelvesToCrawl: db.GetShelvesToCrawl(),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func addShelfToCrawl(w http.ResponseWriter, r *http.Request) {
+	shelfURL := r.URL.Query().Get("shelfurl")
+	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
+		errorMsg := fmt.Sprintf("Invalid shelfurl '%s' given", shelfURL)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	goodreads.GenerateShelfToCrawlEntryAndSave(shelfURL)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func removeShelfToCrawl(w http.ResponseWriter, r *http.Request) {
+	shelfURL := r.URL.Query().Get("shelfurl")
+	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
+		errorMsg := fmt.Sprintf("Invalid shelfurl '%s' given", shelfURL)
+		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
+		return
+	}
+	db.RemoveShelfFromShelvesToCrawl(shelfURL)
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func getRecentCrawlBreadcrumbs(w http.ResponseWriter, r *http.Request) {

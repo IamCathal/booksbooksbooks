@@ -29,8 +29,11 @@ type BooleanSettingStatusResponse struct {
 }
 
 type GetPreviewForShelfResponse struct {
-	Books      []BasicGoodReadsBook `json:"books"`
-	TotalBooks int                  `json:"totalBooks"`
+	ShelfToCrawl ShelfToCrawl `json:"shelfToCrawlPreview"`
+}
+
+type GetPreviewsForShelvesResponse struct {
+	ShelvesToCrawl []ShelfToCrawl `json:"shelvesToCrawlPreviews"`
 }
 
 type GetAutomatedCrawlShelfStats struct {

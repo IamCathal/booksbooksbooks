@@ -8,6 +8,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iamcathal/booksbooksbooks/controller"
+	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
 	"github.com/segmentio/ksuid"
 	"go.uber.org/zap"
@@ -77,6 +78,26 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 		}
 	}
 	return allBooks
+}
+
+func GenerateShelfToCrawlEntryAndSave(shelfURL string) dtos.ShelfToCrawl {
+	doc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(shelfURL))
+	totalBooks := 0
+
+	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {
+		_, totalBooks = extractLoadedCount(loadedCount.Text())
+	})
+	extractedBooks := extractBooksFromHTML(doc)
+
+	shelfToCrawl := dtos.ShelfToCrawl{
+		CrawlKey:  db.GetKeyForRecentCrawlBreadcrumb(shelfURL),
+		ShelfURL:  shelfURL,
+		BookCount: totalBooks,
+		Covers:    getFirstNBookCovers(extractedBooks, 9),
+	}
+	db.AddShelfToShelvesToCrawl(shelfToCrawl)
+
+	return shelfToCrawl
 }
 
 func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {

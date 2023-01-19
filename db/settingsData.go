@@ -396,10 +396,10 @@ func setShelvesToCrawl(shelves []dtos.ShelfToCrawl) {
 	}
 }
 
-func RemoveShelfFromShelvesToCrawl(shelfToRemove dtos.ShelfToCrawl) {
+func RemoveShelfFromShelvesToCrawl(shelfURLToRemove string) {
 	shelvesWithoutRequestedShelfToRemove := []dtos.ShelfToCrawl{}
 	for _, existingShelfToCrawl := range GetShelvesToCrawl() {
-		if existingShelfToCrawl.ShelfURL != shelfToRemove.ShelfURL {
+		if existingShelfToCrawl.ShelfURL != shelfURLToRemove {
 			shelvesWithoutRequestedShelfToRemove = append(shelvesWithoutRequestedShelfToRemove, existingShelfToCrawl)
 		}
 	}

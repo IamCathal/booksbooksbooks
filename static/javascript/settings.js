@@ -14,6 +14,8 @@ function getAndRenderSettings() {
     getAndRenderAddMoreAuthorBooksToAvailableList()
     getAndRenderSeriesInAutomatedCrawl()
     getAndRenderKnownAuthorsList()
+
+    getAndRenderShelvesToCrawl()
 }
 
 document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener("click", (ev) => {
@@ -25,38 +27,22 @@ document.getElementById("settingsSetAutomatedCheckTimeButton").addEventListener(
     })
 })
 
-document.getElementById("settingsTestAutomatedShelfURLButton").addEventListener("click", (ev) => {
-    document.getElementById("automatedCheckShelfPreviewRow").style.display = "none"
+document.getElementById("addShelfToCrawl").addEventListener("click", (ev) => {
+
+    document.getElementById("newShelfToCheckShelfPreviewRow").style.display = "none"
     document.getElementById("automatedCheckShelfURLCheckStatsBox").innerHTML = ""
     document.getElementById("shelfUrlAutomatedCheckStatsTextBox").textContent = ""
+
+    document.getElementById("addShelfToCrawl").classList.add("skeleton")
     const shelfUrl = document.getElementById("shelfCheckURLInputBox").value
 
-    document.getElementById("settingsTestAutomatedShelfURLButton").classList.add("skeleton")
-    
-    setAutomatedShelfCheckURL(shelfUrl).then((res) => {
-        getPreviewForBookShelf(shelfUrl).then(bookPreview => {
-            document.getElementById("automatedCheckShelfPreviewRow").style.display = "flex"
-    
-            document.getElementById("shelfUrlAutomatedCheckStatsTextBox").textContent = 
-                `Found ${bookPreview.totalBooks} books. Should take roughly ${Math.floor(getSWAGEstimateForCrawlTime(bookPreview.totalBooks))}s to crawl`
-            bookPreview.books.forEach(book => {
-                document.getElementById("automatedCheckShelfURLCheckStatsBox").innerHTML += `
-                                <div class="col-1 pr-1">
-                                    <img 
-                                        src="${book.cover}"
-                                        style="width: 2rem"
-                                    >
-                                </div>
-                `
-            })
-            document.getElementById("settingsTestAutomatedShelfURLButton").classList.remove("skeleton")
-        }, (err) => {
-            console.error(err)
-            document.getElementById("settingsTestAutomatedShelfURLButton").classList.remove("skeleton")
-        })
+    addShelfToCrawl(shelfUrl).then(() => {
+        document.getElementById("addShelfToCrawl").classList.remove("skeleton")
+        getAndRenderShelvesToCrawl()
     }, (err) => {
-        document.getElementById("settingsTestAutomatedShelfURLButton").classList.remove("skeleton")
-        document.getElementById("automatedCheckShelfPreviewRow").style.display = "flex"
+        console.error(err)
+        document.getElementById("addShelfToCrawl").classList.remove("skeleton")
+        document.getElementById("newShelfToCheckShelfPreviewRow").style.display = "flex"
         document.getElementById("shelfUrlAutomatedCheckStatsTextBox").innerHTML +=
         `
             <div class="col text-center">
@@ -65,6 +51,39 @@ document.getElementById("settingsTestAutomatedShelfURLButton").addEventListener(
             </div>
         `
     })
+
+    // setAutomatedShelfCheckURL(shelfUrl).then((res) => {
+    //     getPreviewForBookShelf(shelfUrl).then(bookPreview => {
+    //         document.getElementById("newShelfToCheckShelfPreviewRow").style.display = "flex"
+    
+    //         document.getElementById("shelfUrlAutomatedCheckStatsTextBox").textContent = 
+    //             `Found ${bookPreview.totalBooks} books. Should take roughly ${Math.floor(getSWAGEstimateForCrawlTime(bookPreview.totalBooks))}s to crawl`
+    //         bookPreview.books.forEach(book => {
+    //             document.getElementById("automatedCheckShelfURLCheckStatsBox").innerHTML += `
+    //                             <div class="col-1 pr-1">
+    //                                 <img 
+    //                                     src="${book.cover}"
+    //                                     style="width: 2rem"
+    //                                 >
+    //                             </div>
+    //             `
+    //         })
+    //         document.getElementById("addShelfToCrawl").classList.remove("skeleton")
+    //     }, (err) => {
+    //         console.error(err)
+    //         document.getElementById("addShelfToCrawl").classList.remove("skeleton")
+    //     })
+    // }, (err) => {
+    //     document.getElementById("addShelfToCrawl").classList.remove("skeleton")
+    //     document.getElementById("newShelfToCheckShelfPreviewRow").style.display = "flex"
+    //     document.getElementById("shelfUrlAutomatedCheckStatsTextBox").innerHTML +=
+    //     `
+    //         <div class="col text-center">
+    //             <p class="pl-4 mb-0">That's not a valid Goodreads shelf URL. This is an example of a valid shelf URL:</p>
+    //             <p class=" pl-4 pb-0"> <a href="https://www.goodreads.com/review/list/26367680-stephen-king?shelf=read">https://www.goodreads.com/review/list/26367680-stephen-king?shelf=read </a> </p>
+    //         </div>
+    //     `
+    // })
 })
 
 document.getElementById("settingsTestWebhookURLButton").addEventListener("click", (ev) => {
@@ -238,6 +257,86 @@ function getAndRenderKnownAuthorsList() {
     })
 }
 
+function getAndRenderShelvesToCrawl() {
+    document.getElementById("newShelfToCheckShelfPreviewRow").style.display = "none"
+    document.getElementById("automatedCheckShelfURLCheckStatsBox").innerHTML = ""
+    document.getElementById("shelfUrlAutomatedCheckStatsTextBox").textContent = ""
+
+    document.getElementById("shelvesToCrawlRow").innerHTML = ""
+    getShelvesToCrawl().then(shelvesToCrawl => {
+        console.log(shelvesToCrawl)
+        shelvesToCrawl.forEach(shelfToCrawl => {
+            document.getElementById("shelvesToCrawlRow").innerHTML += 
+            `
+            <div class="m-1 pb-2 thinBorder" style="width: 47%;">
+            <div class="col">
+                <div class="row">
+                    <div class="col-11">
+
+                    </div>
+                    <div class="col pl-0 pr-0 text-center" style="font-size: 0.7rem">
+                        <a href="#" class="shelfToCrawlElem" id="${shelfToCrawl.shelfURL}">
+                            x
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-7 pr-1" style="overflow: hidden; height: 4rem">
+                        ${getAndRenderBookCoverPreviews(shelfToCrawl.coversPreview)}
+                    </div>
+                    <div class="col">
+                        <div class="row" style="height: 70%;">
+                            <div class="col text-center">
+                                <p class="bookPreviewCrawlKeyTitle">
+                                    <a href="${shelfToCrawl.shelfURL}">${shelfToCrawl.crawlKey}</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-center bookPreviewBookCount">
+                                ${shelfToCrawl.bookCount} ${shelfToCrawl.bookCount > 1 ? "books" : "book"}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            `
+        })
+
+        document.querySelectorAll(".shelfToCrawlElem").forEach(element => {
+            element.addEventListener("click", (ev) => {
+                console.log(`clicl ${ev.target.id}`)
+                removeShelfToCrawl(ev.target.id).then((res) => {
+                    getAndRenderShelvesToCrawl()
+                }, err => {
+                    console.error(err)
+                })
+            })
+        })
+    })
+}
+
+function getAndRenderBookCoverPreviews(covers) {
+    let output = ``
+    let currLeftPercentage = 5
+
+    covers.forEach(cover => {
+        output +=
+        `
+        <img
+            src="${cover}"
+            style="position: absolute; left:${currLeftPercentage}%; height: 4rem"
+        >
+        `
+        currLeftPercentage += 10
+    })
+
+    return output
+}
+
 document.getElementById("sendWebhookOnlyWhenFreeShippingKicksIn").addEventListener("change", (ev) => {
     if (ev.currentTarget.checked) {
         setSendAlertOnlyWhenFreeShippingKicksIn("true")
@@ -355,7 +454,7 @@ function giveSwayaaangBordersToItems() {
     document.getElementById("seriesLinkBox").style = swayaaangBorders(0.8)
     document.getElementById("bigStyleBox").style = swayaaangBorders(1.6)
     document.getElementById("smallStyleBox").style = swayaaangBorders(1.6)
-    document.getElementById("settingsTestAutomatedShelfURLButton").style = swayaaangBorders(0.4)
+    document.getElementById("addShelfToCrawl").style = swayaaangBorders(0.4)
     document.getElementById("settingsTestWebhookURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsTestOwnedBooksShelfURLButton").style = swayaaangBorders(0.4)
     document.getElementById("settingsSetAutomatedCheckTimeButton").style = swayaaangBorders(0.4)
@@ -910,6 +1009,60 @@ function purgeIgnoredAuthorsFromAvailableBooks(author) {
                 "Accept": "application/json"
             },
         }).then(() => {
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getShelvesToCrawl() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getshelvestocrawl`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.shelvesToCrawlPreviews)
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function addShelfToCrawl(shelfURL) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/addshelftocrawl?shelfurl=${encodeURIComponent(shelfURL)}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
+            if (res.status != 200) {
+                reject(res.error)
+            }
+            resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function removeShelfToCrawl(shelfURL) {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/removeshelftocrawl?shelfurl=${encodeURIComponent(shelfURL)}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+        .then((res) => {
             resolve()
         }, (err) => {
             reject(err)

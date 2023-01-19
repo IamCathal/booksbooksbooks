@@ -342,3 +342,15 @@ func extractCommunityRatingElementsFromText(ratingRawText string) (float32, int)
 
 	return float32(rating), strToInt(publishYear)
 }
+
+func getFirstNBookCovers(books []dtos.BasicGoodReadsBook, n int) []string {
+	bookCovers := []string{}
+
+	for _, book := range books {
+		bookCovers = append(bookCovers, book.Cover)
+	}
+	if len(bookCovers) >= 12 {
+		return bookCovers[:12]
+	}
+	return bookCovers
+}

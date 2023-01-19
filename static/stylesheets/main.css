@@ -221,3 +221,13 @@ body {
   overflow: hidden;
   line-height: 98%;
 }
+
+.bookPreviewCrawlKeyTitle {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.bookPreviewBookCount {
+  font-weight: bold;
+  font-size: 0.7rem;
+}
