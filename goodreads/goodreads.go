@@ -93,7 +93,7 @@ func GenerateShelfToCrawlEntryAndSave(shelfURL string) dtos.ShelfToCrawl {
 		CrawlKey:  db.GetKeyForRecentCrawlBreadcrumb(shelfURL),
 		ShelfURL:  shelfURL,
 		BookCount: totalBooks,
-		Covers:    getFirstNBookCovers(extractedBooks, 9),
+		Covers:    getFirstNBookCovers(extractedBooks, 30),
 	}
 	db.AddShelfToShelvesToCrawl(shelfToCrawl)
 

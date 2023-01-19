@@ -349,8 +349,8 @@ func getFirstNBookCovers(books []dtos.BasicGoodReadsBook, n int) []string {
 	for _, book := range books {
 		bookCovers = append(bookCovers, book.Cover)
 	}
-	if len(bookCovers) >= 12 {
-		return bookCovers[:12]
+	if len(bookCovers) >= n {
+		return bookCovers[:n]
 	}
 	return bookCovers
 }

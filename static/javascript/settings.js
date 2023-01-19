@@ -3,7 +3,6 @@ giveSwayaaangBordersToItems()
 getAndRenderSettings()
 
 function getAndRenderSettings() {
-    getAndRenderAutomatedShelfCheckURL()
     getAndRenderOwnedBooksShelfURL()
     getAndRenderDiscordWebhookURL()
     getAndRenderDiscordMessageFormatPreference()
@@ -132,14 +131,6 @@ document.getElementById("settingsTestOwnedBooksShelfURLButton").addEventListener
         `
     })
 })
-
-function getAndRenderAutomatedShelfCheckURL() {
-    getAutomatedShelfCheckURL().then(url => {
-        document.getElementById("shelfCheckURLInputBox").value = url
-    }, (err) => {
-        console.error(err)
-    })
-}
 
 function getAndRenderOwnedBooksShelfURL() {
     getOwnedBooksShelfURL().then(url => {
@@ -282,7 +273,7 @@ function getAndRenderShelvesToCrawl() {
                 </div>
 
                 <div class="row">
-                    <div class="col-7 pr-1" style="overflow: hidden; height: 4rem">
+                    <div class="col-7 pr-1 bookCoverPreviewsCol" style="${shelfToCrawl.coversPreview.length > 8 ? "overflow-x: scroll; cursor: grab; white-space: nowrap;" : ""} width: 100%; height: 4.5rem">
                         ${getAndRenderBookCoverPreviews(shelfToCrawl.coversPreview)}
                     </div>
                     <div class="col">
@@ -515,36 +506,6 @@ function clearList() {
         })
         .then((res) => {
             resolve(res)
-        }, (err) => {
-            reject(err)
-        });
-    })
-}
-
-function getAutomatedShelfCheckURL(){
-    return new Promise((resolve, reject) => {
-        fetch(`/settings/getautomatedbookshelfcheckurl`)
-        .then((res) => res.json())
-        .then((res) => {
-            resolve(res.shelfURL)
-        }, (err) => {
-            reject(err)
-        });
-    })
-}
-
-function setAutomatedShelfCheckURL(shelfURL){
-    return new Promise((resolve, reject) => {
-        fetch(`/settings/setautomatedbookshelfcheckurl?shelfurl=${encodeURIComponent(shelfURL)}`, {
-            method: "POST"
-        })
-        .then((res) => res.json())
-        .then((res) => {
-            if (res.hasOwnProperty("error")) {
-                reject()
-            } else {
-                resolve(res)
-            }
         }, (err) => {
             reject(err)
         });
