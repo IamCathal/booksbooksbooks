@@ -42,6 +42,14 @@ type ShelfToCrawl struct {
 	Covers    []string `json:"coversPreview"`
 }
 
+type AutomatedCrawlReport struct {
+	BooksSearched int   `json:"booksSearched"`
+	MatchesFound  int   `json:"matchesFound"`
+	NewBooksFound int   `json:"newBooksFound"`
+	TimeStarted   int64 `json:"timeStarted"`
+	TimeCompleted int64 `json:"timeCompleted"`
+}
+
 // Discord embed webhook datastructures
 
 type DiscordMsg struct {

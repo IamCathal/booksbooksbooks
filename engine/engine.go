@@ -53,6 +53,10 @@ func automatedCheck() {
 	stubBooksFoundFromGoodReadsChan := make(chan dtos.BasicGoodReadsBook, 200)
 	stubSearchResultsFromTheBookshopChan := make(chan dtos.EnchancedSearchResult, 200)
 
+	crawlReport := dtos.AutomatedCrawlReport{
+		TimeStarted: time.Now().Unix(),
+	}
+
 	booksThatWereAvailableLastTime := db.GetAvailableBooks()
 	checkAvailabilityOfExistingAvailableBooksList(booksThatWereAvailableLastTime)
 
@@ -65,9 +69,11 @@ func automatedCheck() {
 	searchResults := []dtos.EnchancedSearchResult{}
 	for _, book := range booksFromShelf {
 		searchResults = append(searchResults, thebookshop.SearchForBook(book, stubSearchResultsFromTheBookshopChan))
+		crawlReport.BooksSearched++
 	}
 
 	currentlyAvailableBooksFromShelf := goodreads.GetAvailableBooksFromSearchResult(searchResults)
+	crawlReport.MatchesFound += len(currentlyAvailableBooksFromShelf)
 	logger.Sugar().Infof("%d search queries were made with %d title/author matches found",
 		len(searchResults), len(currentlyAvailableBooksFromShelf))
 
@@ -81,12 +87,17 @@ func automatedCheck() {
 		getConciseBookInfoFromAvailableBooks(newBooksThatNeedNotification))
 
 	for _, newBook := range newBooksThatNeedNotification {
+
 		logger.Sugar().Infof("Available book %s - %s was found through %d",
 			newBook.BookPurchaseInfo.Author, newBook.BookPurchaseInfo.Title, newBook.BookFoundFrom)
+
 		if authorIsIgnored := db.IsIgnoredAuthor(newBook.BookPurchaseInfo.Author); !authorIsIgnored {
+
 			logger.Sugar().Infof("Author %s is not ignored, adding their book %s to the available book list and sending a webhook notification",
 				newBook.BookPurchaseInfo.Author, newBook.BookPurchaseInfo.Title)
 			db.AddAvailableBook(newBook)
+			crawlReport.NewBooksFound++
+
 			util.SendNewBookIsAvailableNotification(newBook.BookPurchaseInfo, true)
 		} else {
 			logger.Sugar().Infof("Author %s is ignored, their book %s will not be added to the available book list",
@@ -95,6 +106,9 @@ func automatedCheck() {
 	}
 
 	logger.Info("Completed automated crawl")
+
+	crawlReport.TimeCompleted = time.Now().Unix()
+	db.AddNewRecentCrawlReport(crawlReport)
 
 	// Add ws for available books
 	// Add timer countdown for next automated crawl

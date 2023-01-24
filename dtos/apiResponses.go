@@ -39,3 +39,7 @@ type GetPreviewsForShelvesResponse struct {
 type GetKnownAuthorsResponse struct {
 	Authors []string `json:"authors"`
 }
+
+type GetRecentCrawlReportsResponse struct {
+	Reports []AutomatedCrawlReport `json:"reports"`
+}

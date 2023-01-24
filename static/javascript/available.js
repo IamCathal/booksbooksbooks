@@ -2,6 +2,7 @@ let availableBooks = []
 
 giveSwayaaangBordersToItems()
 loadAndRenderAvailableBooks()
+getAndRenderTimeToNextAutomatedCrawl()
 
 function loadAndRenderAvailableBooks() {
     getAvailableBooks().then((res) => {
@@ -143,6 +144,12 @@ function renderAvailableBooks(availableBookList) {
     })
 }
 
+function getAndRenderTimeToNextAutomatedCrawl() {
+    getAutomatedCrawlTime().then((crawlTime) => {
+        console.log(crawlTime)
+    })
+}
+
 function getFoundFromBadge(enumVal) {
     switch (enumVal) {
         case 0:
@@ -230,6 +237,23 @@ function unignoreBook(bookURL) {
         })
         .then((res) => {
             resolve()
+        }, (err) => {
+            reject(err)
+        });
+    })
+}
+
+function getAutomatedCrawlTime() {
+    return new Promise((resolve, reject) => {
+        fetch(`/settings/getautomatedcrawltime`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        }).then((res) => res.json())
+        .then((res) => {
+            resolve(res.time)
         }, (err) => {
             reject(err)
         });

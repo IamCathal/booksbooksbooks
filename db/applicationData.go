@@ -12,6 +12,7 @@ var (
 	AVAILABLE_BOOKS          = "availableBooks"
 	SERIES_CRAWL_BOOKS       = "seriesCrawlBooks"
 	RECENT_CRAWL_BREADCRUMBS = "recentCrawlBreadcrumbs"
+	RECENT_CRAWL_REPORTS     = "recentCrawlReports"
 )
 
 func ResetAvailableBooks() {
@@ -159,4 +160,48 @@ func SetRecentCrawlBreadcrumbs(breadCrumbs []dtos.RecentCrawlBreadcrumb) {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
+}
+
+func GetRecentCrawlReports() []dtos.AutomatedCrawlReport {
+	recentCrawlReportsStr, err := redisClient.Get(ctx, RECENT_CRAWL_REPORTS).Result()
+	if err == redis.Nil {
+		SetRecentCrawlReports([]dtos.AutomatedCrawlReport{})
+		return GetRecentCrawlReports()
+	} else if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	recentCrawlReportsArr := []dtos.AutomatedCrawlReport{}
+	if recentCrawlReportsStr == "" {
+		SetRecentCrawlReports([]dtos.AutomatedCrawlReport{})
+		return GetRecentCrawlReports()
+	}
+
+	err = json.Unmarshal([]byte(recentCrawlReportsStr), &recentCrawlReportsArr)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	return recentCrawlReportsArr
+}
+
+func SetRecentCrawlReports(crawlReports []dtos.AutomatedCrawlReport) {
+	jsonCrawlReports, err := json.Marshal(crawlReports)
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+	err = redisClient.Set(ctx, RECENT_CRAWL_REPORTS, jsonCrawlReports, DEFAULT_TTL).Err()
+	if err != nil {
+		logger.Sugar().Fatal(err)
+	}
+}
+
+func AddNewRecentCrawlReport(crawlReport dtos.AutomatedCrawlReport) {
+	recentCrawlReports := GetRecentCrawlReports()
+	newCrawlReport := []dtos.AutomatedCrawlReport{
+		crawlReport,
+	}
+	allCrawlReports := append(newCrawlReport, recentCrawlReports...)
+	if len(allCrawlReports) >= 15 {
+		allCrawlReports = allCrawlReports[:15]
+	}
+	SetRecentCrawlReports(allCrawlReports)
 }

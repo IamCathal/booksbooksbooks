@@ -98,6 +98,15 @@ func getSeriesCrawl(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(db.GetSeriesCrawlBooks())
 }
 
+func getRecentCrawlReports(w http.ResponseWriter, r *http.Request) {
+	res := dtos.GetRecentCrawlReportsResponse{
+		Reports: db.GetRecentCrawlReports(),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
 func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 	shelfURL := r.URL.Query().Get("shelfurl")
 	if isValidShelfURL := goodreads.CheckIsShelfURL(shelfURL); !isValidShelfURL {
