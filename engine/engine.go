@@ -258,14 +258,18 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 	close(initialShelfLookupChan)
 	ownedBooksThatAreInASeries := extractGoodreadsBooksThatAreInSeries(booksFromShelf)
 
+	fmt.Printf("%d books are in a series %+v\n", len(ownedBooksThatAreInASeries), ownedBooksThatAreInASeries)
+
 	previouslyKnownAvailableBooksMap := db.GetAvailableBooksMap()
 	knownSeriesToTheirLinks := make(map[string]bool)
 	seriesLinks := []string{}
 
 	for _, bookInASeries := range ownedBooksThatAreInASeries {
 		baseSeriesTitle := goodreads.FilterSeriesTitleFromSeriesText(bookInASeries.SeriesText)
+		fmt.Printf("\tseries title is: %s\n", baseSeriesTitle)
 		if _, exists := knownSeriesToTheirLinks[baseSeriesTitle]; !exists {
 			knownSeriesToTheirLinks[baseSeriesTitle] = true
+			fmt.Printf("\tLooking up series info for: %+v\n", bookInASeries)
 			seriesLinks = append(seriesLinks, goodreads.GetSeriesLink(bookInASeries))
 		}
 	}

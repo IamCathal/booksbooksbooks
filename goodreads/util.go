@@ -188,7 +188,8 @@ func ensureAllAverageRatingsAreOfTypeString(jsonData []byte) []byte {
 func getSeriesLink(htmlPage *html.Node) string {
 	doc := goquery.NewDocumentFromNode(htmlPage)
 	bookSeriesLink := ""
-	doc.Find("h2[id='bookSeries']").Each(func(i int, bookSeriesElem *goquery.Selection) {
+	doc.Find("h3.Text__italic").Each(func(i int, bookSeriesElem *goquery.Selection) {
+		fmt.Printf("Found a h2 bookSeries")
 		seriesLink, _ := bookSeriesElem.Find("a").Attr("href")
 		bookSeriesLink = seriesLink
 	})
@@ -227,8 +228,7 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 	}
 	authorInMainTitle := false
 
-	fullSeriesPageLink := GOODREADS_BASE_BOOK_URL + seriesPageLink
-	seriesPage := controller.Cnt.GetPage(fullSeriesPageLink)
+	seriesPage := controller.Cnt.GetPage(seriesPageLink)
 
 	doc := goquery.NewDocumentFromNode(seriesPage)
 	doc.Find("div[class='responsiveSeriesHeader']").Each(func(i int, worksInfo *goquery.Selection) {
