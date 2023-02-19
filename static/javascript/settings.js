@@ -101,20 +101,9 @@ document.getElementById("settingsTestOwnedBooksShelfURLButton").addEventListener
     
     setOwnedBooksShelfURL(shelfUrl).then((res) => {
         getPreviewForBookShelf(shelfUrl).then(bookPreview => {
+            console.log(bookPreview)
             document.getElementById("ownedShelfPreviewRow").style.display = "flex"
-    
-            document.getElementById("shelfUrlOwnedStatsTextBox").textContent = 
-                `Found ${bookPreview.totalBooks} books`
-            bookPreview.books.forEach(book => {
-                document.getElementById("ownedShelfURLCheckStatsBox").innerHTML += `
-                                <div class="col-1 pr-1">
-                                    <img 
-                                        src="${book.cover}"
-                                        style="width: 2rem"
-                                    >
-                                </div>
-                `
-            })
+            document.getElementById("ownedShelfURLCheckStatsBox").innerHTML = getHTMLForShelfToCrawl(bookPreview)
             document.getElementById("settingsTestOwnedBooksShelfURLButton").classList.remove("skeleton")
         }, (err) => {
             console.error(err)
@@ -258,44 +247,7 @@ function getAndRenderShelvesToCrawl() {
     getShelvesToCrawl().then(shelvesToCrawl => {
         console.log(shelvesToCrawl)
         shelvesToCrawl.forEach(shelfToCrawl => {
-            document.getElementById("shelvesToCrawlRow").innerHTML += 
-            `
-            <div class="m-1 pb-2 thinBorder" style="width: 47%;">
-            <div class="col">
-                <div class="row">
-                    <div class="col-11">
-
-                    </div>
-                    <div class="col pl-0 pr-0 text-center" style="font-size: 0.7rem">
-                        <a href="#" class="shelfToCrawlElem" id="${shelfToCrawl.shelfURL}">
-                            x
-                        </a>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-7 pr-1 bookCoverPreviewsCol" style="${shelfToCrawl.coversPreview.length > 8 ? "overflow-x: scroll; cursor: grab; white-space: nowrap;" : ""} width: 100%; height: 4.5rem">
-                        ${getAndRenderBookCoverPreviews(shelfToCrawl.coversPreview)}
-                    </div>
-                    <div class="col">
-                        <div class="row" style="height: 70%;">
-                            <div class="col text-center">
-                                <p class="bookPreviewCrawlKeyTitle">
-                                    <a href="${shelfToCrawl.shelfURL}">${shelfToCrawl.crawlKey}</a>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col text-center bookPreviewBookCount">
-                                ${shelfToCrawl.bookCount} ${shelfToCrawl.bookCount > 1 ? "books" : "book"}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-            `
+            document.getElementById("shelvesToCrawlRow").innerHTML += getHTMLForShelfToCrawl(shelfToCrawl)
         })
 
         document.querySelectorAll(".shelfToCrawlElem").forEach(element => {
@@ -309,6 +261,46 @@ function getAndRenderShelvesToCrawl() {
             })
         })
     })
+}
+
+function getHTMLForShelfToCrawl(shelfToCrawl) {
+    return `
+    <div class="m-1 pb-2 thinBorder" style="width: 47%;">
+    <div class="col">
+        <div class="row">
+            <div class="col-11">
+
+            </div>
+            <div class="col pl-0 pr-0 text-center" style="font-size: 0.7rem">
+                <a href="#" class="shelfToCrawlElem" id="${shelfToCrawl.shelfURL}">
+                    x
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-7 pr-1 bookCoverPreviewsCol" style="${shelfToCrawl.coversPreview.length > 8 ? "overflow-x: scroll; cursor: grab; white-space: nowrap;" : ""} width: 100%; height: 4.5rem">
+                ${getAndRenderBookCoverPreviews(shelfToCrawl.coversPreview)}
+            </div>
+            <div class="col">
+                <div class="row" style="height: 70%;">
+                    <div class="col text-center">
+                        <p class="bookPreviewCrawlKeyTitle">
+                            <a href="${shelfToCrawl.shelfURL}">${shelfToCrawl.crawlKey}</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col text-center bookPreviewBookCount">
+                        ${shelfToCrawl.bookCount} ${shelfToCrawl.bookCount > 1 ? "books" : "book"}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    `
 }
 
 function getAndRenderBookCoverPreviews(covers) {
@@ -905,7 +897,7 @@ function getPreviewForBookShelf(shelfURL) {
             },
         }).then((res) => res.json())
         .then((res) => {
-            resolve(res)
+            resolve(res.shelfToCrawlPreview)
         }, (err) => {
             reject(err)
         });
