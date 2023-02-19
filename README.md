@@ -1,6 +1,6 @@
 # booksbooksbooks
 
-I use GoodReads for my book reccomendations and I buy my books mostly from TheBookshop.ie. I made this project to be able to automatically check if books on my "shopping list" are available on TheBookshop. Still in active development and if there is not an official release version then don't expect even master to work properly all of the time
+I use [GoodReads](https://www.goodreads.com/) for my book reccomendations and I buy my books mostly from [TheBookshop.ie](https://thebookshop.ie/). I made this project to be able to automatically check if books on my "shopping list" are available on TheBookshop. Still in active development and if there is not an official release version then don't expect even master to work properly all of the time (I do use it myself at the moment so it should work).
 
 |      |  |
 | ----------- | ----------- |
@@ -9,30 +9,23 @@ I use GoodReads for my book reccomendations and I buy my books mostly from TheBo
 
 ### Usage
 
-* `docker-compose up`
-* Go to [http://localhost:2945/settings](http://localhost:2945/settings)
-    * **Automated Check Shelf URL:** URL of the goodreads shelf that will crawled when the automated check is triggered
-    * **Automated Check Time:** The time that the automated crawl will be triggered on a daily basis
-    * **Discord Webhook URL:** For alerts paste in a discord webhook URL here. See [here on how to go about doing that](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
-* Automated crawls are now set up. If you want to manually crawl a shelf go to [http://localhost:2945/shelf](http://localhost:2945/shelf)
-* Once a few books have been found (through individual crawls with any supplied shelves or through automated crawls) they'll appear on the [http://localhost:2945/available](http://localhost:2945/available) page. Books can be ignored if you don't plan on buying them and unignored if you later change your mind
+* `docker-compose up` and away you go
+* Go to [http://localhost:2945/settings](http://localhost:2945/settings) page and fill in all the details you need
 
 ### Setting Flags
 
 A good few levers can be pulled from the [http://localhost:2945/settings](http://localhost:2945/settings) page to customise your experience
 
-- [x] Set the time when the automated crawl should be executed. The automated crawl happens once per day at the specified time
-- [x] Send an alert when a book was marked as available from the last crawl but is now no longer available (it was bought)
-- [x] Send an alert only when the total cost of the available books has exceeded €20 which means the order is eligible for free shipping
 - [x] If more books are found from an author who's in your shelf then add those books to the available list
-- [x] Whether to have a compact or spacious alert styled messages in discord
-- [x] Authors can be filtered out of future search results so their books won't ever show up as available
-- [x] All available books (if there are any) from a filtered author can be retroactively purged from the available books list
-
+- [x] If a book is in a series then lookup all other books in that series
+- [x] Use discord webhooks for updates (very handy) about when books become available
+- [x] Alert when a book that was previously marked as available is no longer for sale
+- [x] Send an alert only when the total cost of the available books has exceeded €20 which means the order is eligible for free shipping
+- [x] Filter out specific authors from future search results so their books won't ever show up as available
 
 ## Security
 
-Unsanitised user input is written straight to the redis instance, unsanitised user input is rendered as raw HTML and although its not entirely sensitive your supplied discord webhook is accessable through the settings page. Do not publically host this service. I'm currently running this on a cloud VPS (that has all ports blocked) and I can access it on my home network through a [tailscale](https://tailscale.com/) setup.
+Unsanitised user input is written straight to the redis instance and is rendered as raw HTML and although its not entirely sensitive your supplied discord webhook is accessable through the settings page. Do not publically host this service. I'm currently running this on a cloud VPS (that has all ports blocked) and I can access it on my home network through a [tailscale](https://tailscale.com/) setup.
 
 ## Testing
 

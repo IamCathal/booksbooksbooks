@@ -14,20 +14,20 @@ services:
     networks:
       - elk
 
-  # booksbooksbooks:
-  #   build:
-  #     context: .
-  #   container_name: booksbooksbooks
-  #   volumes:
-  #     - ./logs/:/logs/
-  #   environment:
-  #     REDIS_ADDR: "redis:6379"
-  #   ports:
-  #     - '2945:2945'
-  #   depends_on:
-  #     - redis
-  #   networks:
-  #     - elk
+  booksbooksbooks:
+    build:
+      context: .
+    container_name: booksbooksbooks
+    volumes:
+      - ./logs/:/logs/
+    environment:
+      REDIS_ADDR: "redis:6379"
+    ports:
+      - '2945:2945'
+    depends_on:
+      - redis
+    networks:
+      - elk
 
 networks:
   elk:
