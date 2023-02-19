@@ -224,7 +224,7 @@ func extractPrimaryAndTotalWorks(fullWorksText string) (int, int) {
 func extractSeriesInfo(seriesPageLink string) dtos.Series {
 	seriesInfo := dtos.Series{
 		ID:   ksuid.New().String(),
-		Link: GOODREADS_BASE_URL + seriesPageLink,
+		Link: seriesPageLink,
 	}
 	authorInMainTitle := false
 

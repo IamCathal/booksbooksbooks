@@ -116,7 +116,7 @@ func getPreviewForShelf(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := dtos.GetPreviewForShelfResponse{
-		ShelfToCrawl: goodreads.GenerateShelfToCrawlEntryAndSave(shelfURL),
+		ShelfToCrawl: goodreads.GenerateShelfToCrawlEntry(shelfURL),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

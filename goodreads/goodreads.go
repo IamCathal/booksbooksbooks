@@ -91,6 +91,12 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 }
 
 func GenerateShelfToCrawlEntryAndSave(shelfURL string) dtos.ShelfToCrawl {
+	shelfToSave := GenerateShelfToCrawlEntry(shelfURL)
+	db.AddShelfToShelvesToCrawl(shelfToSave)
+	return shelfToSave
+}
+
+func GenerateShelfToCrawlEntry(shelfURL string) dtos.ShelfToCrawl {
 	doc := goquery.NewDocumentFromNode(controller.Cnt.GetPage(shelfURL))
 	totalBooks := 0
 
@@ -99,15 +105,12 @@ func GenerateShelfToCrawlEntryAndSave(shelfURL string) dtos.ShelfToCrawl {
 	})
 	extractedBooks := extractBooksFromHTML(doc)
 
-	shelfToCrawl := dtos.ShelfToCrawl{
+	return dtos.ShelfToCrawl{
 		CrawlKey:  db.GetKeyForRecentCrawlBreadcrumb(shelfURL),
 		ShelfURL:  shelfURL,
 		BookCount: totalBooks,
 		Covers:    getFirstNBookCovers(extractedBooks, 30),
 	}
-	db.AddShelfToShelvesToCrawl(shelfToCrawl)
-
-	return shelfToCrawl
 }
 
 func GetPreviewForShelf(shelfURL string) ([]dtos.BasicGoodReadsBook, int) {
