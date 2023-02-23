@@ -318,6 +318,24 @@ func TestExtractPrimaryAndTotalWorksWhereThereIsOnlyOneTotalWork(t *testing.T) {
 	assert.Equal(t, expectedTotal, actualTotal)
 }
 
+func TestGetFirstNBookCoversCapsAtN(t *testing.T) {
+	allBookCovers := []dtos.BasicGoodReadsBook{
+		{}, {}, {}, {},
+	}
+	expectedLength := 2
+
+	assert.Equal(t, expectedLength, len(getFirstNBookCovers(allBookCovers, expectedLength)))
+}
+
+func TestGetFirstNBookCoversDoesntCapWhenNIsLargerThanSliceLength(t *testing.T) {
+	allBookCovers := []dtos.BasicGoodReadsBook{
+		{}, {}, {}, {},
+	}
+	expectedLength := 10
+
+	assert.Equal(t, len(allBookCovers), len(getFirstNBookCovers(allBookCovers, expectedLength)))
+}
+
 func resetDBFields() {
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 	db.SetAddMoreAuthorBooksToAvailableBooksList(false)

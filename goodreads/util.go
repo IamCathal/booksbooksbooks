@@ -201,7 +201,7 @@ func extractSeriesTitleAndAuthorFromFullSeriesTitle(fullTitle string) (string, s
 	splitTitle := strings.Split(fullTitle, " Series")
 	if len(splitTitle) != 2 {
 		logger.Sugar().Warnf("could not split this series title: '%s'", fullTitle)
-		return fullTitle, "not listed"
+		return fullTitle, ""
 	}
 	return strings.TrimSpace(splitTitle[0]), strings.TrimSpace(splitTitle[1])
 }
