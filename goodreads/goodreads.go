@@ -32,10 +32,8 @@ func SetLogger(newLogger *zap.Logger) {
 func GetBooksFromShelves(shelveURLs []string, shelfStats chan<- int, booksFoundFromGoodReadsChan chan<- dtos.BasicGoodReadsBook) []dtos.BasicGoodReadsBook {
 	booksFromAllShelves := []dtos.BasicGoodReadsBook{}
 	for _, shelfToCrawl := range shelveURLs {
-		fmt.Println("get books from " + shelfToCrawl)
 		booksFromAllShelves = append(booksFromAllShelves, GetBooksFromShelf(shelfToCrawl, shelfStats, booksFoundFromGoodReadsChan)...)
 	}
-	fmt.Println("done getting all books from shelves")
 	close(shelfStats)
 	return booksFromAllShelves
 }
@@ -60,17 +58,17 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 
 	shelfStats <- totalBooks
 	extractedBooks := extractBooksFromHTML(doc)
-	for _, book := range extractedBooks {
-		booksFoundFromGoodReadsChan <- book
+	for _, foundBook := range extractedBooks {
+		booksFoundFromGoodReadsChan <- foundBook
 	}
 	allBooks = append(allBooks, extractedBooks...)
 
-	logger.Sugar().Infof("Extracted all %d books on page 1", len(extractedBooks))
+	logger.Sugar().Infof("Extracted all %d books on page 1 of shelf %s", len(extractedBooks), shelfURL)
 
 	if len(allBooks) < totalBooks {
-		totalPagesToCrawl := totalPagesToCrawl(totalBooks)
-		logger.Sugar().Infof("Shelf had >%d books, %d pages will need to be crawled", BOOK_COUNT_PER_PAGE, totalPagesToCrawl)
+		logger.Sugar().Infof("Shelf had >%d books, %d pages will need to be crawled", BOOK_COUNT_PER_PAGE, totalPagesToCrawl(totalBooks))
 		currPageToView := 2
+
 		for {
 			if len(allBooks) == totalBooks {
 				break
@@ -83,6 +81,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 				booksFoundFromGoodReadsChan <- book
 			}
 			allBooks = append(allBooks, extractedBooksFromNewPage...)
+
 			currPageToView++
 			sleepIfLongerThanAllotedTimeSinceLastRequest()
 		}

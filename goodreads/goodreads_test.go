@@ -298,6 +298,26 @@ func TestExtractCommunityRatingElements(t *testing.T) {
 	assert.Equal(t, expectedRating, actualRating)
 }
 
+func TestExtractPrimaryAndTotalWorks(t *testing.T) {
+	expectedPrimary := 21
+	expectedTotal := 24
+
+	actualPrimary, actualTotal := extractPrimaryAndTotalWorks("21 primary works • 24 total works")
+
+	assert.Equal(t, expectedPrimary, actualPrimary)
+	assert.Equal(t, expectedTotal, actualTotal)
+}
+
+func TestExtractPrimaryAndTotalWorksWhereThereIsOnlyOneTotalWork(t *testing.T) {
+	expectedPrimary := 1
+	expectedTotal := 1
+
+	actualPrimary, actualTotal := extractPrimaryAndTotalWorks("1 primary work • 1 total work")
+
+	assert.Equal(t, expectedPrimary, actualPrimary)
+	assert.Equal(t, expectedTotal, actualTotal)
+}
+
 func resetDBFields() {
 	db.SetKnownAuthors([]dtos.KnownAuthor{})
 	db.SetAddMoreAuthorBooksToAvailableBooksList(false)

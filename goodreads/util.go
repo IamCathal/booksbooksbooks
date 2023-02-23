@@ -23,6 +23,7 @@ var (
 	// the series information is given
 	TITLE_AND_SERIES_INFO_SEPERATOR = regexp.MustCompile("[ ]{3,}")
 	NUMBER_MATCH                    = regexp.MustCompile("[0-9]{1,}")
+	ONLY_NUMBERS                    = regexp.MustCompile(`([0-9]+)`)
 	// Goodreads returns 30 books per page
 	BOOK_COUNT_PER_PAGE = 30
 	// Base URL that book links are built on
@@ -197,28 +198,17 @@ func getSeriesLink(htmlPage *html.Node) string {
 }
 
 func extractSeriesTitleAndAuthorFromFullSeriesTitle(fullTitle string) (string, string) {
-	splitTitle := strings.Split(fullTitle, "by")
+	splitTitle := strings.Split(fullTitle, " Series")
 	if len(splitTitle) != 2 {
-		logger.Sugar().Infof("could not split this series title: '%s'", fullTitle)
-		return fullTitle, ""
+		logger.Sugar().Warnf("could not split this series title: '%s'", fullTitle)
+		return fullTitle, "not listed"
 	}
 	return strings.TrimSpace(splitTitle[0]), strings.TrimSpace(splitTitle[1])
 }
 
 func extractPrimaryAndTotalWorks(fullWorksText string) (int, int) {
-	fullWorksText = strings.Replace(fullWorksText, " primary works • ", " ", 1)
-	fullWorksText = strings.Replace(fullWorksText, " total works", "", 1)
-	splitBySpace := strings.Split(fullWorksText, " ")
-
-	intPrimaryWorks, err := strconv.Atoi(splitBySpace[0])
-	if err != nil {
-		panic(err)
-	}
-	intTotalWorks, err := strconv.Atoi(splitBySpace[1])
-	if err != nil {
-		panic(err)
-	}
-	return intPrimaryWorks, intTotalWorks
+	extractedNumbers := ONLY_NUMBERS.FindAllString(fullWorksText, 2)
+	return strToInt(extractedNumbers[0]), strToInt(extractedNumbers[1])
 }
 
 func extractSeriesInfo(seriesPageLink string) dtos.Series {
