@@ -66,6 +66,7 @@ func (control Cntr) GetPage(pageURL string) *html.Node {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
+	defer res.Body.Close()
 	doc, err := html.Parse(res.Body)
 	if err != nil {
 		logger.Sugar().Fatal(err)
@@ -91,6 +92,7 @@ func (control Cntr) Get(pageURL string) []byte {
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
+	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		logger.Sugar().Fatal(err)

@@ -1,6 +1,7 @@
 package goodreads
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -190,7 +191,6 @@ func getSeriesLink(htmlPage *html.Node) string {
 	doc := goquery.NewDocumentFromNode(htmlPage)
 	bookSeriesLink := ""
 	doc.Find("h3.Text__italic").Each(func(i int, bookSeriesElem *goquery.Selection) {
-		fmt.Printf("Found a h2 bookSeries")
 		seriesLink, _ := bookSeriesElem.Find("a").Attr("href")
 		bookSeriesLink = seriesLink
 	})
@@ -288,6 +288,15 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 
 	if !authorInMainTitle {
 		// TODO get most common authors or all authors
+		if len(seriesInfo.Books) == 0 {
+			fmt.Printf("\n\nbad bad no books found for series im gonna fail\n\n")
+			jsonOut, err := json.Marshal(seriesInfo)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(jsonOut)
+			panic("bad bad bad bad")
+		}
 		seriesInfo.Author = seriesInfo.Books[0].BookInfo.Author
 	}
 
