@@ -2,6 +2,8 @@
 
 I use [GoodReads](https://www.goodreads.com/) for my book reccomendations and I buy my books mostly from [TheBookshop.ie](https://thebookshop.ie/). I made this project to be able to automatically check if books on my "shopping list" are available on TheBookshop. Still in active development and if there is not an official release version then don't expect even master to work properly all of the time (I do use it myself at the moment so it should work).
 
+This is going to be my ultimate book procurement tool. I save a list of my recommended books that I'm interested in from GoodReads (and a list of all of the books that I own) and this application searches for not only all of the previously mentioned books but also any other books in any series that are found in that long list. So even if right now I'm only starting a series I can looking out to buy any of the books in the series to have for when I need them. 
+
 |      |  |
 | ----------- | ----------- |
 | ![](https://i.imgur.com/TEFxUnN.png)     | ![](https://i.imgur.com/vzhiiJ1.png)   |
