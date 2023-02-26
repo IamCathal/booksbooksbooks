@@ -2,11 +2,17 @@ package util
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+)
+
+var (
+	NON_ENGLISH_CHARACTER = regexp.MustCompile(`([^A-Za-z0-9 ,'\\\/\)\(-\.\[\]])`)
 )
 
 func SendNewBookIsAvailableNotification(book dtos.TheBookshopBook, available bool) {
@@ -101,4 +107,44 @@ func SendFreeShippingTotalHasKickedInNotification(totalCostOfBooks float64) {
 		}},
 	}
 	controller.Cnt.DeliverWebhook(message)
+}
+
+func IsEnglishText(bookDetail string) bool {
+	hasNonEnglishCharacters := NON_ENGLISH_CHARACTER.MatchString(bookDetail)
+	if hasNonEnglishCharacters {
+		return false
+	}
+
+	// A very crude BUT lightweight way of detecting a good amount
+	// of non english books. Using an actual language detection
+	// library would be like using an airplane to thread a needle
+	experimentalNonEnglishSnippets := []string{
+		" de ",
+		" le ",
+		" en ",
+		" francais ",
+		" del ",
+		" el ",
+		" los ",
+		" las ",
+		" und ",
+		" der ",
+		" des ",
+		" dem ",
+		" y ",
+		" ein ",
+		" eine ",
+		" einer ",
+		" l'",
+		" d'",
+		" la ",
+		" c'est ",
+	}
+	for _, nonEnglishSnippet := range experimentalNonEnglishSnippets {
+		if strings.Contains(strings.ToLower(bookDetail), nonEnglishSnippet) {
+			return false
+		}
+	}
+
+	return true
 }

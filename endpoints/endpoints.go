@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -136,10 +135,10 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isStaticContent := strings.HasPrefix(r.URL.Path, "/static/"); !isStaticContent {
-			logger.Sugar().Infow(fmt.Sprintf("Served request to %v", r.URL.Path),
-				zap.String("requestInfo", fmt.Sprintf("%+v", r)))
-		}
+		// if isStaticContent := strings.HasPrefix(r.URL.Path, "/static/"); !isStaticContent {
+		// 	logger.Sugar().Infow(fmt.Sprintf("Served request to %v", r.URL.Path),
+		// 		zap.String("requestInfo", fmt.Sprintf("%+v", r)))
+		// }
 		next.ServeHTTP(w, r)
 	})
 }

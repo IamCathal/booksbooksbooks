@@ -294,7 +294,7 @@ func extractSeriesInfo(seriesPageLink string) dtos.Series {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println(jsonOut)
+			fmt.Println(string(jsonOut))
 			panic("bad bad bad bad")
 		}
 		seriesInfo.Author = seriesInfo.Books[0].BookInfo.Author

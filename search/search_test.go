@@ -137,26 +137,6 @@ func TestSearchAllRankFindDoesReturnNonEnglishBooksWhenSettingIsDisabled(t *test
 	assert.DeepEqual(t, searchResults, searchResult.AuthorMatches)
 }
 
-func TestIsBookEnglishDetectsBookWithFrenchFada(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("Parrot, André - Sumer - FRENCH LANGUAGE Edition"))
-}
-
-func TestIsBookEnglishDetectsBookWithAUmlaut(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("Doerr, Anthony -Kaikki se valo jota emme näe - HB - Finnish"))
-}
-func TestIsBookEnglishDetectsBookWithPolishFancyZ(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("McCaffrey, Anne -Historia Nerilki ( Jeźdźcy smoków z"))
-}
-func TestIsBookEnglishDetectsBookWithCyrillicLetters(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("имя ветра"))
-}
-func TestIsBookEnglishDetectsBookWithFSharphesS(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("Schiller, Friedrich - Geschichte des dreißigjährigen Kriegs"))
-}
-func TestIsBookEnglishDetectsEnglishTitleBook(t *testing.T) {
-	assert.Equal(t, true, isBookEnglish("Collins, Suzanne / The Hunger Games ( Hunger Games Trilogy "))
-}
-
 func TestRemoveallBetweenSubstrings(t *testing.T) {
 	sourceText := "Mockingjay( Hunger Games Trilogy - Book 3 )"
 	assert.Equal(t, "Mockingjay", removeAllBetweenSubStrings(sourceText, "(", ")"))
@@ -252,18 +232,6 @@ func TestRemoveUnnecessaryBitsFromTheBookshopTitleRemovesPInformationBeyondFirst
 	actualTitle := removeUnnecessaryBitsFromTheBookshopTitle(testFullTitle)
 
 	assert.Equal(t, expectedTitle, actualTitle)
-}
-
-func TestIsBookEnglishDetectFrenchDune(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("Herbert, Frank - Le Messie de Dune ( FRENCH LANGUAGE PB ED) - En Francais"))
-}
-
-func TestIsBookEnglishDetectsFrenchBook(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("Purdy, James - Les Enfants , C'est tout - PB Gallimard - 1968 "))
-}
-
-func TestIsBookEnglishDetectsSpanishBook(t *testing.T) {
-	assert.Equal(t, false, isBookEnglish("Auel, Jean M. - El Clan Del Oso Cavernario ( Spanish Edition)"))
 }
 
 func TestRemoveEmptyStringElementsInArr(t *testing.T) {

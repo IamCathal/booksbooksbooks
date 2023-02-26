@@ -209,3 +209,13 @@ func mergeBooksThatAreInASeries(ownedBooks []dtos.BasicGoodReadsBook, availableB
 
 	return mergedBooksList
 }
+
+func filterOutNonEnglishSeriesBooks(unfilteredBooks []dtos.SeriesBook) []dtos.SeriesBook {
+	seriesBooksThatAreInEnglish := []dtos.SeriesBook{}
+	for _, book := range unfilteredBooks {
+		if util.IsEnglishText(book.BookInfo.Title) {
+			seriesBooksThatAreInEnglish = append(seriesBooksThatAreInEnglish, book)
+		}
+	}
+	return seriesBooksThatAreInEnglish
+}

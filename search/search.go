@@ -2,18 +2,16 @@ package search
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/iamcathal/booksbooksbooks/util"
 	"go.uber.org/zap"
 )
 
 var (
 	logger *zap.Logger
-
-	NON_ENGLISH_CHARACTER = regexp.MustCompile(`([^A-Za-z0-9 ,'\\\/\)\(-\.\[\]])`)
 )
 
 func SetLogger(newLogger *zap.Logger) {
@@ -79,16 +77,16 @@ func removeNonEnglishBooks(searchResult dtos.EnchancedSearchResult) dtos.Enchanc
 	}
 
 	for _, titleMatch := range searchResult.TitleMatches {
-		isAuthorEnglish := isBookEnglish(titleMatch.Author)
-		isTitleEnglish := isBookEnglish(titleMatch.Title)
+		isAuthorEnglish := util.IsEnglishText(titleMatch.Author)
+		isTitleEnglish := util.IsEnglishText(titleMatch.Title)
 
 		if isAuthorEnglish && isTitleEnglish {
 			filteredSearchResults.TitleMatches = append(filteredSearchResults.TitleMatches, titleMatch)
 		}
 	}
 	for _, authorMatch := range searchResult.AuthorMatches {
-		isAuthorEnglish := isBookEnglish(authorMatch.Author)
-		isTitleEnglish := isBookEnglish(authorMatch.Title)
+		isAuthorEnglish := util.IsEnglishText(authorMatch.Author)
+		isTitleEnglish := util.IsEnglishText(authorMatch.Title)
 
 		if isAuthorEnglish && isTitleEnglish {
 			filteredSearchResults.AuthorMatches = append(filteredSearchResults.AuthorMatches, authorMatch)
@@ -96,46 +94,6 @@ func removeNonEnglishBooks(searchResult dtos.EnchancedSearchResult) dtos.Enchanc
 	}
 
 	return filteredSearchResults
-}
-
-func isBookEnglish(bookDetail string) bool {
-	hasNonEnglishCharacters := NON_ENGLISH_CHARACTER.MatchString(bookDetail)
-	if hasNonEnglishCharacters {
-		return false
-	}
-
-	// A very crude BUT lightweight way of detecting a good amount
-	// of non english books. Using an actual language detection
-	// library would be like using an airplane to thread a needle
-	experimentalNonEnglishSnippets := []string{
-		" de ",
-		" le ",
-		" en ",
-		" francais ",
-		" del ",
-		" el ",
-		" los ",
-		" las ",
-		" und ",
-		" der ",
-		" des ",
-		" dem ",
-		" y ",
-		" ein ",
-		" eine ",
-		" einer ",
-		" l'",
-		" d'",
-		" la ",
-		" c'est ",
-	}
-	for _, nonEnglishSnippet := range experimentalNonEnglishSnippets {
-		if strings.Contains(strings.ToLower(bookDetail), nonEnglishSnippet) {
-			return false
-		}
-	}
-
-	return true
 }
 
 func getPureTheBookshopTitle(unfilteredTitle string) string {

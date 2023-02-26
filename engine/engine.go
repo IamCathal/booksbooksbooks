@@ -255,8 +255,7 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 	lookUpBooksOnTheBookshopChan := make(chan dtos.EnchancedSearchResult, 400)
 
 	booksFromShelf := goodreads.GetBooksFromShelves(db.GetShelfURLsFromShelvesToCrawl(), statsChan, initialShelfLookupChan)
-	// booksFromShelf := goodreads.GetBooksFromShelf(db.GetOwnedBooksShelfURL(), statsChan, initialShelfLookupChan)
-	close(initialShelfLookupChan)
+	// close(initialShelfLookupChan)
 	ownedBooksThatAreInASeries := extractGoodreadsBooksThatAreInSeries(booksFromShelf)
 
 	fmt.Printf("%d books are in a series %+v\n", len(ownedBooksThatAreInASeries), ownedBooksThatAreInASeries)
@@ -304,11 +303,18 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 			if seriesCrawlStats.TotalBooksInSeries == -1 {
 				seriesCrawlStats.TotalBooksInSeries = 0
 			}
+
+			if db.GetOnlyEnglishBooks() {
+				bookCountBeforeFiltering := len(seriesInfo.Books)
+				seriesInfo.Books = filterOutNonEnglishSeriesBooks(seriesInfo.Books)
+				logger.Sugar().Infof("%d non-english books were filtered out", bookCountBeforeFiltering-len(ownedBooksThatAreInASeries))
+			}
+
 			seriesCrawlStats.TotalBooksInSeries += len(seriesInfo.Books)
 			writeNewSeriesFoundMessage(seriesInfo, seriesCrawlStats, ws)
 
 			shelfSeriesDetails = append(shelfSeriesDetails, seriesInfo)
-			logger.Sugar().Infof("[SeriesLookedUp: %d][BooksSearchedOnTheBookshop: %d/%d] Found series: %s which have %d books in total",
+			logger.Sugar().Infof("[SeriesLookedUp: %d][BooksSearchedOnTheBookshop: %d/%d] Found series: %s which has %d books in total",
 				seriesCrawlStats.SeriesLookedUp, seriesCrawlStats.BooksSearchedOnTheBookshop, seriesCrawlStats.TotalBooksInSeries, seriesInfo.Title, len(seriesInfo.Books))
 
 			for _, bookInSeries := range seriesInfo.Books {
@@ -337,6 +343,7 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 	}
 	close(lookUpBooksOnTheBookshopChan)
 	close(seriesDetailsChan)
+	close(initialShelfLookupChan)
 
 	logger.Sugar().Infof("Found %d matches out of %d searches for series crawl lookup of shelf: %s\n",
 		seriesCrawlStats.BookMatchesFound, seriesCrawlStats.BooksSearchedOnTheBookshop, db.GetOwnedBooksShelfURL())
@@ -344,7 +351,7 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 	updatedShelfSeriesDetailsWithMatches := shelfSeriesDetails
 
 	for bookLink, match := range theBookshopMatchesFound {
-		logger.Sugar().Infof("Inserting match %s -> %+v into series details: %+v", bookLink, match)
+		logger.Sugar().Infof("Inserting match %s -> %+v", bookLink, match)
 
 		for k, bookSeries := range shelfSeriesDetails {
 			for i := 0; i < len(bookSeries.Books); i++ {
@@ -357,6 +364,7 @@ func SeriesLookupWorker(ws *websocket.Conn) []dtos.Series {
 	}
 
 	db.SetSeriesCrawlBooks(updatedShelfSeriesDetailsWithMatches)
+	logger.Info("Done series crawl :)")
 	return updatedShelfSeriesDetailsWithMatches
 }
 
