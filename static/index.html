@@ -47,18 +47,24 @@
 
     <div class="container mt-4 swankyBorders" style="border: 2px solid #c0c0c0">
         <div class="row">
-            <div class="col">
+            <div class="col pt-3">
                 <div class="col pl-3 pb-5" style="border-top-left-radius: 2rem; border-bottom-right-radius: 2rem;">
-                    <div class="row justify-content-md-center pl-3 pr-3 pt-2 pb-3">
+                    <div class="row justify-content-md-center pl-3 pr-3 pt-0 pb-0">
+                        <p class="mb-0 pageBoxMidTitle">Start a simple crawl of a GoodReads shelf</p>
+                    </div>
+                    <div class="row justify-content-md-center pl-3 pr-3 pt-0 pb-0">
                         <input 
                             type="text"
                             id="mainInputBox"
                         >
-                     </div>
-                     <div class="row justify-content-md-center" id="recentCrawlBreadcrumbButtons">
+                    </div>
+                    <div class="row justify-content-md-center">
+                        <p class="mb-0" style="font-size: 0.7rem">Previously crawled shelves</p>
+                    </div>
+                    <div class="row justify-content-md-center" id="recentCrawlBreadcrumbButtons">
 
-                     </div>
-                     <div class="row pl-3 pr-3">
+                    </div>
+                    <div class="row pl-3 pr-3">
                          <div class="col text-center" id="crawlInfoBox" style="display:none">
                              <div class="row justify-content-md-center pt-2 pb-2">
                                 <div class="col crawlInfoCol">
@@ -95,7 +101,7 @@
                                 </div>
                              </div>
                          </div>
-                     </div>
+                    </div>
                      <div class="row crawlProgressBar mt-2 mb-2" id="crawlProgressDiv">
                         <span class="crawlProgressBarSpan" id="crawlProgressBarSpanID"></span>
                     </div>

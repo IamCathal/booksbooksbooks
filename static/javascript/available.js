@@ -20,7 +20,6 @@ document.getElementById("clearList").addEventListener("click", () => {
     getAvailableBooks().then((res) => {
         availableBooks = res
         renderAvailableBooks(res)
-        loadAndRenderAutomatedShelfStats()
     }, err => {
         console.error(err)
     })
@@ -69,7 +68,7 @@ function renderAvailableBooks(availableBookList) {
                                         ${moreInfoText} 
                                         <a href="#"><span class="ml-1 pl-1 pr-1 thinBorderBox ignoreBook" style="border-radius: 0.2rem" id="${book.bookPurchaseInfo.link}">Ignore</span></a>
                                     </div>
-                                    <div class="row mt-1 ignoreBook" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
+                                    <div class="row mt-1" style="font-size: 0.6rem; color: #c0c0c0" id="${book.bookPurchaseInfo.link}">
                                         ${getFoundFromBadge(book.bookFoundFrom)}, checked ${timeSince(new Date(book.lastCheckedTimeStamp * 1000))} ago
                                     </div>
                                 </div>
@@ -117,7 +116,6 @@ function renderAvailableBooks(availableBookList) {
                 unignoreBook(ev.target.id).then((res) => {
                     getAvailableBooks().then(newAvailableBooks => {
                         renderAvailableBooks(newAvailableBooks)
-                        loadAndRenderAutomatedShelfStats()
                     }, err => {
                         console.error(err)
                     })
@@ -132,7 +130,6 @@ function renderAvailableBooks(availableBookList) {
                 ignoreBook(ev.target.id).then((res) => {
                     getAvailableBooks().then(newAvailableBooks => {
                         renderAvailableBooks(newAvailableBooks)
-                        loadAndRenderAutomatedShelfStats()
                     }, err => {
                         console.error(err)
                     })

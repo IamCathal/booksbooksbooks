@@ -62,10 +62,8 @@
                 <div class="col">
                     <div class="row pb-3">
                         <div class="col">
-                            A regular crawl will search all books that are found in the provided shelf. The automated shelf check URL will 
-                            be the shelf that's used for automatic crawling at the provided time. If no URL is given then the automated 
-                            crawl isn't executed and likewise for the time. Results can be viewed on the
-                            <a style="display:inline" href="/available">available</a> page.
+                            All shelves listed in the shelves to crawl section will be processed during the daily automated crawl if a time is specified.
+                            Any book that's found in your owned book shelf will not be searched if somehow found during a crawl (this makes searches more efficient)
                         </div>
                     </div>
                     <div class="row">
@@ -81,7 +79,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-3">
+                        <div class="col-3" id="shelvesToCrawlMarker">
                             Shelves to Crawl
                         </div>
                         <div class="col-7 pl-1">
@@ -128,6 +126,22 @@
                         </div>
                     </div>
 
+                    <div class="row pt-3">
+                        <div class="col-3">
+                            Owned books Shelf URL
+                        </div>
+                        <div class="col-7 pl-1">
+                            <input
+                                type="text"
+                                class="settingsInputBox"
+                                id="ownedBookshelfURLInputBox"
+                            >
+                        </div>
+                        <div class="col" >
+                            <button class="settingsTestButton" id="settingsTestOwnedBooksShelfURLButton" style="width: 4rem;"> Set Shelf </button>
+                        </div>
+                    </div>
+
                     <div class="row pt-2 pb-2">
                         <div class="col-3">
                             Automated Check Time
@@ -139,11 +153,12 @@
                             <button class="settingsTestButton" id="settingsSetAutomatedCheckTimeButton" style="width: 5rem;"> Configure </button>
                         </div>
                     </div>
-                    <div class="row pt-2 pb-2">
+
+                    <div class="row pt-3 pb-2">
                         <div class="col-4">
                             <div class="row">
                                 <div class="col-9">
-                                    If more books from an author are found then add the books to the available list
+                                    If more books from an author are found then add those books to the available list
                                 </div>
                                 <div class="col">
                                     <input id="addMoreAuthorBooksToAvailableList" type="checkbox">
@@ -153,7 +168,7 @@
                         <div class="col-4">
                             <div class="row">
                                 <div class="col-9">
-                                    If a book is part of a series search all of the other books in that series
+                                    If a book is part of a series then search all of the other books in that series
                                 </div>
                                 <div class="col">
                                     <input id="setSeriesInAutomatedCrawl" type="checkbox">
@@ -167,7 +182,7 @@
             </div>
 
 
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col" style="font-size: 1.8rem; font-weight: bold">
                     Series Crawling
                 </div>
@@ -181,11 +196,11 @@
                     then all of the other books in the series are searched on TheBookshop. Results can be viewed on the
                     <a style="display:inline" href="/series">series</a> page.
                 </p>
-            </div>
+            </div> -->
 
             <div class="row pt-1 pb-3">
                 <div class="col">
-                    <div class="row">
+                    <!-- <div class="row">
                         <div class="col-3">
                             Owned books Shelf URL
                         </div>
@@ -199,7 +214,7 @@
                         <div class="col-1" >
                             <button class="settingsTestButton" id="settingsTestOwnedBooksShelfURLButton" style="width: 3rem;"> Test </button>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="row" id="ownedShelfPreviewRow" style="display: none">
                         <div class="col-3">
                             
@@ -231,13 +246,19 @@
 
             <hr style="background-color: #c0c0c0" class="mt-0 mb-1"/>
 
+            <div class="row">
+                <div class="col">
+                    Send notifications via discord webhooks to a channel of your choice.
+                </div>
+            </div>
+
             <div class="row pt-3 pb-3">
                 <div class="col">
                     <div class="row pb-3">
                         <div class="col-3">
                             Discord Webhook URL
                         </div>
-                        <div class="col">
+                        <div class="col-7">
                             <input
                                 type="text"
                                 class="settingsInputBox"
