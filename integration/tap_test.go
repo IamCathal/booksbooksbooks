@@ -8,7 +8,9 @@ import (
 	"github.com/iamcathal/booksbooksbooks/controller"
 	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/iamcathal/booksbooksbooks/engine"
 	"github.com/iamcathal/booksbooksbooks/goodreads"
+	"github.com/iamcathal/booksbooksbooks/thebookshop"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -17,6 +19,7 @@ var (
 	logger                  *zap.Logger
 	CHAOS_WALKING_SHELF     = "https://www.goodreads.com/review/list/164034456?shelf=chaoswalking"
 	LORD_OF_THE_RINGS_SHELF = "https://www.goodreads.com/review/list/164034456?shelf=lordoftherings"
+	MONSTERS_OF_MEN_LINK    = "https://www.goodreads.com/book/show/20758105-monsters-of-men"
 )
 
 func TestMain(m *testing.M) {
@@ -33,6 +36,8 @@ func TestMain(m *testing.M) {
 	logger = testLogger
 	db.SetLogger(testLogger)
 	goodreads.SetLogger(testLogger)
+	engine.SetLogger(testLogger)
+	thebookshop.SetLogger(testLogger)
 	db.ConnectToRedis()
 	db.SetTestDataIdentifiers()
 
@@ -121,4 +126,14 @@ func TestGetsBooksFromShelves(t *testing.T) {
 	actualBooksFromShelves := goodreads.GetBooksFromShelves([]string{CHAOS_WALKING_SHELF, LORD_OF_THE_RINGS_SHELF}, shelfStatsChan, booksFromShelfChan)
 
 	assert.ObjectsAreEqualValues(expectedBooksFromShelf, actualBooksFromShelves)
+}
+
+func TestGetSeriesLinkForMonstersOfMen(t *testing.T) {
+	monstersOfMen := dtos.BasicGoodReadsBook{
+		Title:      "Monsters of Men",
+		Author:     "Ness, Patrick",
+		SeriesText: "Chaos Walking, #3",
+		Link:       MONSTERS_OF_MEN_LINK,
+	}
+	assert.NotEmpty(t, goodreads.GetSeriesLink(monstersOfMen))
 }
