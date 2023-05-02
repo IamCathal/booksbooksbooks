@@ -77,7 +77,7 @@ func processBook(fullTitle, author, cover, isbn13, asin, rating, link string) dt
 
 func extractBooksFromHTML(doc *goquery.Document) []dtos.BasicGoodReadsBook {
 	allBooks := []dtos.BasicGoodReadsBook{}
-	doc.Find("tbody#booksBody").Each(func(i int, bookReviews *goquery.Selection) {
+	doc.Find("#booksBody").Each(func(i int, bookReviews *goquery.Selection) {
 		bookReviews.Find("tr").Each(func(k int, bookReviewRow *goquery.Selection) {
 			title := bookReviewRow.Find("td[class='field title'] a").Text()
 			author := bookReviewRow.Find("td[class='field author'] a").Text()
@@ -104,7 +104,7 @@ func GetAvailableBooksFromSearchResult(searchResults []dtos.EnchancedSearchResul
 			}
 			availableBooks = append(availableBooks, availableBook)
 		}
-		if addMoreAuthorBooks := db.GetAddMoreAuthorBooksToAvailableBooksList(); addMoreAuthorBooks {
+		if addMoreAuthorBooks := db.AddOtherAuthorBooksIfFound(); addMoreAuthorBooks {
 			for _, authorMatch := range searchResult.TitleMatches {
 				availableBook := dtos.AvailableBook{
 					BookInfo:         searchResult.SearchBook,
@@ -187,13 +187,17 @@ func ensureAllAverageRatingsAreOfTypeString(jsonData []byte) []byte {
 	return []byte(stringJson)
 }
 
-func getSeriesLink(htmlPage *html.Node) string {
+func getSeriesLink(seriesTitle string, htmlPage *html.Node) string {
 	doc := goquery.NewDocumentFromNode(htmlPage)
 	bookSeriesLink := ""
-	doc.Find("h3.Text__italic").Each(func(i int, bookSeriesElem *goquery.Selection) {
-		seriesLink, _ := bookSeriesElem.Find("a").Attr("href")
-		bookSeriesLink = seriesLink
+	doc.Find("h3.Text__italic > a").Each(func(i int, bookSeriesElem *goquery.Selection) {
+		bookSeriesLink, _ := bookSeriesElem.Attr("href")
+		fmt.Printf("Found a new series link: %s\n", bookSeriesLink)
 	})
+	if bookSeriesLink == "" {
+		logger.Sugar().Panicf("failed to retrieve series link for %s", seriesTitle)
+	}
+	fmt.Printf("Returning the series link found from indiv page %s\n", bookSeriesLink)
 	return bookSeriesLink
 }
 
