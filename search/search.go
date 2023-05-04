@@ -57,12 +57,12 @@ func SearchAllRankFind(bookInfo dtos.BasicGoodReadsBook, searchResults []dtos.Th
 	}
 
 	if len(potentialTitleMatches) >= 1 {
-		logger.Sugar().Infof("%d potential title matches found for book: %+v matches: %+v",
-			len(potentialAuthorMatches), bookInfo, potentialTitleMatches)
+		logger.Sugar().Infof("%d potential title matches found for book: %+v, title matches: %+v",
+			len(potentialTitleMatches), bookInfo.Title, util.GetConciseInfoFromGoodReadsBooks(potentialTitleMatches))
 	}
 	if len(potentialAuthorMatches) >= 1 {
-		logger.Sugar().Infof("%d potential author matches found for book: %+v matches: %+v",
-			len(potentialAuthorMatches), bookInfo, potentialTitleMatches)
+		logger.Sugar().Infof("%d potential author matches found for author %s who wrote %+v, author matches: %+v",
+			len(potentialAuthorMatches), bookInfo.Author, bookInfo.Title, util.GetConciseInfoFromGoodReadsBooks(potentialAuthorMatches))
 	}
 
 	if getOnlyEnglishBooks := db.GetOnlyEnglishBooks(); getOnlyEnglishBooks {
@@ -90,6 +90,8 @@ func removeNonEnglishBooks(searchResult dtos.EnchancedSearchResult) dtos.Enchanc
 
 		if isAuthorEnglish && isTitleEnglish {
 			filteredSearchResults.AuthorMatches = append(filteredSearchResults.AuthorMatches, authorMatch)
+		} else {
+			// logger.Sugar().Infof("Filtering out non-english book: %s by %s because filter non-english books is enabled", authorMatch.Title, authorMatch.Author)
 		}
 	}
 

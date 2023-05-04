@@ -148,3 +148,12 @@ func IsEnglishText(bookDetail string) bool {
 
 	return true
 }
+
+func GetConciseInfoFromGoodReadsBooks(bookList []dtos.TheBookshopBook) []string {
+	info := []string{}
+
+	for _, book := range bookList {
+		info = append(info, fmt.Sprintf("%s: %s (%v)", book.Author, book.Title, book.Price))
+	}
+	return info
+}
