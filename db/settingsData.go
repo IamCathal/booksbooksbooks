@@ -20,7 +20,6 @@ var (
 	OTHER_BOOKS_IN_SERIES_LOOKUP                  = "otherBooksInSeriesLookup"
 	OWNED_BOOKS_SHELF_URL                         = "ownedBooksShelfURL"
 	ONLY_ENGLISH_BOOKS_TOGGLE                     = "onlyEnglishBooksToggle"
-	SERIES_CRAWL_IN_AUTOMATED_CRAWL               = "seriesCrawlInAutomatedCrawl"
 	SHELVES_TO_CRAWL                              = "shelvesToCrawl"
 )
 
@@ -148,17 +147,17 @@ func SetAddMoreAuthorBooksToAvailableBooksList(enabled bool) {
 	}
 }
 
-func GetAddMoreAuthorBooksToAvailableBooksList() bool {
+func AddOtherAuthorBooksIfFound() bool {
 	enabled, err := redisClient.Get(ctx, ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST).Result()
 	if err == redis.Nil {
 		SetAddMoreAuthorBooksToAvailableBooksList(false)
-		return GetAddMoreAuthorBooksToAvailableBooksList()
+		return AddOtherAuthorBooksIfFound()
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 	if enabled == "" {
 		SetAddMoreAuthorBooksToAvailableBooksList(false)
-		return GetAddMoreAuthorBooksToAvailableBooksList()
+		return AddOtherAuthorBooksIfFound()
 	}
 	return strToBool(enabled)
 }
@@ -256,24 +255,24 @@ func PurgeIgnoredAuthorsFromAvailableBooks() {
 	SetAvailableBooks(availableBooksWithoutPurgedAuthor)
 }
 
-func SetOtherBooksInSeriesLookup(enabled bool) {
+func SetSearchOtherSeriesBooksLookup(enabled bool) {
 	err := redisClient.Set(ctx, OTHER_BOOKS_IN_SERIES_LOOKUP, enabled, DEFAULT_TTL).Err()
 	if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 }
 
-func GetOtherBooksInSeriesLookup() bool {
+func SearchOtherSeriesBooksLookup() bool {
 	enabled, err := redisClient.Get(ctx, OTHER_BOOKS_IN_SERIES_LOOKUP).Result()
 	if err == redis.Nil {
-		SetOtherBooksInSeriesLookup(false)
-		return GetOtherBooksInSeriesLookup()
+		SetSearchOtherSeriesBooksLookup(false)
+		return SearchOtherSeriesBooksLookup()
 	} else if err != nil {
 		logger.Sugar().Fatal(err)
 	}
 	if enabled == "" {
-		SetOtherBooksInSeriesLookup(false)
-		return GetOtherBooksInSeriesLookup()
+		SetSearchOtherSeriesBooksLookup(false)
+		return SearchOtherSeriesBooksLookup()
 	}
 	return strToBool(enabled)
 }
@@ -313,28 +312,6 @@ func GetOnlyEnglishBooks() bool {
 	if enabled == "" {
 		SetOnlyEnglishBooks(false)
 		return GetOnlyEnglishBooks()
-	}
-	return strToBool(enabled)
-}
-
-func SetSeriesCrawlInAutomatedCrawl(enabled bool) {
-	err := redisClient.Set(ctx, SERIES_CRAWL_IN_AUTOMATED_CRAWL, enabled, DEFAULT_TTL).Err()
-	if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-}
-
-func GetSeriesCrawlInAutomatedCrawl() bool {
-	enabled, err := redisClient.Get(ctx, SERIES_CRAWL_IN_AUTOMATED_CRAWL).Result()
-	if err == redis.Nil {
-		SetSeriesCrawlInAutomatedCrawl(false)
-		return GetSeriesCrawlInAutomatedCrawl()
-	} else if err != nil {
-		logger.Sugar().Fatal(err)
-	}
-	if enabled == "" {
-		SetSeriesCrawlInAutomatedCrawl(false)
-		return GetSeriesCrawlInAutomatedCrawl()
 	}
 	return strToBool(enabled)
 }

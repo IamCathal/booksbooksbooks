@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/iamcathal/booksbooksbooks/controller"
@@ -218,4 +220,37 @@ func filterOutNonEnglishSeriesBooks(unfilteredBooks []dtos.SeriesBook) []dtos.Se
 		}
 	}
 	return seriesBooksThatAreInEnglish
+}
+
+func addAuthorsToKnownAuthors(books []dtos.TheBookshopBook) {
+	for _, book := range books {
+		db.AddAuthorToKnownAuthors(book.Author)
+	}
+}
+
+func getNewBooksFromSearchResult(matches []dtos.TheBookshopBook, previouslyKnownAvailableBooksMap map[string]bool) []dtos.TheBookshopBook {
+	newBooks := []dtos.TheBookshopBook{}
+	for _, book := range matches {
+		if bookIsNew := wasNotPreviouslyAvailable(book, previouslyKnownAvailableBooksMap); bookIsNew {
+			newBooks = append(newBooks, book)
+		}
+	}
+	return newBooks
+}
+
+// https://stackoverflow.com/a/32843750
+func waitButTimeoutAfterDuration(waitG *sync.WaitGroup, duration time.Duration) bool {
+	tempChannel := make(chan struct{})
+
+	go func() {
+		defer close(tempChannel)
+		waitG.Wait()
+	}()
+
+	select {
+	case <-tempChannel:
+		return false
+	case <-time.After(duration):
+		return true
+	}
 }

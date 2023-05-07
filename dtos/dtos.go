@@ -1,6 +1,9 @@
 package dtos
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 const (
 	TITLE_MATCH = iota
@@ -95,4 +98,10 @@ type EmbedField struct {
 	Name   string `json:"name,omitempty"`
 	Value  string `json:"value,omitempty"`
 	Inline bool   `json:"inline,omitempty"`
+}
+
+type WorkerInteralData struct {
+	SearchedGoodReadsBooks map[string]bool
+	SearchedSeries         map[string]bool
+	Lock                   *sync.Mutex
 }

@@ -10,6 +10,8 @@ let singleBook = {
 }
 
 checkToSeeIfShelfURLPreLoaded()
+getAndRenderRecentCrawlBreadcrumbs()
+giveSwayaaangBordersToItems()
 
 function checkToSeeIfShelfURLPreLoaded() {
     const urlParams = new URLSearchParams(window.location.search)
@@ -21,8 +23,6 @@ function checkToSeeIfShelfURLPreLoaded() {
         enableBackGroundVisualToggle("naturalOrderToggle")
     }
 }
-
-getAndRenderRecentCrawlBreadcrumbs()
 
 function getAndRenderRecentCrawlBreadcrumbs() {
     fetch(`/getrecentcrawlbreadcrumbs`)
@@ -46,18 +46,6 @@ function getAndRenderRecentCrawlBreadcrumbs() {
     });
 }
 
-// experiment()
-// function experiment() {
-//     let tableContent = `<table style="width: 100%"><tr style="border: 1px solid #606060">`
-
-//     for (let i = 0; i < 53; i++) {
-//         tableContent += `<td style="background-color: ${i % 2 == 0 ? '#22242f' : 'green'}; height: 0.5rem"></td>`
-//     }
-//     tableContent += `</tr></table>`
-//     document.getElementById("tdExperiment").innerHTML = tableContent
-// }
-
-giveSwayaaangBordersToItems()
 
 document.getElementById("mainInputBox").addEventListener("keyup", function(event) {
     const shelfUrl = document.getElementById("mainInputBox").value
@@ -66,8 +54,6 @@ document.getElementById("mainInputBox").addEventListener("keyup", function(event
         clearCurrentCrawlIfThereIsOne()
         showCrawlInfoElements()
         enableBackGroundVisualToggle("naturalOrderToggle")
-        // https://www.goodreads.com/review/list/1753152-sharon?shelf=fantasy
-
     }
 });
 
@@ -249,6 +235,7 @@ function renderAndAddBookToNewAvailableBookList(newAvailableBook) {
 }
 
 function fillInSearchResult(msg) {
+    console.log(`its a new search result for book ${msg}`)
     if (msg.titleMatches == null || msg.titleMatches.length == 0) {
         document.getElementById(`${msg.searchBook.id}-theBookshopResults`).innerHTML = `
     <div class="row">

@@ -11,6 +11,9 @@ type BasicGoodReadsBook struct {
 	Asin          string  `json:"asin"`
 	Rating        float32 `json:"rating"`
 	PublishedYear int     `json:"published"`
+
+	// BooksBooksBooks specific meta data
+	IsFromSeriesSearch bool `json:"isFromSeriesSearch"`
 }
 
 type GoodReadsSearchBookResult struct {

@@ -53,8 +53,8 @@ func setupSettingsRouter(mainRouter *mux.Router) *mux.Router {
 	settingsRouter.HandleFunc("/purgeauthormatches", purgeAuthorMatches).Methods("POST")
 	settingsRouter.HandleFunc("/purgeseriesmatches", purgeSeriesMatches).Methods("POST")
 
-	settingsRouter.HandleFunc("/getseriesinautomatedcrawl", getSeriesInAutomatedCrawl).Methods("GET")
-	settingsRouter.HandleFunc("/setseriesinautomatedcrawl", setSeriesInAutomatedCrawl).Methods("POST")
+	settingsRouter.HandleFunc("/getsearchotherseriesbooksinlookup", getSearchOtherSeriesBooksInLookup).Methods("GET")
+	settingsRouter.HandleFunc("/setsearchotherseriesbookslookup", setSearchOtherSeriesBooksLookup).Methods("POST")
 
 	settingsRouter.Use(logMiddleware)
 
@@ -264,7 +264,7 @@ func setAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Re
 
 func getAddMoreAuthorBooksToAvailableBooksList(w http.ResponseWriter, r *http.Request) {
 	res := dtos.BooleanSettingStatusResponse{
-		Enabled: db.GetAddMoreAuthorBooksToAvailableBooksList(),
+		Enabled: db.AddOtherAuthorBooksIfFound(),
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
@@ -367,15 +367,15 @@ func purgeSeriesMatches(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func getSeriesInAutomatedCrawl(w http.ResponseWriter, r *http.Request) {
+func getSearchOtherSeriesBooksInLookup(w http.ResponseWriter, r *http.Request) {
 	res := dtos.BooleanSettingStatusResponse{
-		Enabled: db.GetSeriesCrawlInAutomatedCrawl(),
+		Enabled: db.SearchOtherSeriesBooksLookup(),
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
 
-func setSeriesInAutomatedCrawl(w http.ResponseWriter, r *http.Request) {
+func setSearchOtherSeriesBooksLookup(w http.ResponseWriter, r *http.Request) {
 	enabled := r.URL.Query().Get("enabled")
 	enabledBool, isValid := strToBool(enabled)
 	if !isValid {
@@ -383,6 +383,6 @@ func setSeriesInAutomatedCrawl(w http.ResponseWriter, r *http.Request) {
 		SendBasicInvalidResponse(w, r, errorMsg, http.StatusBadRequest)
 		return
 	}
-	db.SetSeriesCrawlInAutomatedCrawl(enabledBool)
+	db.SetSearchOtherSeriesBooksLookup(enabledBool)
 	w.WriteHeader(http.StatusOK)
 }

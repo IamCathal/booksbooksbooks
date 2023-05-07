@@ -191,8 +191,8 @@ func getSeriesLink(seriesTitle string, htmlPage *html.Node) string {
 	doc := goquery.NewDocumentFromNode(htmlPage)
 	bookSeriesLink := ""
 	doc.Find("h3.Text__italic > a").Each(func(i int, bookSeriesElem *goquery.Selection) {
-		bookSeriesLink, _ := bookSeriesElem.Attr("href")
-		fmt.Printf("Found a new series link: %s\n", bookSeriesLink)
+		seriesLinkExtracted, _ := bookSeriesElem.Attr("href")
+		bookSeriesLink = seriesLinkExtracted
 	})
 	if bookSeriesLink == "" {
 		logger.Sugar().Panicf("failed to retrieve series link for %s", seriesTitle)

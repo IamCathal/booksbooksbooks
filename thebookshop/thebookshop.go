@@ -34,12 +34,12 @@ func SearchForBook(bookInfo dtos.BasicGoodReadsBook, bookSearchResultsChan chan<
 	for {
 		if time.Since(lastRequestMade) > SLEEP_DURATION {
 			lastRequestMade = time.Now()
+			logger.Sugar().Infof("Searching for %s by %s", bookInfo.Title, bookInfo.Author)
 			bookSearchResults := searchTheBookshop(bookInfo, bookSearchResultsChan)
 			bookshopRequestLock.Unlock()
 			logger.Sugar().Debugw(fmt.Sprintf("Waited %v before executing TheBookshop.ie search request", time.Since(startTime)),
 				zap.String("dignostics", "theBookshopEngine"))
 			return bookSearchResults
-			// return FindAuthorAndOrTitleMatches(bookInfo, allBooks)
 		}
 	}
 }

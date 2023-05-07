@@ -34,7 +34,7 @@ func GetBooksFromShelves(shelveURLs []string, shelfStats chan<- int, booksFoundF
 	for _, shelfToCrawl := range shelveURLs {
 		booksFromAllShelves = append(booksFromAllShelves, GetBooksFromShelf(shelfToCrawl, shelfStats, booksFoundFromGoodReadsChan)...)
 	}
-	close(shelfStats)
+	// TODO move this up one level
 	return booksFromAllShelves
 }
 
@@ -51,7 +51,7 @@ func extractBooksFromShelfPage(shelfURL string, shelfStats chan<- int, booksFoun
 	allBooks := []dtos.BasicGoodReadsBook{}
 	totalBooks := 0
 
-	doc.Find("div[id='infiniteStatus']").Each(func(i int, loadedCount *goquery.Selection) {
+	doc.Find("#infiniteStatus").Each(func(i int, loadedCount *goquery.Selection) {
 		_, totalBooks = extractLoadedCount(loadedCount.Text())
 		logger.Sugar().Infof("Shelf %s has %d total books to crawl", shelfURL, totalBooks)
 	})
@@ -161,8 +161,10 @@ func SearchGoodreads(bookPurchaseInfo dtos.TheBookshopBook) (bool, dtos.BasicGoo
 }
 
 func GetSeriesLink(bookInSeries dtos.BasicGoodReadsBook) string {
+	logger.Sugar().Infof("Finding series link for %s by %s with seriesText %s", bookInSeries.Title, bookInSeries.Author, bookInSeries.SeriesText)
 	individualBookPage := controller.Cnt.GetPage(bookInSeries.Link)
-	return getSeriesLink(individualBookPage)
+	fmt.Printf("Got book page doc %s\n", bookInSeries.Link)
+	return getSeriesLink(bookInSeries.SeriesText, individualBookPage)
 }
 
 func GetSeriesDetailsFromLink(seriesLink string, seriesDetailsChan chan<- dtos.Series) dtos.Series {

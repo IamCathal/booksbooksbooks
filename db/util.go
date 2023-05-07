@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/iamcathal/booksbooksbooks/dtos"
+	"github.com/segmentio/ksuid"
 )
 
 var (
@@ -228,22 +229,22 @@ func GetShelfCrawlKeysFromShelvesToCrawl() []string {
 }
 
 func SetTestDataIdentifiers() {
-	AVAILABLE_BOOKS = "test-availableBooks"
-	RECENT_CRAWL_BREADCRUMBS = "test-recentCrawls"
-	AUTOMATED_BOOK_SHELF_CRAWL_TIME = "test-automatedBookShelfCrawlTime"
-	DISCORD_WEBHOOK_URL = "test-discordWebHookURL"
-	DISCORD_MESSAGE_FORMAT = "test-discordMessageFormat"
-	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE = "test-sendAlertWhenBookNoLongerAvailable"
-	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "test-sendAlertWhenFreeShippingKicksIn"
-	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF = "test-totalBooksInAutomatedBookShelf"
-	ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST = "test-addMoreAuthorBooksToAvailableBooksList"
-	KNOWN_AUTHORS = "test-knownAuthors"
-	IGNORE_AUTHORS = "test-ignoreAuthors"
-	OTHER_BOOKS_IN_SERIES_LOOKUP = "test-otherBooksInSeriesLookup"
-	OWNED_BOOKS_SHELF_URL = "test-ownedBooksShelfURL"
-	SERIES_CRAWL_BOOKS = "test-seriesCrawlBooks"
-	ONLY_ENGLISH_BOOKS_TOGGLE = "test-onlyEnglishBooksToggle"
-	SERIES_CRAWL_IN_AUTOMATED_CRAWL = "test-seriesCrawlInAutomatedCrawl"
-	SHELVES_TO_CRAWL = "test-shelvesToCrawl"
-	DEFAULT_TTL = time.Duration(5 * time.Second)
+	randomID := ksuid.New().String()
+	AVAILABLE_BOOKS = "test-" + randomID + "-availableBooks"
+	RECENT_CRAWL_BREADCRUMBS = "test-" + randomID + "-recentCrawls"
+	AUTOMATED_BOOK_SHELF_CRAWL_TIME = "test-" + randomID + "-automatedBookShelfCrawlTime"
+	DISCORD_WEBHOOK_URL = "test-" + randomID + "-discordWebHookURL"
+	DISCORD_MESSAGE_FORMAT = "test-" + randomID + "-discordMessageFormat"
+	SEND_ALERT_WHEN_BOOK_NO_LONGER_AVAILABLE = "test-" + randomID + "-sendAlertWhenBookNoLongerAvailable"
+	SEND_ALERT_ONLY_WHEN_FREE_SHIPPING_KICKS_IN = "test-" + randomID + "-sendAlertWhenFreeShippingKicksIn"
+	TOTAL_BOOKS_IN_AUTOMATED_BOOK_SHELF = "test-" + randomID + "-totalBooksInAutomatedBookShelf"
+	ADD_MORE_AUTHOR_BOOKS_TO_AVAILABLE_BOOKS_LIST = "test-" + randomID + "-addMoreAuthorBooksToAvailableBooksList"
+	KNOWN_AUTHORS = "test-" + randomID + "-knownAuthors"
+	IGNORE_AUTHORS = "test-" + randomID + "-ignoreAuthors"
+	OTHER_BOOKS_IN_SERIES_LOOKUP = "test-" + randomID + "-otherBooksInSeriesLookup"
+	OWNED_BOOKS_SHELF_URL = "test-" + randomID + "-ownedBooksShelfURL"
+	SERIES_CRAWL_BOOKS = "test-" + randomID + "-seriesCrawlBooks"
+	ONLY_ENGLISH_BOOKS_TOGGLE = "test-" + randomID + "-onlyEnglishBooksToggle"
+	SHELVES_TO_CRAWL = "test-" + randomID + "-shelvesToCrawl"
+	DEFAULT_TTL = time.Duration(300 * time.Second)
 }

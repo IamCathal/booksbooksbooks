@@ -345,11 +345,11 @@ document.getElementById("addMoreAuthorBooksToAvailableList").addEventListener("c
     }
 })
 
-document.getElementById("setSeriesInAutomatedCrawl").addEventListener("change", (ev) => {
+document.getElementById("setsearchotherseriesbookslookup").addEventListener("change", (ev) => {
     if (ev.currentTarget.checked) {
-        setSeriesInAutomatedCrawl("true")
+        setSearchOtherSeriesBooksLookup("true")
     } else {
-        setSeriesInAutomatedCrawl("false")
+        setSearchOtherSeriesBooksLookup("false")
     }
 })
 
@@ -367,11 +367,11 @@ function getAndRenderAddMoreAuthorBooksToAvailableList() {
 }
 
 function getAndRenderSeriesInAutomatedCrawl() {
-    getSeriesInAutomatedCrawl().then(enabled => {
+    getsearchotherseriesbooksinlookup().then(enabled => {
         if (enabled == true) {
-            document.getElementById("setSeriesInAutomatedCrawl").checked = true
+            document.getElementById("setsearchotherseriesbookslookup").checked = true
         } else {
-            document.getElementById("setSeriesInAutomatedCrawl").checked = false
+            document.getElementById("setsearchotherseriesbookslookup").checked = false
         }
     }, (err) => {
         console.error(err)
@@ -853,9 +853,9 @@ function getAddMoreBooksFromAuthorToAvailableBooksList() {
     })
 }
 
-function setSeriesInAutomatedCrawl(enabled) {
+function setSearchOtherSeriesBooksLookup(enabled) {
     return new Promise((resolve, reject) => {
-        fetch(`/settings/setseriesinautomatedcrawl?enabled=${enabled}`, {
+        fetch(`/settings/setsearchotherseriesbookslookup?enabled=${enabled}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -870,9 +870,9 @@ function setSeriesInAutomatedCrawl(enabled) {
     })
 }
 
-function getSeriesInAutomatedCrawl() {
+function getsearchotherseriesbooksinlookup() {
     return new Promise((resolve, reject) => {
-        fetch(`/settings/getseriesinautomatedcrawl`, {
+        fetch(`/settings/getsearchotherseriesbooksinlookup`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
