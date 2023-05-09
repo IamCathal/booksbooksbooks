@@ -185,6 +185,12 @@ body {
   font-size: 0.6rem;
 }
 
+.otherBooksFromTitleText {
+  font-size: 0.8rem;
+  background-color: #c0c0c0;
+  color: #22242f;
+}
+
 .searchResultBook {
   width: 2rem;
 }
