@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/iamcathal/booksbooksbooks/db"
 	"github.com/iamcathal/booksbooksbooks/engine"
 )
 
@@ -21,7 +20,7 @@ func shelfCrawl(w http.ResponseWriter, r *http.Request) {
 		SendBasicInvalidResponse(w, r, "unable to upgrade websocket", http.StatusBadRequest)
 		return
 	}
-	engine.GenericWorker(db.GetShelfURLsFromShelvesToCrawl(), ws)
+	engine.GenericWorker([]string{r.URL.Query().Get("shelfurl")}, ws)
 	ws.Close()
 }
 
