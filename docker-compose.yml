@@ -12,7 +12,7 @@ services:
     volumes:
       - 'redis_data:/bitnami/redis/data'
     networks:
-      - elk
+      - krnetwork
 
   # booksbooksbooks:
   #   build:
@@ -30,7 +30,7 @@ services:
   #     - elk
 
 networks:
-  elk:
+  krnetwork:
     driver: bridge
 
 volumes:
